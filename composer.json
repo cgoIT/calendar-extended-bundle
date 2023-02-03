@@ -47,4 +47,7 @@
   "extra": {
     "contao-manager-plugin": "CgoIt\\CalendarExtendedBundle\\ContaoManager\\Plugin"
   }
+  "replace": {
+    "kmielke/calendar-extended-bundle": "*"
+  }
 }
