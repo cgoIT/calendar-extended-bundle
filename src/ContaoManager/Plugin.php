@@ -14,18 +14,17 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle\ContaoManager;
+namespace Cgoit\CalendarExtendedBundle\ContaoManager;
 
+use Cgoit\CalendarExtendedBundle\CalendarExtendedBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
-use Kmielke\CalendarExtendedBundle\CalendarExtendedBundle;
 
 /**
  * Plugin for the Contao Manager.

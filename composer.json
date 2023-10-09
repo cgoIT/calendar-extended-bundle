@@ -1,5 +1,5 @@
 {
-  "name": "kmielke/calendar-extended-bundle",
+  "name": "cgoit/calendar-extended-bundle",
   "description": "Contao 4 LTS calendar extension bundle. Better recurring events and exceptions.",
   "type": "contao-bundle",
   "version": "1.1.3",
@@ -45,7 +45,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kmielke\\CalendarExtendedBundle\\": "src/"
+      "Cgoit\\CalendarExtendedBundle\\": "src/"
     },
     "classmap": [
       "src/Resources/contao/"
@@ -62,7 +62,7 @@
       "bin-links": false,
       "target-directory": "tools"
     },
-    "contao-manager-plugin": "Kmielke\\CalendarExtendedBundle\\ContaoManager\\Plugin"
+    "contao-manager-plugin": "Cgoit\\CalendarExtendedBundle\\ContaoManager\\Plugin"
   },
   "config": {
     "allow-plugins": {

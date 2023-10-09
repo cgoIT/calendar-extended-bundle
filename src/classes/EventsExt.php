@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
@@ -16,10 +15,9 @@ declare(strict_types=1);
  * Namespace.
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\Calendar;
-use Contao\CalendarModel;
 use Contao\Config;
 use Contao\Date;
 use Contao\Events;
@@ -28,9 +26,44 @@ use Contao\StringUtil;
 /**
  * Class EventExt.
  *
+ * @property array<mixed> $filter_fields
+ * @property bool         $showOnlyNext
+ * @property bool         $show_holiday
+ * @property array<mixed> $cal_calendar
+ * @property array<mixed> $cal_holiday
+ * @property string       $cal_ctemplate
+ * @property int          $cal_startDay
+ * @property string       $cal_format
+ * @property string       $cal_order
+ * @property bool         $cal_showQuantity
+ * @property string       $cal_template
+ * @property string       $com_template
+ * @property int          $cal_readerModule
+ * @property bool         $cal_ignoreDynamic
+ * @property string       $cal_format_ext
+ * @property array<mixed> $range_date
+ * @property bool         $showRecurrences
+ * @property bool         $pubTimeRecurrences
+ * @property string       $displayDuration
+ * @property bool         $hide_started
+ * @property int          $cal_limit
+ * @property bool         $fc_editable
+ * @property bool         $businessHours
+ * @property bool         $weekNumbers
+ * @property bool         $weekNumbersWithinDays
+ * @property int          $eventLimit
+ * @property bool         $cal_times
+ * @property bool         $use_navigation
+ * @property bool         $linkCurrent
+ * @property array<mixed> $cal_times_range
+ * @property string       $cellhight
+ * @property bool         $showDate
+ * @property bool         $hideEmptyDays
+ * @property bool         $use_horizontal
+ *
  * @copyright  Kester Mielke 2010-2013
  */
-class EventsExt extends Events
+abstract class EventsExt extends Events
 {
     /**
      * Template.
@@ -40,15 +73,9 @@ class EventsExt extends Events
     protected $strTemplate = '';
 
     /**
-     * Generate the module.
-     */
-    protected function compile(): void
-    {
-        parent::compile;
-    }
-
-    /**
      * Get all events of a certain period.
+     *
+     * @phpstan-param array<mixed> $arrCalendars
      *
      * @param array $arrCalendars
      * @param int   $intStart
@@ -57,9 +84,9 @@ class EventsExt extends Events
      *
      * @throws \Exception
      *
-     * @return array
+     * @phpstan-return array<mixed>
      */
-    protected function getAllEvents($arrCalendars, $intStart, $intEnd, $blnFeatured = null)
+    protected function getAllEvents($arrCalendars, $intStart, $intEnd, $blnFeatured = null): array
     {
         return $this->getAllEventsExt($arrCalendars, $intStart, $intEnd, [null, true], $blnFeatured);
     }
@@ -67,17 +94,19 @@ class EventsExt extends Events
     /**
      * Get all events of a certain period.
      *
-     * @param $arrCalendars
-     * @param $intStart
-     * @param $intEnd
-     * @param null $arrParam
-     * @param bool $blnFeatured
+     * @phpstan-param array<mixed> $arrCalendars
+     *
+     * @param array             $arrCalendars
+     * @param int               $intStart
+     * @param int               $intEnd
+     * @param array<mixed>|null $arrParam
+     * @param bool              $blnFeatured
      *
      * @throws \Exception
      *
-     * @return array
+     * @return array<mixed>
      */
-    protected function getAllEventsExt($arrCalendars, $intStart, $intEnd, $arrParam = null, $blnFeatured = null)
+    protected function getAllEventsExt($arrCalendars, $intStart, $intEnd, $arrParam = null, $blnFeatured = null): array
     {
         // set default values...
         $arrHolidays = null;
@@ -101,15 +130,6 @@ class EventsExt extends Events
         $arrEventSkipInfo = [];
 
         foreach ($arrCalendars as $id) {
-            $strUrl = $this->strUrl;
-            $objCalendar = CalendarModel::findByPk($id);
-
-            // Get the current "jumpTo" page
-            if (null !== $objCalendar && $objCalendar->jumpTo && ($objTarget = $objCalendar->getRelated('jumpTo')) !== null) {
-                /** @var \PageModel $objTarget */
-                $strUrl = $objTarget->getFrontendUrl(Config::get('useAutoItem') && !Config::get('disableAlias') ? '/%s' : '/events/%s');
-            }
-
             // Get the events of the current period
             $objEvents = CalendarEventsModelExt::findCurrentByPid($id, $intStart, $intEnd, ['showFeatured' => $blnFeatured]);
 
@@ -169,6 +189,8 @@ class EventsExt extends Events
                 }
 
                 // check the repeat values
+                $arrRepeat = null;
+
                 if ($objEvents->recurring) {
                     $arrRepeat = StringUtil::deserialize($objEvents->repeatEach) ?: null;
                 }
@@ -188,7 +210,7 @@ class EventsExt extends Events
                 if (true === $store) {
                     $eventEnd = $objEvents->endTime;
 
-                    $this->addEvent($objEvents, $objEvents->startTime, $eventEnd, $strUrl, $intStart, $intEnd, $id);
+                    $this->addEvent($objEvents, $objEvents->startTime, $eventEnd, $intStart, $intEnd, $id);
 
                     // increase $cntRecurrences if event is in scope
                     if ($dateNextStart >= $dateBegin && $dateNextEnd <= $dateEnd) {
@@ -293,6 +315,7 @@ class EventsExt extends Events
                             }
                         }
 
+                        $oldDate = null;
                         // check if there is any exception
                         if (\is_array($arrEventSkipInfo[$objEvents->id])) {
                             // modify the css class of the exceptions
@@ -343,9 +366,9 @@ class EventsExt extends Events
 
                                         // get the date of the event and add the new time to the new date
                                         $newStart = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->startTime)
-                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
+                                            .' EventsExt.php'.$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
                                         $newEnd = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->endTime)
-                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
+                                            .' EventsExt.php'.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
 
                                         //set the new values
                                         $objEvents->startTime = strtotime($newDate, strtotime($newStart));
@@ -388,13 +411,13 @@ class EventsExt extends Events
                         $store = true;
 
                         if ($objEvents->hideOnWeekend) {
-                            if (0 === $weekday || 6 === $weekday) {
+                            if ('0' === $weekday || '6' === $weekday) {
                                 $store = false;
                             }
                         }
 
                         if (true === $store && true === $addmonth) {
-                            $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $strUrl, $intStart, $intEnd, $id);
+                            $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $intStart, $intEnd, $id);
                         }
 
                         // reset this values...
@@ -433,20 +456,20 @@ class EventsExt extends Events
                             // new start time
                             $strNewDate = $fixedDate['new_repeat'];
                             $strNewTime = (\strlen($fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time);
-                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
-                            $objEvents->startTime = $newDateStart->timestamp;
+                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
+                            $objEvents->startTime = $newDateStart->tstamp;
                             $dateNextStart = date('Ymd', $objEvents->startTime);
 
                             // new end time
                             $strNewTime = (\strlen($fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time);
-                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
+                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
 
                             // use the multi-day span of the event
                             if ($orgDateSpan > 0) {
-                                $newDateEnd = new Date(strtotime('+'.$orgDateSpan.' days', $newDateEnd->timestamp), Date::getNumericDatimFormat());
+                                $newDateEnd = new Date(strtotime('+'.$orgDateSpan.' days', $newDateEnd->tstamp), Date::getNumericDatimFormat());
                             }
 
-                            $objEvents->endTime = $newDateEnd->timestamp;
+                            $objEvents->endTime = $newDateEnd->tstamp;
                             $dateNextEnd = date('Ymd', $objEvents->endTime);
 
                             // set a reason if given...
@@ -455,11 +478,11 @@ class EventsExt extends Events
                             // position of the event
                             ++$objEvents->pos_idx;
 
-                            $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $strUrl, $intStart, $intEnd, $id);
+                            $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $intStart, $intEnd, $id);
 
                             // restore the original values
-                            $objEvents->startTime = $orgDateStart->timestamp;
-                            $objEvents->endTime = $orgDateEnd->timestamp;
+                            $objEvents->startTime = $orgDateStart->tstamp;
+                            $objEvents->endTime = $orgDateEnd->tstamp;
 
                             // increase $cntRecurrences if event is in scope
                             if ($dateNextStart >= $dateBegin && $dateNextEnd <= $dateEnd) {
@@ -481,15 +504,7 @@ class EventsExt extends Events
             foreach ($arrHolidays as $id) {
                 $objAE = $this->Database->prepare('SELECT allowEvents FROM tl_calendar WHERE id = ?')
                     ->limit(1)->execute($id);
-                $allowEvents = 1 === $objAE->allowEvents ? true : false;
-
-                $strUrl = $this->strUrl;
-                $objCalendar = \CalendarModel::findByPk($id);
-
-                // Get the current "jumpTo" page
-                if (null !== $objCalendar && $objCalendar->jumpTo && ($objTarget = $objCalendar->getRelated('jumpTo')) !== null) {
-                    $strUrl = $this->generateFrontendUrl($objTarget->row(), ($GLOBALS['TL_CONFIG']['useAutoItem'] ? '/%s' : '/events/%s'));
-                }
+                $allowEvents = 1 === $objAE->allowEvents; // @phpstan-ignore-line
 
                 // Get the events of the current period
                 $objEvents = CalendarEventsModelExt::findCurrentByPid($id, $intStart, $intEnd);
@@ -501,7 +516,7 @@ class EventsExt extends Events
                 while ($objEvents->next()) {
                     // at last we add the free multi-day / holiday or what ever kind of event
                     if (!$this->show_holiday) {
-                        $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $strUrl, $intStart, $intEnd, $id);
+                        $this->addEvent($objEvents, $objEvents->startTime, $objEvents->endTime, $intStart, $intEnd, $id);
                     }
 
                     /**
@@ -514,20 +529,20 @@ class EventsExt extends Events
                     $intDate = $objEvents->startTime;
                     $key = date('Ymd', $intDate);
                     // check all events if the calendar allows events on free days
-                    if ($this->arrEvents[$key]) {
+                    if ($this->arrEvents[$key]) { // @phpstan-ignore-line
                         foreach ($this->arrEvents[$key] as $k1 => $events) {
                             foreach ($events as $k2 => $event) {
                                 // do not remove events from any holiday calendar
-                                $isHolidayEvent = array_search($event['pid'], $arrHolidays, true);
+                                $isHolidayEvent = \in_array($event['pid'], $arrHolidays, true);
 
                                 // unset the event if showOnFreeDay is not set
                                 if (false === $allowEvents) {
                                     if (false === $isHolidayEvent) {
-                                        unset($this->arrEvents[$key][$k1][$k2]);
+                                        unset($this->arrEvents[$key][$k1][$k2]); // @phpstan-ignore-line
                                     }
                                 } else {
-                                    if (false === $isHolidayEvent && 1 === !$event['showOnFreeDay']) {
-                                        unset($this->arrEvents[$key][$k1][$k2]);
+                                    if (false === $isHolidayEvent && !$event['showOnFreeDay']) {
+                                        unset($this->arrEvents[$key][$k1][$k2]); // @phpstan-ignore-line
                                     }
                                 }
                             }
@@ -539,20 +554,20 @@ class EventsExt extends Events
                         $intDate = strtotime('+ 1 day', $intDate);
                         $key = date('Ymd', $intDate);
                         // check all events if the calendar allows events on free days
-                        if ($this->arrEvents[$key]) {
+                        if ($this->arrEvents[$key]) { // @phpstan-ignore-line
                             foreach ($this->arrEvents[$key] as $k1 => $events) {
                                 foreach ($events as $k2 => $event) {
                                     // do not remove events from any holiday calendar
-                                    $isHolidayEvent = array_search($event['pid'], $arrHolidays, true);
+                                    $isHolidayEvent = \in_array($event['pid'], $arrHolidays, true);
 
                                     // unset the event if showOnFreeDay is not set
                                     if (false === $allowEvents) {
                                         if (false === $isHolidayEvent) {
-                                            unset($this->arrEvents[$key][$k1][$k2]);
+                                            unset($this->arrEvents[$key][$k1][$k2]); // @phpstan-ignore-line
                                         }
                                     } else {
-                                        if (false === $isHolidayEvent && 1 === !$event['showOnFreeDay']) {
-                                            unset($this->arrEvents[$key][$k1][$k2]);
+                                        if (false === $isHolidayEvent && !$event['showOnFreeDay']) {
+                                            unset($this->arrEvents[$key][$k1][$k2]); // @phpstan-ignore-line
                                         }
                                     }
                                 }
@@ -564,8 +579,10 @@ class EventsExt extends Events
         }
 
         // Sort the array
-        foreach (array_keys($this->arrEvents) as $key) {
-            ksort($this->arrEvents[$key]);
+        if (!empty($this->arrEvents)) {
+            foreach (array_keys($this->arrEvents) as $key) {
+                ksort($this->arrEvents[$key]);
+            }
         }
 
         // HOOK: modify the result set

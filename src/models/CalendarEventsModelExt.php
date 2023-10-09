@@ -6,13 +6,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\CalendarEventsModel;
 use Contao\Date;
@@ -26,10 +25,10 @@ class CalendarEventsModelExt extends CalendarEventsModel
     /**
      * Find events of the current period by their parent ID.
      *
-     * @param int   $intPid     The calendar ID
-     * @param int   $intStart   The start date as Unix timestamp
-     * @param int   $intEnd     The end date as Unix timestamp
-     * @param array $arrOptions An optional options array
+     * @param int          $intPid     The calendar ID
+     * @param int          $intStart   The start date as Unix timestamp
+     * @param int          $intEnd     The end date as Unix timestamp
+     * @param array<mixed> $arrOptions An optional options array
      *
      * @return Collection|array<CalendarEventsModel>|CalendarEventsModel|null A collection of models or null if there are no events
      */
@@ -56,9 +55,9 @@ class CalendarEventsModelExt extends CalendarEventsModel
     /**
      * Find upcoming events by their parent IDs.
      *
-     * @param array $arrIds     An array of calendar IDs
-     * @param int   $intLimit   An optional limit
-     * @param array $arrOptions An optional options array
+     * @param array<mixed> $arrIds     An array of calendar IDs
+     * @param int          $intLimit   An optional limit
+     * @param array<mixed> $arrOptions An optional options array
      *
      * @return Collection|array<CalendarEventsModel>|CalendarEventsModel|null A collection of models or null if there are no events
      */
@@ -88,12 +87,12 @@ class CalendarEventsModelExt extends CalendarEventsModel
     /**
      * Find events of the current period by their parent ID.
      *
-     * @param int   $intPid     The calendar ID
-     * @param int   $intStart   The start date as Unix timestamp
-     * @param int   $intEnd     The end date as Unix timestamp
-     * @param array $arrOptions An optional options array
+     * @param int          $intPid     The calendar ID
+     * @param int          $intStart   The start date as Unix timestamp
+     * @param int          $intEnd     The end date as Unix timestamp
+     * @param array<mixed> $arrOptions An optional options array
      *
-     * @return Collection|array<\CalendarEventsModelExt>|\CalendarEventsModelExt|null A collection of models or null if there are no events
+     * @return Collection|array<CalendarEventsModel>|CalendarEventsModel|null A collection of models or null if there are no events
      */
     public static function findOverlappingByPid($intPid, $intStart, $intEnd, array $arrOptions = [])
     {

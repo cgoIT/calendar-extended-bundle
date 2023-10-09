@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
@@ -59,25 +58,25 @@ $GLOBALS['TL_CONFIG']['tl_calendar_events']['filter']['location_plz'] = [];
  */
 array_insert($GLOBALS['FE_MOD'], 99, [
     'events' => [
-        'timetable' => 'Kmielke\CalendarExtendedBundle\ModuleTimeTable',
-        'yearview' => 'Kmielke\CalendarExtendedBundle\ModuleYearView',
-        'evr_registration' => 'Kmielke\CalendarExtendedBundle\ModuleEventRegistration',
-        'fullcalendar' => 'Kmielke\CalendarExtendedBundle\ModuleFullcalendar',
+        'timetable' => 'Cgoit\CalendarExtendedBundle\ModuleTimeTable',
+        'yearview' => 'Cgoit\CalendarExtendedBundle\ModuleYearView',
+        'evr_registration' => 'Cgoit\CalendarExtendedBundle\ModuleEventRegistration',
+        'fullcalendar' => 'Cgoit\CalendarExtendedBundle\ModuleFullcalendar',
     ],
 ]);
 
 // Replace Contao Module
-$GLOBALS['FE_MOD']['events']['calendar'] = 'Kmielke\CalendarExtendedBundle\ModuleCalendar';
-$GLOBALS['FE_MOD']['events']['eventlist'] = 'Kmielke\CalendarExtendedBundle\ModuleEventlist';
-$GLOBALS['FE_MOD']['events']['eventmenu'] = 'Kmielke\CalendarExtendedBundle\ModuleEventMenu';
-$GLOBALS['FE_MOD']['events']['eventreader'] = 'Kmielke\CalendarExtendedBundle\ModuleEventReader';
+$GLOBALS['FE_MOD']['events']['calendar'] = 'Cgoit\CalendarExtendedBundle\ModuleCalendar';
+$GLOBALS['FE_MOD']['events']['eventlist'] = 'Cgoit\CalendarExtendedBundle\ModuleEventlist';
+$GLOBALS['FE_MOD']['events']['eventmenu'] = 'Cgoit\CalendarExtendedBundle\ModuleEventMenu';
+$GLOBALS['FE_MOD']['events']['eventreader'] = 'Cgoit\CalendarExtendedBundle\ModuleEventReader';
 
 /*
  * BACK END FORM FIELDS
  */
 
 array_insert($GLOBALS['BE_FFL'], 99, [
-    'timePeriodExt' => 'Kmielke\CalendarExtendedBundle\TimePeriodExt',
+    'timePeriodExt' => 'Cgoit\CalendarExtendedBundle\TimePeriodExt',
 ]);
 
 // config.php
@@ -101,4 +100,4 @@ $GLOBALS['NOTIFICATION_CENTER']['NOTIFICATION_TYPE']['event_registration'] = [
 /*
  * Event Hook
  */
-$GLOBALS['TL_HOOKS']['getAllEvents'][] = ['Kmielke\CalendarExtendedBundle\EventUrls', 'modifyEventUrl'];
+$GLOBALS['TL_HOOKS']['getAllEvents'][] = ['Cgoit\CalendarExtendedBundle\EventUrls', 'modifyEventUrl'];

@@ -6,13 +6,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\Database;
 use Contao\Database\Result;
@@ -29,6 +28,9 @@ class CalendarLeadsModel extends Model
      * @var string
      */
     protected static $strTableMaster = 'tl_lead';
+    /**
+     * @var string
+     */
     protected static $strTableDetail = 'tl_lead_data';
 
     /**
@@ -55,7 +57,7 @@ class CalendarLeadsModel extends Model
         // und ausführen
         $objResult = Database::getInstance()->prepare($sql)->execute($fid, $eid, $email);
 
-        return $objResult->email === $email ? false : true;
+        return !($objResult->email === $email); // @phpstan-ignore-line
     }
 
     /**
@@ -81,7 +83,7 @@ class CalendarLeadsModel extends Model
         // und ausführen
         $objResult = Database::getInstance()->prepare($sql)->execute($fid, $eid);
 
-        return $objResult->count ? $objResult->count : 0;
+        return $objResult->count ?: 0; // @phpstan-ignore-line
     }
 
     /**
@@ -89,7 +91,7 @@ class CalendarLeadsModel extends Model
      * @param int    $eid  eventid
      * @param string $mail email
      *
-     * @return Result|object
+     * @return Result|object|bool
      */
     public static function findByLeadEventMail($lid, $eid, $mail)
     {
@@ -109,15 +111,15 @@ class CalendarLeadsModel extends Model
         // und ausführen
         $objResult = Database::getInstance()->prepare($sql)->execute((int) $lid, 'eventid', (int) $eid, 'email', $mail);
 
-        if (!$objResult || 0 === $objResult->numRows) {
+        if (0 === $objResult->numRows) {
             return false;
         }
 
-        return self::findByPid($objResult->pid);
+        return self::findByPid($objResult->pid); // @phpstan-ignore-line
     }
 
     /**
-     * @param $pid
+     * @param int $pid
      *
      * @return Result|object
      */
@@ -139,13 +141,13 @@ class CalendarLeadsModel extends Model
      */
     public static function updateByLeadEventMail($lid, $eid, $mail, $published)
     {
-        $objResult = self::findPidByLeadEventMail($lid, $eid, $mail);
+        $objResult = self::findByLeadEventMail($lid, $eid, $mail);
 
-        if (!$objResult || 0 === $objResult->numRows) {
+        if (\is_bool($objResult) && !$objResult) {
             return false;
         }
 
-        $result = self::updateByPidField($objResult->pid, 'published', $published);
+        $result = self::updateByPid($objResult->pid, $published); // @phpstan-ignore-line
 
         if (!$result) {
             return false;
@@ -155,9 +157,8 @@ class CalendarLeadsModel extends Model
     }
 
     /**
-     * @param int    $pid   pid
-     * @param string $field fieldname
-     * @param mixed  $value value
+     * @param int   $pid   pid
+     * @param mixed $value value
      *
      * @return bool
      */

@@ -14,13 +14,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

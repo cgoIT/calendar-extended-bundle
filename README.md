@@ -11,6 +11,8 @@ The calendar extended bundle adds morde calendar functionality to Contao 4.
 - event registrations
 - vacations
 
+Some more additions beside.
+- Fixed time ranges in EventList module
 
 Installation
 ------------
@@ -18,7 +20,7 @@ Installation
 Run the following command in your project directory:
 
 ```bash
-composer require kmielke/calendar-extended-bundle
+composer require cgoit/calendar-extended-bundle
 ```
 
 

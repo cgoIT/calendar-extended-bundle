@@ -6,18 +6,17 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
+use Cgoit\CalendarExtendedBundle\CalendarEventsModelExt;
+use Cgoit\CalendarExtendedBundle\CalendarLeadsModel;
 use Contao\CalendarModel;
 use Contao\Database;
 use Contao\Date;
 use Contao\FormModel;
-use Contao\Input;
-use Contao\Message;
 
 foreach ($GLOBALS['TL_DCA']['tl_calendar_events']['config']['onsubmit_callback'] as $k => $v) {
     if ('tl_calendar_events' === $v[0] && 'adjustTime' === $v[1]) {
@@ -433,9 +432,9 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEnd'] = [
     'sql' => "int(10) unsigned NOT NULL default '0'",
 ];
 
+use Contao\Input;
+use Contao\Message;
 use Contao\StringUtil;
-use Kmielke\CalendarExtendedBundle\CalendarEventsModelExt;
-use Kmielke\CalendarExtendedBundle\CalendarLeadsModel;
 
 /**
  * Class tl_calendar_events_ext.

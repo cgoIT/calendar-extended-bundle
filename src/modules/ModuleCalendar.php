@@ -6,13 +6,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\Config;
@@ -20,6 +19,8 @@ use Contao\Date;
 use Contao\Environment;
 use Contao\FrontendTemplate;
 use Contao\Input;
+use Contao\PageError404;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 
@@ -34,6 +35,9 @@ class ModuleCalendar extends EventsExt
      * @var Date
      */
     protected $Date;
+    /**
+     * @var array<mixed>
+     */
     protected $calConf = [];
 
     /**
@@ -59,7 +63,9 @@ class ModuleCalendar extends EventsExt
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
@@ -76,7 +82,7 @@ class ModuleCalendar extends EventsExt
         $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (!\is_array($this->cal_calendar) || empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar)) {
             return '';
         }
 
@@ -97,9 +103,9 @@ class ModuleCalendar extends EventsExt
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
                 ->limit(1)->execute($cal);
 
-            $this->calConf[$cal]['calendar'] = $objBG->title;
+            $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
-            if ($objBG->bg_color) {
+            if ($objBG->bg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
 
                 if (!empty($cssColor)) {
@@ -111,7 +117,7 @@ class ModuleCalendar extends EventsExt
                 }
             }
 
-            if ($objBG->fg_color) {
+            if ($objBG->fg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
 
                 if (!empty($cssColor)) {
@@ -128,7 +134,7 @@ class ModuleCalendar extends EventsExt
         $this->strLink = $this->strUrl;
 
         if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
-            /** @var \PageModel $objTarget */
+            /** @var PageModel $objTarget */
             $this->strLink = $objTarget->getFrontendUrl();
         }
 
@@ -156,12 +162,12 @@ class ModuleCalendar extends EventsExt
                 $this->Date = new Date();
             }
         } catch (\OutOfBoundsException $e) {
-            /** @var \PageModel $objPage */
+            /** @var PageModel $objPage */
             global $objPage;
 
-            /** @var \PageError404 $objHandler */
+            /** @var PageError404 $objHandler */
             $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->generate($objPage->id);
+            $objHandler->getResponse($objPage);
         }
 
         /** @var FrontendTemplate|object $objTemplate */
@@ -177,13 +183,13 @@ class ModuleCalendar extends EventsExt
         $prevYear = $intMonth <= 1 ? $intYear - 1 : $intYear;
         $prevMonth = $intMonth <= 1 ? 12 : $intMonth - 1;
         $lblPrevious = $GLOBALS['TL_LANG']['MONTHS'][$prevMonth - 1].' '.$prevYear;
-        $intPrevYm = (int) ($prevYear.str_pad($prevMonth, 2, ' ', STR_PAD_LEFT));
+        $intPrevYm = (int) ($prevYear.str_pad((string) $prevMonth, 2, '0', STR_PAD_LEFT));
 
         // Only generate a link if there are events (see #4160)
         //if ($objMinMax->dateFrom !== null && $intPrevYm >= date('Ym', $objMinMax->dateFrom))
         //{
         $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'month='.$intPrevYm;
-        $objTemplate->prevTitle = specialchars($lblPrevious);
+        $objTemplate->prevTitle = StringUtil::specialchars($lblPrevious);
         $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
         $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
         //}
@@ -195,13 +201,13 @@ class ModuleCalendar extends EventsExt
         $nextYear = $intMonth >= 12 ? $intYear + 1 : $intYear;
         $nextMonth = $intMonth >= 12 ? 1 : $intMonth + 1;
         $lblNext = $GLOBALS['TL_LANG']['MONTHS'][$nextMonth - 1].' '.$nextYear;
-        $intNextYm = $nextYear.str_pad($nextMonth, 2, 0, STR_PAD_LEFT);
+        $intNextYm = $nextYear.str_pad((string) $nextMonth, 2, '0', STR_PAD_LEFT);
 
         // Only generate a link if there are events (see #4160)
         //if ($objMinMax->dateTo !== null && $intNextYm <= date('Ym', max($objMinMax->dateTo, $objMinMax->repeatUntil)))
         //{
         $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'month='.$intNextYm;
-        $objTemplate->nextTitle = specialchars($lblNext);
+        $objTemplate->nextTitle = StringUtil::specialchars($lblNext);
         $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
         $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
         //		}
@@ -221,7 +227,7 @@ class ModuleCalendar extends EventsExt
     /**
      * Return the week days and labels as array.
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function compileDays()
     {
@@ -255,7 +261,7 @@ class ModuleCalendar extends EventsExt
      *
      * @throws \Exception
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function compileWeeks()
     {
@@ -267,13 +273,13 @@ class ModuleCalendar extends EventsExt
         }
 
         $intColumnCount = -1;
-        $intNumberOfRows = ceil(($intDaysInMonth + $intFirstDayOffset) / 7);
+        $intNumberOfRows = (int) ceil(($intDaysInMonth + $intFirstDayOffset) / 7);
         $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $this->Date->monthBegin, $this->Date->monthEnd, [$this->cal_holiday]);
         $arrDays = [];
 
         // Compile days
         for ($i = 1; $i <= $intNumberOfRows * 7; ++$i) {
-            $intWeek = floor(++$intColumnCount / 7);
+            $intWeek = (int) floor(++$intColumnCount / 7);
             $intDay = $i - $intFirstDayOffset;
             $intCurrentDay = ($i + $this->cal_startDay) % 7;
 
@@ -294,7 +300,7 @@ class ModuleCalendar extends EventsExt
                 continue;
             }
 
-            $intKey = date('Ym', $this->Date->tstamp).(\strlen($intDay) < 2 ? '0'.$intDay : $intDay);
+            $intKey = date('Ym', $this->Date->tstamp).(\strlen((string) $intDay) < 2 ? '0'.$intDay : $intDay);
             $strClass .= (int) $intKey === (int) date('Ymd') ? ' today' : '';
             $strClass .= (int) $intKey < (int) date('Ymd') ? ' bygone' : '';
             $strClass .= (int) $intKey > (int) date('Ymd') ? ' upcomming' : '';
@@ -305,7 +311,7 @@ class ModuleCalendar extends EventsExt
             }
 
             // Inactive days
-            if (empty($intKey) || !isset($arrAllEvents[$intKey])) {
+            if (!isset($arrAllEvents[$intKey])) {
                 $arrDays[$strWeekClass][$i]['label'] = $intDay;
                 $arrDays[$strWeekClass][$i]['class'] = 'days'.$strClass;
                 $arrDays[$strWeekClass][$i]['events'] = [];

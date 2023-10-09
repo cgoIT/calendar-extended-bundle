@@ -12,7 +12,7 @@ return static function (ECSConfig $ecsConfig): void {
     $ecsConfig->parallel();
 
     $ecsConfig->ruleWithConfiguration(HeaderCommentFixer::class, [
-        'header' => "This file is part of cgoit\\calendar-extended-bundle.\n\n(c) Kester Mielke\n\n(c) Carsten Götzinger\n\n@license LGPL-3.0-or-later"
+        'header' => "This file is part of cgoit\\calendar-extended-bundle.\n\n(c) Kester Mielke\n(c) Carsten Götzinger\n\n@license LGPL-3.0-or-later"
     ]);
 
     if (PHP_VERSION_ID < 80000) {

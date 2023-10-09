@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
@@ -16,7 +15,7 @@ declare(strict_types=1);
  * Namespace.
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\Config;
@@ -27,6 +26,7 @@ use Contao\Input;
 use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Contao\System;
 
 /**
  * Class ModuleTimeTableExt.
@@ -38,11 +38,20 @@ class ModuleTimeTable extends EventsExt
     /**
      * Current date object.
      *
-     * @var int
+     * @var Date
      */
     protected $Date;
+    /**
+     * @var int
+     */
     protected $weekBegin;
+    /**
+     * @var int
+     */
     protected $weekEnd;
+    /**
+     * @var array<mixed>
+     */
     protected $calConf = [];
 
     /**
@@ -68,10 +77,12 @@ class ModuleTimeTable extends EventsExt
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['timetable'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper($GLOBALS['TL_LANG']['FMD']['timetable'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -84,7 +95,7 @@ class ModuleTimeTable extends EventsExt
         $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (!\is_array($this->cal_calendar) || empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar)) {
             return '';
         }
 
@@ -105,9 +116,9 @@ class ModuleTimeTable extends EventsExt
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
                 ->limit(1)->execute($cal);
 
-            $this->calConf[$cal]['calendar'] = $objBG->title;
+            $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
-            if ($objBG->bg_color) {
+            if ($objBG->bg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
 
                 if (!empty($cssColor)) {
@@ -119,7 +130,7 @@ class ModuleTimeTable extends EventsExt
                 }
             }
 
-            if ($objBG->fg_color) {
+            if ($objBG->fg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
 
                 if (!empty($cssColor)) {
@@ -152,7 +163,7 @@ class ModuleTimeTable extends EventsExt
         try {
             // Respond to month
             if (Input::get('month')) {
-                $this->Date = new \Date(Input::get('month').'01', 'Ymd');
+                $this->Date = new Date((int) (Input::get('month').'01'), 'Ymd');
             } // Respond to week
             elseif (Input::get('week')) {
                 $selYear = (int) substr(Input::get('week'), 0, 4);
@@ -160,14 +171,14 @@ class ModuleTimeTable extends EventsExt
                 $selDay = 1 === $selWeek ? 4 : 1;
                 $dt = new \DateTime();
                 $dt->setISODate($selYear, $selWeek, $selDay);
-                $this->Date = new \Date($dt->format('Ymd'), 'Ymd');
+                $this->Date = new Date((int) $dt->format('Ymd'), 'Ymd');
                 unset($dt);
             } // Respond to day
             elseif (Input::get('day')) {
-                $this->Date = new \Date(Input::get('day'), 'Ymd');
+                $this->Date = new Date((int) Input::get('day'), 'Ymd');
             } // Fallback to today
             else {
-                $this->Date = new \Date();
+                $this->Date = new Date();
             }
         } catch (\OutOfBoundsException $e) {
             /** @var PageModel $objPage */
@@ -175,7 +186,7 @@ class ModuleTimeTable extends EventsExt
 
             /** @var PageError404 $objHandler */
             $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->generate($objPage->id);
+            $objHandler->getResponse($objPage);
         }
 
         // Get the Year and the week of the given date
@@ -186,24 +197,24 @@ class ModuleTimeTable extends EventsExt
 
         // Set date to the first day of the given week
         $dt->setISODate($intYear, $intWeek, 1);
-        $newDate = new Date($dt->format('Ymd'), 'Ymd');
-        $newYear = date('Y', $newDate->tstamp);
-        $newMonth = date('m', $newDate->tstamp);
+        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
+        $newYear = (int) date('Y', $newDate->tstamp);
+        $newMonth = (int) date('m', $newDate->tstamp);
         $newDay = (int) date('d', $newDate->tstamp);
         $this->weekBegin = mktime(0, 0, 0, $newMonth, $newDay, $newYear);
 
         // Set date to the last day of the given week
         $dt->setISODate($intYear, $intWeek, 7);
-        $newDate = new Date($dt->format('Ymd'), 'Ymd');
-        $newYear = date('Y', $newDate->tstamp);
-        $newMonth = date('m', $newDate->tstamp);
+        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
+        $newYear = (int) date('Y', $newDate->tstamp);
+        $newMonth = (int) date('m', $newDate->tstamp);
         $newDay = (int) date('d', $newDate->tstamp);
         $this->weekEnd = mktime(23, 59, 59, $newMonth, $newDay, $newYear);
 
         unset($dt);
 
         // Get total count of weeks of the year
-        if (($weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear))) === 1) {
+        if (($weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear))) === '1') {
             $weeksTotal = date('W', mktime(0, 0, 0, 12, 24, $intYear));
         }
 
@@ -231,8 +242,8 @@ class ModuleTimeTable extends EventsExt
                 $currYear = date('o');
                 $currWeek = (int) date('W');
                 $lblCurrent = $GLOBALS['TL_LANG']['MSC']['curr_week'];
-                $objTemplate->currHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$currYear.str_pad($currWeek, 2, 0, STR_PAD_LEFT);
-                $objTemplate->currTitle = specialchars($lblCurrent);
+                $objTemplate->currHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$currYear.str_pad((string) $currWeek, 2, '0', STR_PAD_LEFT);
+                $objTemplate->currTitle = StringUtil::specialchars($lblCurrent);
                 $objTemplate->currLink = $lblCurrent;
                 $objTemplate->currLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
             }
@@ -245,8 +256,8 @@ class ModuleTimeTable extends EventsExt
 
 //            if ($intPrevYm >= $intLeftBoundary)
 //            {
-            $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$prevYear.str_pad($prevWeek, 2, 0, STR_PAD_LEFT);
-            $objTemplate->prevTitle = specialchars($lblPrevious);
+            $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$prevYear.str_pad($prevWeek, 2, '0', STR_PAD_LEFT);
+            $objTemplate->prevTitle = StringUtil::specialchars($lblPrevious);
             $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
             $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
 //            }
@@ -259,16 +270,16 @@ class ModuleTimeTable extends EventsExt
 
             // Next month
             // Next month
-            $nextWeek = $intWeek === $weeksTotal ? 1 : $intWeek + 1;
-            $nextYear = $intWeek === $weeksTotal ? $intYear + 1 : $intYear;
+            $nextWeek = $intWeek === (int) $weeksTotal ? 1 : $intWeek + 1;
+            $nextYear = $intWeek === (int) $weeksTotal ? $intYear + 1 : $intYear;
             $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$nextWeek.' '.$nextYear;
             //$intNextYm = $nextYear.str_pad($nextWeek, 2, 0, STR_PAD_LEFT);
 
             // Only generate a link if there are events (see #4160)
 //            if ($intNextYm <= $intRightBoundary)
 //            {
-            $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$nextYear.str_pad($nextWeek, 2, 0, STR_PAD_LEFT);
-            $objTemplate->nextTitle = specialchars($lblNext);
+            $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$nextYear.str_pad((string) $nextWeek, 2, '0', STR_PAD_LEFT);
+            $objTemplate->nextTitle = StringUtil::specialchars($lblNext);
             $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
             $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
 //            }
@@ -289,7 +300,7 @@ class ModuleTimeTable extends EventsExt
      *
      * @throws \Exception
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function compileDays()
     {
@@ -313,7 +324,7 @@ class ModuleTimeTable extends EventsExt
                 $intCurrentDay = ($i + $this->cal_startDay) % 7;
 
                 $intKey = date('Ymd', strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
-                $currDay = \Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
+                $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
 
                 // Here we have to get the valid times
                 if (\is_array($arrAllEvents[$intKey])) {
@@ -371,14 +382,14 @@ class ModuleTimeTable extends EventsExt
             $intCurrentDay = ($i + $this->cal_startDay) % 7;
 
             $intKey = date('Ymd', strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
-            $currDay = \Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
+            $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
 
-            $class = 0 === $intCurrentDay || 6 === $intCurrentDay || 7 === $intCurrentDay ? 'weekend' : 'weekday';
+            $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
             $class .= 0 === $intCurrentDay % 2 ? ' even' : ' odd';
             $class .= ' '.strtolower($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
             $class .= 0 === $intCurrentDay ? ' last' : '';
 
-            if ($currDay === \Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d')))) {
+            if ($currDay === Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d')))) {
                 $class .= ' today';
             }
 
@@ -417,7 +428,7 @@ class ModuleTimeTable extends EventsExt
                         $h = date('H', $vv['startTime']);
                         $m = date('i', $vv['startTime']);
 
-                        if (\is_array($arrListTimes[$h])) {
+                        if (isset($arrListTimes) && \is_array($arrListTimes[$h]) && isset($cellhight)) {
                             // calculate the top of the event
                             $top = $arrListTimes[$h]['top'] + $m * $cellhight / 60;
 
@@ -425,7 +436,7 @@ class ModuleTimeTable extends EventsExt
                             $d1 = date_create(date('H:i', $vv['startTime']));
                             $d2 = date_create(date('H:i', $vv['endTime']));
                             $d0 = date_diff($d1, $d2);
-                            $height = ($d0->format('%h') * $cellhight) + $d0->format('%i') * $cellhight / 60;
+                            $height = ((int) $d0->format('%h') * $cellhight) + (int) $d0->format('%i') * $cellhight / 60;
 
                             $vv['style'] .= 'position:absolute;top:'.$top.'px;height:'.$height.'px;';
                         }
@@ -444,6 +455,6 @@ class ModuleTimeTable extends EventsExt
             }
         }
 
-        return [$arrDays, $arrListTimes];
+        return [$arrDays, $arrListTimes ?? []];
     }
 }

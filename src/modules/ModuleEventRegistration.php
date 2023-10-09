@@ -6,13 +6,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\FrontendTemplate;
@@ -23,6 +22,9 @@ use NotificationCenter\Model\Notification;
 
 /**
  * Class ModuleEventRegistration.
+ *
+ * @property int $regtype
+ * @property int $nc_notification
  */
 class ModuleEventRegistration extends Module
 {
@@ -40,10 +42,12 @@ class ModuleEventRegistration extends Module
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['evr_registration'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper($GLOBALS['TL_LANG']['FMD']['evr_registration'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -122,15 +126,15 @@ class ModuleEventRegistration extends Module
                 if (false !== $objResult) {
                     // zuerst den entsprechenden Datensatz updaten...
                     $published = $this->regtype;
-                    $result = CalendarLeadsModel::updateByPid($objResult->pid, $published);
+                    $result = CalendarLeadsModel::updateByPid($objResult->pid, $published); // @phpstan-ignore-line
 
                     if ($result) {
                         // Dann bauen wir arrTokens für die Nachrichten
                         $arrRawData = [];
 
-                        while ($objResult->next()) {
-                            $arrTokens['recipient_'.$objResult->name] = $objResult->value;
-                            $arrRawData[] = ucfirst($objResult->name).': '.$objResult->value;
+                        while ($objResult->next()) { // @phpstan-ignore-line
+                            $arrTokens['recipient_'.$objResult->name] = $objResult->value; // @phpstan-ignore-line
+                            $arrRawData[] = ucfirst($objResult->name).': '.$objResult->value; // @phpstan-ignore-line
                         }
                         $arrTokens['raw_data'] = implode('<br>', $arrRawData);
                         unset($arrRawData);

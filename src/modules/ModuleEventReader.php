@@ -6,16 +6,17 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\Calendar;
+use Contao\CalendarModel;
+use Contao\Comments;
 use Contao\Config;
 use Contao\ContentModel;
 use Contao\CoreBundle\Exception\PageNotFoundException;
@@ -25,8 +26,8 @@ use Contao\Events;
 use Contao\FilesModel;
 use Contao\Form;
 use Contao\FrontendTemplate;
+use Contao\FrontendUser;
 use Contao\Input;
-use Contao\ModuleLoader;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -34,6 +35,8 @@ use Contao\Validator;
 
 /**
  * Front end module "event reader".
+ *
+ * @property Comments $Comments
  */
 class ModuleEventReader extends EventsExt
 {
@@ -51,7 +54,9 @@ class ModuleEventReader extends EventsExt
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
@@ -71,10 +76,10 @@ class ModuleEventReader extends EventsExt
 
         // Do not index or cache the page if no event has been specified
         if (!Input::get('events')) {
-            /** @var \PageModel $objPage */
+            /** @var PageModel $objPage */
             global $objPage;
 
-            $objPage->noSearch = 1;
+            $objPage->noSearch = true;
             $objPage->cache = 0;
 
             return '';
@@ -86,11 +91,11 @@ class ModuleEventReader extends EventsExt
         $this->cal_calendar = $this->sortOutProtected($cals);
 
         // Do not index or cache the page if there are no calendars
-        if (!\is_array($this->cal_calendar) || empty($this->cal_calendar)) {
-            /** @var \PageModel $objPage */
+        if (empty($this->cal_calendar)) {
+            /** @var PageModel $objPage */
             global $objPage;
 
-            $objPage->noSearch = 1;
+            $objPage->noSearch = true;
             $objPage->cache = 0;
 
             return '';
@@ -104,7 +109,7 @@ class ModuleEventReader extends EventsExt
      */
     protected function compile(): void
     {
-        /** @var \PageModel $objPage */
+        /** @var PageModel $objPage */
         global $objPage;
 
         $this->Template->event = '';
@@ -178,8 +183,8 @@ class ModuleEventReader extends EventsExt
                 $nextValueStr = $arrRange['value'].' '.$arrRange['unit'].' of '.$arrMonth[$month].' '.$year;
                 $nextValueDate = strtotime($nextValueStr, $intStartTime);
                 // add time to the new date
-                $intStartTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', $intStartTime));
-                $intEndTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', $intEndTime));
+                $intStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intStartTime));
+                $intEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intEndTime));
 
                 ++$month;
 
@@ -200,16 +205,16 @@ class ModuleEventReader extends EventsExt
                     $nextValueDate = $fixedDate['new_repeat'] ? strtotime($fixedDate['new_repeat']) : $intStartTime;
 
                     if (\strlen($fixedDate['new_start'])) {
-                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', strtotime($fixedDate['new_start'])));
+                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime($fixedDate['new_start'])));
                         $nextValueDate = $nextStartTime;
                     } else {
-                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', $intStartTime));
+                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intStartTime));
                     }
 
                     if (\strlen($fixedDate['new_end'])) {
-                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', strtotime($fixedDate['new_end'])));
+                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime($fixedDate['new_end'])));
                     } else {
-                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' '.date('H:i:s', $intEndTime));
+                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intEndTime));
                     }
 
                     if ($nextValueDate > time() && $nextEndTime <= $objEvent->repeatEnd) {
@@ -226,21 +231,21 @@ class ModuleEventReader extends EventsExt
             [$intStartTime, $intEndTime] = explode(',', Input::get('times'));
         }
 
-        $strDate = Date::parse($objPage->dateFormat, $intStartTime);
+        $strDate = Date::parse(Config::get('dateFormat'), $intStartTime);
 
         if ($span > 0) {
-            $strDate = Date::parse($objPage->dateFormat, $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->dateFormat, $intEndTime);
+            $strDate = Date::parse(Config::get('dateFormat'), $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->dateFormat, $intEndTime);
         }
 
         $strTime = '';
 
         if ($objEvent->addTime) {
             if ($span > 0) {
-                $strDate = Date::parse($objPage->datimFormat, $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->datimFormat, $intEndTime);
+                $strDate = Date::parse(Config::get('datimFormat'), $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->datimFormat, $intEndTime);
             } elseif ($intStartTime === $intEndTime) {
-                $strTime = Date::parse($objPage->timeFormat, $intStartTime);
+                $strTime = Date::parse(Config::get('timeFormat'), $intStartTime);
             } else {
-                $strTime = Date::parse($objPage->timeFormat, $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->timeFormat, $intEndTime);
+                $strTime = Date::parse(Config::get('timeFormat'), $intStartTime).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->timeFormat, $intEndTime);
             }
         }
 
@@ -248,7 +253,7 @@ class ModuleEventReader extends EventsExt
         if (1 === (int) $objEvent->ignoreEndTime) {
             // $strDate = Date::parse($objPage->datimFormat, $objEvent->startTime) . $GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'] . Date::parse($objPage->dateFormat, $objEvent->endTime);
             // $strTime = null;
-            $strDate = Date::parse($objPage->dateFormat, $objEvent->startTime);
+            $strDate = Date::parse(Config::get('dateFormat'), $objEvent->startTime);
             $objEvent->endTime = '';
             $objEvent->time = '';
         }
@@ -392,9 +397,10 @@ class ModuleEventReader extends EventsExt
         // Prüfen, ob sich ein angemeldeter Benutzer schon registriert hat
         $showToUser = true;
 
-        if (FE_USER_LOGGED_IN) {
-            $this->import('FrontendUser', 'User');
-            $email = $this->User->email;
+        $security = System::getContainer()->get('@security.helper');
+
+        if (($user = $security->getUser()) instanceof FrontendUser) {
+            $email = $user->email;
             $showToUser = CalendarLeadsModel::regCheckByFormEventMail($fid, $eid, $email);
         }
 
@@ -519,7 +525,7 @@ class ModuleEventReader extends EventsExt
                 if (!Validator::isUuid($objEvent->singleSRC)) {
                     $objTemplate->text = '<p class="error">'.$GLOBALS['TL_LANG']['ERR']['version2format'].'</p>';
                 }
-            } elseif (is_file(TL_ROOT.'/'.$objModel->path)) {
+            } elseif (is_file(System::getContainer()->getParameter('kernel.project_dir').'/'.$objModel->path)) {
                 // Do not override the field now that we have a model registry (see #6303)
                 $arrEvent = $objEvent->row();
 
@@ -566,13 +572,16 @@ class ModuleEventReader extends EventsExt
         }
 
         // HOOK: comments extension required
-        if ($objEvent->noComments || !\in_array('comments', ModuleLoader::getActive(), true)) {
+        $bundles = System::getContainer()->getParameter('kernel.bundles');
+
+        // HOOK: comments extension required
+        if ($objEvent->noComments || !isset($bundles['ContaoCommentsBundle'])) {
             $this->Template->allowComments = false;
 
             return;
         }
 
-        /** @var \CalendarModel $objCalendar */
+        /** @var CalendarModel $objCalendar */
         $objCalendar = $objEvent->getRelated('pid');
         $this->Template->allowComments = $objCalendar->allowComments;
 
@@ -585,7 +594,7 @@ class ModuleEventReader extends EventsExt
         $intHl = min((int) (str_replace('h', '', $this->hl)), 5);
         $this->Template->hlc = 'h'.($intHl + 1);
 
-        $this->import('Comments');
+        $this->import(Comments::class, 'Comments'); // @phpstan-ignore-line
         $arrNotifies = [];
 
         // Notify the system administrator
@@ -595,7 +604,6 @@ class ModuleEventReader extends EventsExt
 
         // Notify the author
         if ('notify_admin' !== $objCalendar->notify) {
-            /** @var \UserModel $objAuthor */
             if (($objAuthor = $objEvent->getRelated('author')) !== null && '' !== $objAuthor->email) {
                 $arrNotifies[] = $objAuthor->email;
             }
@@ -611,6 +619,6 @@ class ModuleEventReader extends EventsExt
         $objConfig->bbcode = $objCalendar->bbcode;
         $objConfig->moderate = $objCalendar->moderate;
 
-        $this->Comments->addCommentsToTemplate($this->Template, $objConfig, 'tl_calendar_events', $objEvent->id, $arrNotifies);
+        $this->Comments->addCommentsToTemplate($this->Template, $objConfig, 'tl_calendar_events', $objEvent->id, $arrNotifies); // @phpstan-ignore-line
     }
 }

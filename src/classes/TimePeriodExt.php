@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
@@ -16,7 +15,7 @@ declare(strict_types=1);
  * Namespace.
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\StringUtil;
 use Contao\Widget;
@@ -45,14 +44,14 @@ class TimePeriodExt extends Widget
     /**
      * Values.
      *
-     * @var array
+     * @var array<mixed>
      */
     protected $arrValues = [];
 
     /**
      * Units.
      *
-     * @var array
+     * @var array<mixed>
      */
     protected $arrUnits = [];
 
@@ -103,7 +102,7 @@ class TimePeriodExt extends Widget
         foreach ($this->arrValues as $arrValue) {
             $arrValues[] = sprintf(
                 '<option value="%s"%s>%s</option>',
-                specialchars($arrValue['value']),
+                StringUtil::specialchars($arrValue['value']),
                 (\is_array($this->varValue) && \in_array($arrValue['value'], $this->varValue, true) ? ' selected="selected"' : ''),
                 $arrValue['label']
             );
@@ -112,7 +111,7 @@ class TimePeriodExt extends Widget
         foreach ($this->arrUnits as $arrUnit) {
             $arrUnits[] = sprintf(
                 '<option value="%s"%s>%s</option>',
-                specialchars($arrUnit['value']),
+                StringUtil::specialchars($arrUnit['value']),
                 (\is_array($this->varValue) && \in_array($arrUnit['value'], $this->varValue, true) ? ' selected="selected"' : ''),
                 $arrUnit['label']
             );

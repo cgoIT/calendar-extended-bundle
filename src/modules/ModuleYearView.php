@@ -6,13 +6,12 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\Config;
@@ -20,8 +19,10 @@ use Contao\Date;
 use Contao\Environment;
 use Contao\FrontendTemplate;
 use Contao\Input;
+use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Contao\System;
 
 /**
  * Class ModuleYearViewExt.
@@ -36,8 +37,17 @@ class ModuleYearView extends EventsExt
      * @var Date
      */
     protected $Date;
+    /**
+     * @var int
+     */
     protected $yearBegin;
+    /**
+     * @var int
+     */
     protected $yearEnd;
+    /**
+     * @var array<mixed>
+     */
     protected $calConf = [];
 
     /**
@@ -63,7 +73,9 @@ class ModuleYearView extends EventsExt
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
@@ -80,7 +92,7 @@ class ModuleYearView extends EventsExt
         $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (!\is_array($this->cal_calendar) || empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar)) {
             return '';
         }
 
@@ -101,9 +113,9 @@ class ModuleYearView extends EventsExt
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
                 ->limit(1)->execute($cal);
 
-            $this->calConf[$cal]['calendar'] = $objBG->title;
+            $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
-            if ($objBG->bg_color) {
+            if ($objBG->bg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
 
                 if (!empty($cssColor)) {
@@ -115,7 +127,7 @@ class ModuleYearView extends EventsExt
                 }
             }
 
-            if ($objBG->fg_color) {
+            if ($objBG->fg_color) { // @phpstan-ignore-line
                 [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
 
                 if (!empty($cssColor)) {
@@ -157,13 +169,13 @@ class ModuleYearView extends EventsExt
             /** @var PageModel $objPage */
             global $objPage;
 
-            /** @var \PageError404 $objHandler */
+            /** @var PageError404 $objHandler */
             $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->generate($objPage->id);
+            $objHandler->getResponse($objPage);
         }
 
         // Get the Year and the week of the given date
-        $intYear = date('Y', $this->Date->tstamp);
+        $intYear = (int) date('Y', $this->Date->tstamp);
         $this->yearBegin = mktime(0, 0, 0, 1, 1, $intYear);
         $this->yearEnd = mktime(23, 59, 59, 12, 31, $intYear);
 
@@ -243,7 +255,7 @@ class ModuleYearView extends EventsExt
     /**
      * Return the name of the months.
      *
-     * @return array
+     * @return array<mixed>
      */
     protected function compileMonths()
     {
@@ -264,9 +276,9 @@ class ModuleYearView extends EventsExt
      *
      * @throws \Exception
      *
-     * @return array
+     * @return array<mixed>
      */
-    protected function compileDays($currYear)
+    protected function compileDays(int $currYear)
     {
         $arrDays = [];
 
@@ -294,12 +306,12 @@ class ModuleYearView extends EventsExt
                     if ($this->use_horizontal) {
                         $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
                         $arrDays[$m][0]['class'] = 'head';
-                        $arrDays[$m][$d]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
+                        $arrDays[$m][$d]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
                         $arrDays[$m][$d]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                         $arrDays[$m][$d]['day'] = $d;
                         $arrDays[$m][$d]['class'] = $class;
                     } else {
-                        $arrDays[$d][$m]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
+                        $arrDays[$d][$m]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
                         $arrDays[$d][$m]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                         $arrDays[$d][$m]['day'] = $d;
                         $arrDays[$d][$m]['class'] = $class;

@@ -6,7 +6,6 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
@@ -16,7 +15,9 @@ declare(strict_types=1);
  * Namespace.
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
+
+use Contao\ModuleModel;
 
 /**
  * Class EventExt.
@@ -26,15 +27,10 @@ namespace Kmielke\CalendarExtendedBundle;
 class EventUrls
 {
     /**
-     * @param $arrEvents
-     * @param $arrCalendars
-     * @param $intStart
-     * @param $intEnd
-     * @param $objModule
-     *
-     * @return mixed
+     * @param array<mixed> $arrEvents
+     * @param array<mixed> $arrCalendars
      */
-    public function modifyEventUrl($arrEvents, $arrCalendars, $intStart, $intEnd, $objModule)
+    public function modifyEventUrl(array $arrEvents, array $arrCalendars, int $intStart, int $intEnd, ModuleModel $objModule): mixed
     {
         if (1 === (int) $objModule->ignore_urlparameter) {
             return $arrEvents;

@@ -6,19 +6,18 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle.
  *
  * (c) Kester Mielke
- *
  * (c) Carsten Götzinger
  *
  * @license LGPL-3.0-or-later
  */
 
-namespace Kmielke\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle;
 
 use Contao\BackendTemplate;
 use Contao\Config;
 use Contao\FrontendTemplate;
 use Contao\Input;
-use Contao\ModuleCalendar;
+use Contao\System;
 
 /**
  * Class ModuleEventMenuExt.
@@ -34,7 +33,9 @@ class ModuleEventMenu extends ModuleCalendar
      */
     public function generate()
     {
-        if (TL_MODE === 'BE') {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
+        if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
@@ -77,9 +78,11 @@ class ModuleEventMenu extends ModuleCalendar
      */
     protected function compileYearlyMenu(): void
     {
+        $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+
         $arrData = [];
 
-        if ($this->customTpl && TL_MODE === 'FE') {
+        if ($this->customTpl && System::getContainer()->get('contao.routing.scope_matcher')->isFrontendRequest($request)) {
             $strTemplate = $this->customTpl;
         } else {
             $strTemplate = 'mod_eventmenu';
@@ -119,7 +122,7 @@ class ModuleEventMenu extends ModuleCalendar
         }
 
         $this->Template->items = $arrItems;
-        $this->Template->showQuantity = '' !== $this->cal_showQuantity ? true : false;
+        $this->Template->showQuantity = !empty($this->cal_showQuantity);
         $this->Template->yearly = true;
     }
 
@@ -130,8 +133,8 @@ class ModuleEventMenu extends ModuleCalendar
     {
         $arrData = [];
 
-        /** @var \FrontendTemplate|object $objTemplate */
-        $objTemplate = new \FrontendTemplate('mod_eventmenu');
+        /** @var FrontendTemplate|object $objTemplate */
+        $objTemplate = new FrontendTemplate('mod_eventmenu');
 
         $this->Template = $objTemplate;
         $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, 0, 2145913200, [$this->cal_holiday]);
@@ -173,7 +176,7 @@ class ModuleEventMenu extends ModuleCalendar
         }
 
         $this->Template->items = $arrItems;
-        $this->Template->showQuantity = '' !== $this->cal_showQuantity ? true : false;
+        $this->Template->showQuantity = !empty($this->cal_showQuantity);
         $this->Template->url = $this->strLink.(Config::get('disableAlias') ? '&amp;' : '?');
         $this->Template->activeYear = Input::get('year');
     }
