@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\Config;
@@ -35,6 +36,7 @@ class ModuleCalendar extends EventsExt
      * @var Date
      */
     protected $Date;
+
     /**
      * @var array<mixed>
      */
@@ -57,9 +59,9 @@ class ModuleCalendar extends EventsExt
     /**
      * Do not show the module if no calendar has been selected.
      *
-     * @throws \Exception
-     *
      * @return string
+     *
+     * @throws \Exception
      */
     public function generate()
     {
@@ -69,7 +71,7 @@ class ModuleCalendar extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['calendar'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['calendar'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -89,7 +91,7 @@ class ModuleCalendar extends EventsExt
         // Calendar filter
         if (Input::get('cal')) {
             // Create array of cal_id's to filter
-            $cals1 = explode(',', Input::get('cal'));
+            $cals1 = explode(',', (string) Input::get('cal'));
             // Check if the cal_id's are valid for this module
             $cals2 = array_intersect($cals1, $this->cal_calendar);
 
@@ -101,7 +103,8 @@ class ModuleCalendar extends EventsExt
         // Get the background and foreground colors of the calendars
         foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal);
+                ->limit(1)->execute($cal)
+            ;
 
             $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
@@ -130,7 +133,7 @@ class ModuleCalendar extends EventsExt
             }
         }
 
-        $this->strUrl = preg_replace('/\?.*$/', '', Environment::get('request'));
+        $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
         if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
@@ -161,7 +164,7 @@ class ModuleCalendar extends EventsExt
             } else {
                 $this->Date = new Date();
             }
-        } catch (\OutOfBoundsException $e) {
+        } catch (\OutOfBoundsException) {
             /** @var PageModel $objPage */
             global $objPage;
 
@@ -171,7 +174,7 @@ class ModuleCalendar extends EventsExt
         }
 
         /** @var FrontendTemplate|object $objTemplate */
-        $objTemplate = new FrontendTemplate(($this->cal_ctemplate ?: 'cal_default'));
+        $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_default');
 
         // Store year and month
         $intYear = date('Y', $this->Date->tstamp);
@@ -185,16 +188,13 @@ class ModuleCalendar extends EventsExt
         $lblPrevious = $GLOBALS['TL_LANG']['MONTHS'][$prevMonth - 1].' '.$prevYear;
         $intPrevYm = (int) ($prevYear.str_pad((string) $prevMonth, 2, '0', STR_PAD_LEFT));
 
-        // Only generate a link if there are events (see #4160)
-        //if ($objMinMax->dateFrom !== null && $intPrevYm >= date('Ym', $objMinMax->dateFrom))
-        //{
+        // Only generate a link if there are events (see #4160) f ($objMinMax->dateFrom
+        // !== null && $intPrevYm >= date('Ym', $objMinMax->dateFrom))
         $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'month='.$intPrevYm;
         $objTemplate->prevTitle = StringUtil::specialchars($lblPrevious);
         $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
         $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
-        //}
-
-        // Current month
+        // } Current month
         $objTemplate->current = $GLOBALS['TL_LANG']['MONTHS'][date('m', $this->Date->tstamp) - 1].' '.date('Y', $this->Date->tstamp);
 
         // Next month
@@ -203,9 +203,8 @@ class ModuleCalendar extends EventsExt
         $lblNext = $GLOBALS['TL_LANG']['MONTHS'][$nextMonth - 1].' '.$nextYear;
         $intNextYm = $nextYear.str_pad((string) $nextMonth, 2, '0', STR_PAD_LEFT);
 
-        // Only generate a link if there are events (see #4160)
-        //if ($objMinMax->dateTo !== null && $intNextYm <= date('Ym', max($objMinMax->dateTo, $objMinMax->repeatUntil)))
-        //{
+        // Only generate a link if there are events (see #4160) f ($objMinMax->dateTo !== null
+        // && $intNextYm <= date('Ym', max($objMinMax->dateTo, $objMinMax->repeatUntil)))
         $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'month='.$intNextYm;
         $objTemplate->nextTitle = StringUtil::specialchars($lblNext);
         $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
@@ -259,9 +258,9 @@ class ModuleCalendar extends EventsExt
     /**
      * Return all weeks of the current month as array.
      *
-     * @throws \Exception
-     *
      * @return array<mixed>
+     *
+     * @throws \Exception
      */
     protected function compileWeeks()
     {
@@ -342,7 +341,7 @@ class ModuleCalendar extends EventsExt
 
             if (\count($arrEvents) > 0) {
                 $arrDays[$strWeekClass][$i]['href'] = $this->strLink.(Config::get('disableAlias') ? '&amp;' : '?').'day='.$intKey;
-                $arrDays[$strWeekClass][$i]['title'] = sprintf(specialchars($GLOBALS['TL_LANG']['MSC']['cal_events']), \count($arrEvents));
+                $arrDays[$strWeekClass][$i]['title'] = sprintf(StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['cal_events']), \count($arrEvents));
                 $arrDays[$strWeekClass][$i]['events'] = $arrEvents;
             }
         }

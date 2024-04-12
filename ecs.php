@@ -8,17 +8,17 @@ use PhpCsFixer\Fixer\PhpUnit\PhpUnitExpectationFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return static function (ECSConfig $ecsConfig): void {
-    $ecsConfig->sets([__DIR__.'/tools/ecs/vendor/contao/easy-coding-standard/config/contao.php']);
-    $ecsConfig->parallel();
-
+    $year = date('Y');
     $ecsConfig->ruleWithConfiguration(HeaderCommentFixer::class, [
-        'header' => "This file is part of cgoit\\calendar-extended-bundle.\n\n(c) Kester Mielke\n(c) Carsten Götzinger\n\n@license LGPL-3.0-or-later"
+        'header' => <<<EOF
+This file is part of cgoit\\calendar-extended-bundle for Contao Open Source CMS.
+
+@copyright  Copyright (c) Kester Mielke
+@copyright  Copyright (c) $year, cgoIT
+@author     Kester Mielke
+@author     cgoIT <https://cgo-it.de>
+@license    LGPL-3.0-or-later
+EOF
+        ,
     ]);
-
-    if (PHP_VERSION_ID < 80000) {
-        $ecsConfig->ruleWithConfiguration(TrailingCommaInMultilineFixer::class, ['elements' => ['arrays'], 'after_heredoc' => true]);
-        $ecsConfig->skip([PhpUnitExpectationFixer::class]); // see https://github.com/symplify/symplify/issues/3130
-    }
-
-    // Adjust the configuration according to your needs.
 };

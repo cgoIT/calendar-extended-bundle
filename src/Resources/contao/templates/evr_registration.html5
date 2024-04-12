@@ -7,7 +7,7 @@
 <?php if ($this->hasError): ?>
 
     <div><h3>Folgende Fehler sind aufgetreten</h3></div>
-    <?php foreach ($this->msgError as $key => $error): ?>
+    <?php foreach ($this->msgError as $error): ?>
         <?php echo $error; ?><br/>
     <?php endforeach; ?>
 

@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\Calendar;
@@ -60,7 +61,7 @@ class ModuleEventReader extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['eventreader'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['eventreader'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -138,7 +139,7 @@ class ModuleEventReader extends EventsExt
 
         // Overwrite the page title (see #2853 and #4955)
         if ('' !== $objEvent->title) {
-            $objPage->pageTitle = strip_tags(strip_insert_tags($objEvent->title));
+            $objPage->pageTitle = strip_tags((string) StringUtil::stripInsertTags($objEvent->title));
         }
 
         // Overwrite the page description
@@ -200,19 +201,19 @@ class ModuleEventReader extends EventsExt
             $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
             // Check if there are valid data in the array...
-            if (\is_array($arrFixedDates) && \strlen($arrFixedDates[0]['new_repeat'])) {
+            if (\is_array($arrFixedDates) && \strlen((string) $arrFixedDates[0]['new_repeat'])) {
                 foreach ($arrFixedDates as $fixedDate) {
-                    $nextValueDate = $fixedDate['new_repeat'] ? strtotime($fixedDate['new_repeat']) : $intStartTime;
+                    $nextValueDate = $fixedDate['new_repeat'] ? strtotime((string) $fixedDate['new_repeat']) : $intStartTime;
 
-                    if (\strlen($fixedDate['new_start'])) {
-                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime($fixedDate['new_start'])));
+                    if (\strlen((string) $fixedDate['new_start'])) {
+                        $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime((string) $fixedDate['new_start'])));
                         $nextValueDate = $nextStartTime;
                     } else {
                         $nextStartTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intStartTime));
                     }
 
-                    if (\strlen($fixedDate['new_end'])) {
-                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime($fixedDate['new_end'])));
+                    if (\strlen((string) $fixedDate['new_end'])) {
+                        $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', strtotime((string) $fixedDate['new_end'])));
                     } else {
                         $nextEndTime = strtotime(date('Y-m-d', $nextValueDate).' ModuleEventReader.php'.date('H:i:s', $intEndTime));
                     }
@@ -228,7 +229,7 @@ class ModuleEventReader extends EventsExt
 
         // Replace the date an time with the correct ones from the recurring event
         if (Input::get('times')) {
-            [$intStartTime, $intEndTime] = explode(',', Input::get('times'));
+            [$intStartTime, $intEndTime] = explode(',', (string) Input::get('times'));
         }
 
         $strDate = Date::parse(Config::get('dateFormat'), $intStartTime);
@@ -251,8 +252,9 @@ class ModuleEventReader extends EventsExt
 
         // Fix date if we have to ignore the time
         if (1 === (int) $objEvent->ignoreEndTime) {
-            // $strDate = Date::parse($objPage->datimFormat, $objEvent->startTime) . $GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'] . Date::parse($objPage->dateFormat, $objEvent->endTime);
-            // $strTime = null;
+            // $strDate = Date::parse($objPage->datimFormat, $objEvent->startTime) .
+            // $GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'] .
+            // Date::parse($objPage->dateFormat, $objEvent->endTime); $strTime = null;
             $strDate = Date::parse(Config::get('dateFormat'), $objEvent->startTime);
             $objEvent->endTime = '';
             $objEvent->time = '';
@@ -300,7 +302,7 @@ class ModuleEventReader extends EventsExt
                     if ('move' === $fixedDate['action']) {
                         // value to add to the old date
                         $addToDate = $fixedDate['new_exception'];
-                        $newDate = strtotime($addToDate, $fixedDate['exception']);
+                        $newDate = strtotime((string) $addToDate, $fixedDate['exception']);
 
                         if (date('Ymd', $newDate) === date('Ymd', $intStartTime)) {
                             $moveReason = $fixedDate['reason'] ?: null;
@@ -316,7 +318,7 @@ class ModuleEventReader extends EventsExt
 
             if (\is_array($arrFixedDates)) {
                 foreach ($arrFixedDates as $fixedDate) {
-                    if (date('Ymd', strtotime($fixedDate['new_repeat'])) === date('Ymd', $intStartTime)) {
+                    if (date('Ymd', strtotime((string) $fixedDate['new_repeat'])) === date('Ymd', $intStartTime)) {
                         $moveReason = $fixedDate['reason'] ?: null;
                     }
                 }
@@ -347,7 +349,7 @@ class ModuleEventReader extends EventsExt
 
             if (\is_array($arrNext)) {
                 foreach ($arrNext as $k => $nextDate) {
-                    if (strtotime($nextDate) > time()) {
+                    if (strtotime((string) $nextDate) > time()) {
                         // check if we have the correct weekday
                         if ($useWeekdays && 'days' === $unit) {
                             if (!\in_array(date('w', $k), $weekdays, true)) {
@@ -591,7 +593,7 @@ class ModuleEventReader extends EventsExt
         }
 
         // Adjust the comments headline level
-        $intHl = min((int) (str_replace('h', '', $this->hl)), 5);
+        $intHl = min((int) str_replace('h', '', (string) $this->hl), 5);
         $this->Template->hlc = 'h'.($intHl + 1);
 
         $this->import(Comments::class, 'Comments'); // @phpstan-ignore-line

@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
 $GLOBALS['TL_CONFIG']['tl_calendar_events']['maxRepeatExceptions'] = 365;
@@ -56,7 +57,7 @@ $GLOBALS['TL_CONFIG']['tl_calendar_events']['filter']['location_plz'] = [];
 /*
  * Front end modules
  */
-array_insert($GLOBALS['FE_MOD'], 99, [
+\Contao\ArrayUtil::arrayInsert($GLOBALS['FE_MOD'], 99, [
     'events' => [
         'timetable' => 'Cgoit\CalendarExtendedBundle\ModuleTimeTable',
         'yearview' => 'Cgoit\CalendarExtendedBundle\ModuleYearView',
@@ -75,7 +76,7 @@ $GLOBALS['FE_MOD']['events']['eventreader'] = 'Cgoit\CalendarExtendedBundle\Modu
  * BACK END FORM FIELDS
  */
 
-array_insert($GLOBALS['BE_FFL'], 99, [
+\Contao\ArrayUtil::arrayInsert($GLOBALS['BE_FFL'], 99, [
     'timePeriodExt' => 'Cgoit\CalendarExtendedBundle\TimePeriodExt',
 ]);
 

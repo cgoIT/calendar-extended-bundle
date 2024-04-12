@@ -3,20 +3,22 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\Config;
 use Contao\FrontendTemplate;
 use Contao\Input;
+use Contao\StringUtil;
 use Contao\System;
 
 /**
@@ -39,7 +41,7 @@ class ModuleEventMenu extends ModuleCalendar
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['eventmenu'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['eventmenu'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -96,7 +98,7 @@ class ModuleEventMenu extends ModuleCalendar
 
         foreach ($arrAllEvents as $intDay => $arrDay) {
             foreach ($arrDay as $arrEvents) {
-                $arrData[substr($intDay, 0, 4)] += \count($arrEvents);
+                $arrData[substr((string) $intDay, 0, 4)] += \count($arrEvents);
             }
         }
 
@@ -110,14 +112,14 @@ class ModuleEventMenu extends ModuleCalendar
         // Prepare navigation
         foreach ($arrData as $intYear => $intCount) {
             $intDate = $intYear;
-            $quantity = sprintf(($intCount < 2 ? $GLOBALS['TL_LANG']['MSC']['entry'] : $GLOBALS['TL_LANG']['MSC']['entries']), $intCount);
+            $quantity = sprintf($intCount < 2 ? $GLOBALS['TL_LANG']['MSC']['entry'] : $GLOBALS['TL_LANG']['MSC']['entries'], $intCount);
 
             $arrItems[$intYear]['date'] = $intDate;
             $arrItems[$intYear]['link'] = $intYear;
             $arrItems[$intYear]['href'] = $this->strLink.(Config::get('disableAlias') ? '&amp;' : '?').'year='.$intDate;
-            $arrItems[$intYear]['title'] = specialchars($intYear.' ('.$quantity.')');
+            $arrItems[$intYear]['title'] = StringUtil::specialchars($intYear.' ('.$quantity.')');
             $arrItems[$intYear]['class'] = trim((1 === ++$count ? 'first ' : '').($count === $limit ? 'last' : ''));
-            $arrItems[$intYear]['isActive'] = (Input::get('year') === $intDate);
+            $arrItems[$intYear]['isActive'] = Input::get('year') === $intDate;
             $arrItems[$intYear]['quantity'] = $quantity;
         }
 
@@ -141,7 +143,7 @@ class ModuleEventMenu extends ModuleCalendar
 
         foreach ($arrAllEvents as $intDay => $arrDay) {
             foreach ($arrDay as $arrEvents) {
-                $arrData[substr($intDay, 0, 4)][substr($intDay, 4, 2)] += \count($arrEvents);
+                $arrData[substr((string) $intDay, 0, 4)][substr((string) $intDay, 4, 2)] += \count($arrEvents);
             }
         }
 
@@ -163,14 +165,14 @@ class ModuleEventMenu extends ModuleCalendar
                 $intDate = $intYear.$intMonth;
                 $intMonth = (int) $intMonth - 1;
 
-                $quantity = sprintf(($intCount < 2 ? $GLOBALS['TL_LANG']['MSC']['entry'] : $GLOBALS['TL_LANG']['MSC']['entries']), $intCount);
+                $quantity = sprintf($intCount < 2 ? $GLOBALS['TL_LANG']['MSC']['entry'] : $GLOBALS['TL_LANG']['MSC']['entries'], $intCount);
 
                 $arrItems[$intYear][$intMonth]['date'] = $intDate;
                 $arrItems[$intYear][$intMonth]['link'] = $GLOBALS['TL_LANG']['MONTHS'][$intMonth].' '.$intYear;
                 $arrItems[$intYear][$intMonth]['href'] = $this->strLink.(Config::get('disableAlias') ? '&amp;' : '?').'month='.$intDate;
-                $arrItems[$intYear][$intMonth]['title'] = specialchars($GLOBALS['TL_LANG']['MONTHS'][$intMonth].' '.$intYear.' ('.$quantity.')');
+                $arrItems[$intYear][$intMonth]['title'] = StringUtil::specialchars($GLOBALS['TL_LANG']['MONTHS'][$intMonth].' '.$intYear.' ('.$quantity.')');
                 $arrItems[$intYear][$intMonth]['class'] = trim((1 === ++$count ? 'first ' : '').($count === $limit ? 'last' : ''));
-                $arrItems[$intYear][$intMonth]['isActive'] = (Input::get('month') === $intDate);
+                $arrItems[$intYear][$intMonth]['isActive'] = Input::get('month') === $intDate;
                 $arrItems[$intYear][$intMonth]['quantity'] = $quantity;
             }
         }

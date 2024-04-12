@@ -1,8 +1,7 @@
 {
   "name": "cgoit/calendar-extended-bundle",
-  "description": "Contao 4 LTS calendar extension bundle. Better recurring events and exceptions.",
   "type": "contao-bundle",
-  "version": "1.1.3",
+  "description": "Contao 4/5 LTS calendar extension bundle. Better recurring events and exceptions.",
   "keywords": [
     "contao",
     "fullcalendar",
@@ -12,7 +11,7 @@
     "registration",
     "vacations"
   ],
-  "type": "contao-bundle",
+  "version": "1.1.3",
   "license": "LGPL-3.0-or-later",
   "authors": [
     {
@@ -29,7 +28,7 @@
     "source": "https://github.com/cgoIT/calendar-extended-bundle"
   },
   "require": {
-    "php": "^8.1 || ^8.2",
+    "php": "^8.1 || ^8.2 || ^8.3",
     "contao/core-bundle": "^4.13",
     "contao/calendar-bundle": "^4.13",
     "menatwork/contao-multicolumnwizard-bundle": "^3.6",
@@ -37,51 +36,40 @@
     "terminal42/contao-leads": "^3.0"
   },
   "require-dev": {
-    "bamarni/composer-bin-plugin": "^1.5",
     "contao/manager-plugin": "^2.0",
     "phpunit/phpunit": "^10.3",
     "symfony/phpunit-bridge": "^6.1",
-    "franzl/studio": "^0.16.0"
+    "terminal42/contao-build-tools": "dev-main"
   },
   "autoload": {
     "psr-4": {
       "Cgoit\\CalendarExtendedBundle\\": "src/"
-    },
-    "classmap": [
-      "src/Resources/contao/"
-    ],
-    "exclude-from-classmap": [
-      "src/Resources/contao/config/",
-      "src/Resources/contao/dca/",
-      "src/Resources/contao/languages/",
-      "src/Resources/contao/templates/"
-    ]
+    }
   },
-  "extra": {
-    "bamarni-bin": {
-      "bin-links": false,
-      "target-directory": "tools"
-    },
-    "contao-manager-plugin": "Cgoit\\CalendarExtendedBundle\\ContaoManager\\Plugin"
+  "autoload-dev": {
+    "psr-4": {
+      "Cgoit\\CalendarExtendedBundle\\Tests\\": "tests/"
+    }
   },
   "config": {
     "allow-plugins": {
       "contao-components/installer": true,
       "php-http/discovery": true,
       "contao-community-alliance/composer-plugin": true,
-      "bamarni/composer-bin-plugin": true,
       "contao/manager-plugin": true,
-      "franzl/studio": true
+      "terminal42/contao-build-tools": true
     }
+  },
+  "extra": {
+    "contao-manager-plugin": "Cgoit\\CalendarExtendedBundle\\ContaoManager\\Plugin"
   },
   "scripts": {
     "all": [
       "@unit-tests",
-      "@ecs",
+      "@cs-fixer",
+      "@rector",
       "@phpstan"
     ],
-    "ecs": "@php tools/ecs/vendor/bin/ecs check src tests --config ecs.php --fix --ansi --clear-cache",
-    "phpstan": "@php tools/phpstan/vendor/bin/phpstan analyze --ansi",
     "unit-tests": "@php vendor/bin/phpunit --colors=always"
   }
 }

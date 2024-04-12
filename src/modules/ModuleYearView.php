@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\Config;
@@ -37,14 +38,17 @@ class ModuleYearView extends EventsExt
      * @var Date
      */
     protected $Date;
+
     /**
      * @var int
      */
     protected $yearBegin;
+
     /**
      * @var int
      */
     protected $yearEnd;
+
     /**
      * @var array<mixed>
      */
@@ -67,9 +71,9 @@ class ModuleYearView extends EventsExt
     /**
      * Do not show the module if no calendar has been selected.
      *
-     * @throws \Exception
-     *
      * @return string
+     *
+     * @throws \Exception
      */
     public function generate()
     {
@@ -79,7 +83,7 @@ class ModuleYearView extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['yearview'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['yearview'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -99,7 +103,7 @@ class ModuleYearView extends EventsExt
         // Calendar filter
         if (Input::get('cal')) {
             // Create array of cal_id's to filter
-            $cals1 = explode(',', Input::get('cal'));
+            $cals1 = explode(',', (string) Input::get('cal'));
             // Check if the cal_id's are valid for this module
             $cals2 = array_intersect($cals1, $this->cal_calendar);
 
@@ -111,7 +115,8 @@ class ModuleYearView extends EventsExt
         // Get the background and foreground colors of the calendars
         foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal);
+                ->limit(1)->execute($cal)
+            ;
 
             $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
@@ -140,7 +145,7 @@ class ModuleYearView extends EventsExt
             }
         }
 
-        $this->strUrl = preg_replace('/\?.*$/', '', Environment::get('request'));
+        $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
         if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
@@ -165,7 +170,7 @@ class ModuleYearView extends EventsExt
             } else {
                 $this->Date = new Date();
             }
-        } catch (\OutOfBoundsException $e) {
+        } catch (\OutOfBoundsException) {
             /** @var PageModel $objPage */
             global $objPage;
 
@@ -179,20 +184,19 @@ class ModuleYearView extends EventsExt
         $this->yearBegin = mktime(0, 0, 0, 1, 1, $intYear);
         $this->yearEnd = mktime(23, 59, 59, 12, 31, $intYear);
 
-        // Get total count of weeks of the year
-        //if (($weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear))) === 1) {
-        //    $weeksTotal = date('W', mktime(0, 0, 0, 12, 24, $intYear));
-        //}
-
-        //$time = Date::floorToMinute();
-
-        // Find the boundaries
-        //$objMinMax = $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid IN('.implode(',', array_map('intval', $this->cal_calendar)).')'.(!BE_USER_LOGGED_IN ? " AND (start='' OR start<='$time') AND (stop='' OR stop>'".($time + 60)."') AND published='1'" : ''));
-        //$intLeftBoundary = date('Y', $objMinMax->dateFrom);
-        //$intRightBoundary = date('Y', max($objMinMax->dateTo, $objMinMax->repeatUntil));
+        // Get total count of weeks of the year f (($weeksTotal = date('W', mktime(0, 0,
+        // 0, 12, 31, $intYear))) === 1) {    $weeksTotal = date('W', mktime(0, 0, 0, 12,
+        // 24, $intYear));  time = Date::floorToMinute(); Find the boundaries objMinMax =
+        // $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS
+        // dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid
+        // IN('.implode(',', array_map('intval',
+        // $this->cal_calendar)).')'.(!BE_USER_LOGGED_IN ? " AND (start='' OR
+        // start<='$time') AND (stop='' OR stop>'".($time + 60)."') AND published='1'" :
+        // '')); intLeftBoundary = date('Y', $objMinMax->dateFrom); intRightBoundary =
+        // date('Y', max($objMinMax->dateTo, $objMinMax->repeatUntil));
 
         /** @var FrontendTemplate|object $objTemplate */
-        $objTemplate = new FrontendTemplate(($this->cal_ctemplate ?: 'cal_yearview'));
+        $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_yearview');
 
         $objTemplate->intYear = $intYear;
         $objTemplate->use_horizontal = $this->use_horizontal;
@@ -215,29 +219,26 @@ class ModuleYearView extends EventsExt
             // Previous week
             $prevYear = $intYear - 1;
             $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$prevYear;
-            // Only generate a link if there are events (see #4160)
-//            if ($prevYear >= $intLeftBoundary)
-//            {
+            // Only generate a link if there are events (see #4160)            if ($prevYear
+            // >= $intLeftBoundary)            {
             $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'year='.$prevYear;
             $objTemplate->prevTitle = $prevYear;
             $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
             $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
-//            }
-            // Current week
+            //            } Current week
             $objTemplate->current = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$intYear;
 
             // Next month
             $nextYear = $intYear + 1;
             $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$nextYear;
 
-            // Only generate a link if there are events (see #4160)
-//            if ($nextYear <= $intRightBoundary)
-//            {
+            // Only generate a link if there are events (see #4160)            if ($nextYear
+            // <= $intRightBoundary)            {
             $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'year='.$nextYear;
             $objTemplate->nextTitle = $nextYear;
             $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
             $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
-//            }
+            //            }
         }
 
         // Set week start day
@@ -272,17 +273,15 @@ class ModuleYearView extends EventsExt
     /**
      * Return the week days and labels as array.
      *
-     * @param $currYear
+     * @return array<mixed>
      *
      * @throws \Exception
-     *
-     * @return array<mixed>
      */
     protected function compileDays(int $currYear)
     {
         $arrDays = [];
 
-        //Get all events
+        // Get all events
         $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $this->yearBegin, $this->yearEnd, [$this->cal_holiday]);
 
         for ($m = 1; $m <= 12; ++$m) {
@@ -291,13 +290,13 @@ class ModuleYearView extends EventsExt
                     $day = mktime(12, 00, 00, $m, $d, $currYear);
 
                     $intCurrentDay = (int) date('w', $day);
-                    //$intCurrentWeek = (int) date('W', $day);
+                    // $intCurrentWeek = (int) date('W', $day);
 
                     $intKey = date('Ymd', strtotime(date('Y-m-d', $day)));
                     $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $day)));
                     $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
                     $class .= 0 === $d % 2 ? ' even' : ' odd';
-                    $class .= ' '.strtolower($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
+                    $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
 
                     if ($currDay === Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d')))) {
                         $class .= ' today';
@@ -306,13 +305,13 @@ class ModuleYearView extends EventsExt
                     if ($this->use_horizontal) {
                         $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
                         $arrDays[$m][0]['class'] = 'head';
-                        $arrDays[$m][$d]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
-                        $arrDays[$m][$d]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
+                        $arrDays[$m][$d]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
+                        $arrDays[$m][$d]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                         $arrDays[$m][$d]['day'] = $d;
                         $arrDays[$m][$d]['class'] = $class;
                     } else {
-                        $arrDays[$d][$m]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
-                        $arrDays[$d][$m]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
+                        $arrDays[$d][$m]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
+                        $arrDays[$d][$m]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                         $arrDays[$d][$m]['day'] = $d;
                         $arrDays[$d][$m]['class'] = $class;
                     }

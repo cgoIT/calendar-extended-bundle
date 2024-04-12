@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\CalendarEventsModel;
@@ -42,6 +43,7 @@ class ModuleEventlist extends EventsExt
      * @var Date
      */
     protected $Date;
+
     /**
      * @var array<mixed>
      */
@@ -67,7 +69,7 @@ class ModuleEventlist extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['eventlist'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['eventlist'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -87,7 +89,7 @@ class ModuleEventlist extends EventsExt
         // Calendar filter
         if (Input::get('cal')) {
             // Create array of cal_id's to filter
-            $cals1 = explode(',', Input::get('cal'));
+            $cals1 = explode(',', (string) Input::get('cal'));
             // Check if the cal_id's are valid for this module
             $cals2 = array_intersect($cals1, $this->cal_calendar);
 
@@ -99,7 +101,8 @@ class ModuleEventlist extends EventsExt
         // Get the background and foreground colors of the calendars
         foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal);
+                ->limit(1)->execute($cal)
+            ;
 
             $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
@@ -174,7 +177,7 @@ class ModuleEventlist extends EventsExt
             $blnClearInput = true;
         }
 
-        $blnDynamicFormat = (!$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true));
+        $blnDynamicFormat = !$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true);
 
         // Create the date object
         try {
@@ -193,7 +196,7 @@ class ModuleEventlist extends EventsExt
             } else {
                 $this->Date = new Date();
             }
-        } catch (\OutOfBoundsException $e) {
+        } catch (\OutOfBoundsException) {
             /** @var PageError404 $objHandler */
             $objHandler = new $GLOBALS['TL_PTY']['error_404']();
             $objHandler->getResponse($objPage);
@@ -203,7 +206,7 @@ class ModuleEventlist extends EventsExt
 
         // we will overwrite $strBegin, $strEnd if cal_format_ext is set
         if ('' !== $this->cal_format_ext) {
-            $times = explode('|', $this->cal_format_ext);
+            $times = explode('|', (string) $this->cal_format_ext);
 
             if (1 === \count($times)) {
                 $strBegin = time();
@@ -218,21 +221,22 @@ class ModuleEventlist extends EventsExt
         $arrRange = StringUtil::deserialize($this->range_date);
 
         if (\is_array($arrRange) && $arrRange[0]['date_from']) {
-            $startRange = strtotime($arrRange[0]['date_from']);
-            $endRange = strtotime($arrRange[0]['date_to']);
+            $startRange = strtotime((string) $arrRange[0]['date_from']);
+            $endRange = strtotime((string) $arrRange[0]['date_to']);
 
             if ($startRange && $endRange) {
                 if (
-                    checkdate((int) date('m', $startRange), (int) date('d', $startRange), (int) date('Y', $startRange)) &&
-                    checkdate((int) date('m', $endRange), (int) date('d', $endRange), (int) date('Y', $endRange))
+                    checkdate((int) date('m', $startRange), (int) date('d', $startRange), (int) date('Y', $startRange))
+                    && checkdate((int) date('m', $endRange), (int) date('d', $endRange), (int) date('Y', $endRange))
                 ) {
-                    $strBegin = strtotime($arrRange[0]['date_from']);
-                    $strEnd = strtotime($arrRange[0]['date_to']);
+                    $strBegin = strtotime((string) $arrRange[0]['date_from']);
+                    $strEnd = strtotime((string) $arrRange[0]['date_to']);
                 }
             }
         }
 
-        // we have to check if we have to show recurrences and pass it to the getAllEventsExt function...
+        // we have to check if we have to show recurrences and pass it to the
+        // getAllEventsExt function...
         $showRecurrences = !(1 === (int) $this->showRecurrences);
 
         $security = System::getContainer()->get('@security.helper');
@@ -261,6 +265,7 @@ class ModuleEventlist extends EventsExt
 
         // Step 1: get the current time
         $currTime = Date::floorToMinute();
+
         // Remove events outside the scope
         foreach ($arrAllEvents as $key => $days) {
             // Do not show recurrences
@@ -282,9 +287,11 @@ class ModuleEventlist extends EventsExt
                         continue;
                     }
 
-                    // We have to get start and end from DB again, because start is overwritten in addEvent()
+                    // We have to get start and end from DB again, because start is overwritten
+                    // in addEvent()
                     $objEV = $this->Database->prepare('select start, stop from tl_calendar_events where id = ?')
-                        ->limit(1)->execute($event['id']);
+                        ->limit(1)->execute($event['id'])
+                    ;
                     $eventStart = $objEV->start ?: false; // @phpstan-ignore-line
                     $eventStop = $objEV->stop ?: false; // @phpstan-ignore-line
                     unset($objEV);
@@ -303,11 +310,12 @@ class ModuleEventlist extends EventsExt
                         }
                     }
 
-                    // We take the "show from" time or the "event start" time to check the display duration limit
+                    // We take the "show from" time or the "event start" time to check the display
+                    // duration limit
                     $displayStart = $event['start'] ?: $event['startTime'];
 
                     if ('' !== $this->displayDuration) {
-                        $displayStop = strtotime($this->displayDuration, $displayStart);
+                        $displayStop = strtotime((string) $this->displayDuration, $displayStart);
 
                         if ($displayStop < $currTime) {
                             continue;
@@ -351,7 +359,7 @@ class ModuleEventlist extends EventsExt
 
                     $event['firstDay'] = $GLOBALS['TL_LANG']['DAYS'][date('w', $day)];
                     $event['firstDate'] = Date::parse($objPage->dateFormat, $day);
-//                    $event['datetime'] = date('Y-m-d', $day);
+                    //                    $event['datetime'] = date('Y-m-d', $day);
 
                     $event['calendar_title'] = $this->calConf[$event['pid']]['calendar'];
 
@@ -366,12 +374,12 @@ class ModuleEventlist extends EventsExt
                     // Set endtime to starttime always...
                     if (1 === (int) $event['addTime'] && 1 === (int) $event['ignoreEndTime']) {
                         $event['time'] = Date::parse($objPage->timeFormat, $event['startTime']);
-//                        $event['date'] = Date::parse($objPage->datimFormat, $event['startTime']) . ' - ' .   Date::parse($objPage->dateFormat, $event['endTime']);
-//                        $event['endTime'] = '';
-//                        $event['time'] = '';
-//                        if ((int)$event['addTime'] === 1) {
-//                            $event['time'] = Date::parse($objPage->timeFormat, $event['startTime']);
-//                        }
+                        //                        $event['date'] = Date::parse($objPage->datimFormat,
+                        // $event['startTime']) . ' - ' .   Date::parse($objPage->dateFormat,
+                        // $event['endTime']);                        $event['endTime'] = '';
+                        // $event['time'] = '';                        if ((int)$event['addTime'] === 1)
+                        // {                       $event['time'] = Date::parse($objPage->timeFormat,
+                        // $event['startTime']);                        }
                     }
 
                     // check the repeat values
@@ -397,7 +405,7 @@ class ModuleEventlist extends EventsExt
                         $arrNext = StringUtil::deserialize($event['repeatDates']);
 
                         foreach ($arrNext as $k => $nextDate) {
-                            if (strtotime($nextDate) > time()) {
+                            if (strtotime((string) $nextDate) > time()) {
                                 // check if we have the correct weekday
                                 if ($useWeekdays && 'days' === $unit) {
                                     if (!\in_array(date('w', $k), $weekdays, true)) {
@@ -431,7 +439,7 @@ class ModuleEventlist extends EventsExt
         // Pagination
         if ($this->perPage > 0) {
             $id = 'page_e'.$this->id;
-            $page = null !== Input::get($id) ? Input::get($id) : 1;
+            $page = Input::get($id) ?? 1;
 
             // Do not index or cache the page if the page number is outside the range
             if ($page < 1 || $page > max(ceil($total / $this->perPage), 1)) {
@@ -502,7 +510,7 @@ class ModuleEventlist extends EventsExt
             // Add the template variables
             $objTemplate->classList = $event['class'].(0 === $headerCount % 2 ? ' even' : ' odd').(0 === $headerCount ? ' first' : '').($blnIsLastEvent ? ' last' : '').' cal_'.$event['parent'];
             $objTemplate->classUpcoming = $event['class'].(0 === $eventCount % 2 ? ' even' : ' odd').(0 === $eventCount ? ' first' : '').(($offset + $eventCount + 1) >= $limit ? ' last' : '').' cal_'.$event['parent'];
-            $objTemplate->readMore = specialchars(sprintf($GLOBALS['TL_LANG']['MSC']['readMore'], $event['title']));
+            $objTemplate->readMore = StringUtil::specialchars(sprintf($GLOBALS['TL_LANG']['MSC']['readMore'], $event['title']));
             $objTemplate->more = $GLOBALS['TL_LANG']['MSC']['more'];
             $objTemplate->locationLabel = $GLOBALS['TL_LANG']['MSC']['location'];
 
@@ -563,9 +571,7 @@ class ModuleEventlist extends EventsExt
         }
 
         // No events found
-        if ('' === $strEvents) {
-            $strEvents = "\n".'<div class="empty">'.$strEmpty.'</div>'."\n";
-        }
+        $strEvents = "\n".'<div class="empty">'.$strEmpty.'</div>'."\n";
 
         // See #3672
         $this->Template->headline = $this->headline;

@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Models;
 
 use Contao\Database;
 use Contao\Database\Result;
@@ -28,6 +29,7 @@ class CalendarLeadsModel extends Model
      * @var string
      */
     protected static $strTableMaster = 'tl_lead';
+
     /**
      * @var string
      */
@@ -127,6 +129,7 @@ class CalendarLeadsModel extends Model
     {
         // SQL bauen
         $sql = 'select pid, name, value from '.static::$strTableDetail.' where pid = ? order by id';
+
         // und ausführen
         return Database::getInstance()->prepare($sql)->execute($pid);
     }
@@ -162,7 +165,7 @@ class CalendarLeadsModel extends Model
      *
      * @return bool
      */
-    public static function updateByPid($pid, $value)
+    public static function updateByPid($pid, mixed $value)
     {
         // SQL bauen
         $sql = 'update '.static::$strTableDetail.' set value = ?, label = ? where pid = ? and name = "published"';

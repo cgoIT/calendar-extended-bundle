@@ -1,4 +1,3 @@
-
 <div class="yearview full">
 
 	<?php if ($this->use_navigation): ?>
@@ -19,20 +18,20 @@
 
         <!-- vertical -->
         <tr class="yearview_days">
-        <?php foreach ($this->months as $i => $day): ?>
+        <?php foreach ($this->months as $day): ?>
             <td colspan="2" class="<?php echo $day['class']; ?>">
             <div class="head"><?php echo $day['label']; ?></div>
             </td>
         <?php endforeach; ?>
         </tr>
 
-        <?php foreach ($this->yeardays as $d => $days): ?>
+        <?php foreach ($this->yeardays as $days): ?>
             <tr class="yearview_events">
-            <?php foreach ($days as $dd => $day): ?>
+            <?php foreach ($days as $day): ?>
                 <td nowrap valign="top" class="<?php echo $day['class']; ?>"><?php echo $day['label']; ?></td>
                 <?php if ($day['events']): ?>
                     <td class="<?php echo $day['class']; ?>">
-                    <?php foreach ($day['events'] as $e => $event): ?>
+                    <?php foreach ($day['events'] as $event): ?>
                         <div class="event cal_<?php echo $event['pid']; ?><?php if ($event['class']): echo $event['class']; endif; ?>" style="<?php echo $event['bgstyle']; ?>" title="<?php echo $event['title']; ?>">
                             <div class="event_title <?php echo $event['fgstyle']; ?>" title="<?php echo $event['time']; ?>">
                                 <?php echo $event['title']; ?>
@@ -48,14 +47,14 @@
     <?php else : ?>
 
         <!-- horizontal -->
-        <?php foreach ($this->yeardays as $d => $days): ?>
+        <?php foreach ($this->yeardays as $days): ?>
             <tr class="yearview_events">
             <?php foreach ($days as $dd => $day): ?>
                 <td nowrap valign="top" class="<?php echo $day['class']; ?>"><?php echo $day['label']; ?></td>
                 <?php if ($dd > 0): ?>
                     <td class="<?php echo $day['class']; ?>">
                     <?php if ($day['events']): ?>
-                        <?php foreach ($day['events'] as $e => $event): ?>
+                        <?php foreach ($day['events'] as $event): ?>
                             <div class="event cal_<?php echo $event['pid']; ?><?php if ($event['class']): echo $event['class']; endif; ?>" style="<?php echo $event['bgstyle']; ?>" title="<?php echo $event['title']; ?>">
                                 <div class="event_title <?php echo $event['fgstyle']; ?>" title="<?php echo $event['time']; ?>">
                                     <?php echo $event['title']; ?>

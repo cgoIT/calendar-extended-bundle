@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Modules;
 
 use Contao\BackendTemplate;
 use Contao\Database;
@@ -36,14 +37,17 @@ class ModuleFullcalendar extends EventsExt
      * @var Date
      */
     protected $Date;
+
     /**
      * @var array<mixed>
      */
     protected $calConf = [];
+
     /**
      * @var int
      */
     protected $intStart;
+
     /**
      * @var int
      */
@@ -66,9 +70,9 @@ class ModuleFullcalendar extends EventsExt
     /**
      * Do not show the module if no calendar has been selected.
      *
-     * @throws \Exception
-     *
      * @return string
+     *
+     * @throws \Exception
      */
     public function generate()
     {
@@ -78,7 +82,7 @@ class ModuleFullcalendar extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.utf8_strtoupper($GLOBALS['TL_LANG']['FMD']['fullcalendar'][0]).' ###';
+            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['fullcalendar'][0]).' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
@@ -98,7 +102,7 @@ class ModuleFullcalendar extends EventsExt
         // Calendar filter
         if (Input::get('cal')) {
             // Create array of cal_id's to filter
-            $cals1 = explode(',', Input::get('cal'));
+            $cals1 = explode(',', (string) Input::get('cal'));
             // Check if the cal_id's are valid for this module
             $cals2 = array_intersect($cals1, $this->cal_calendar);
 
@@ -110,36 +114,35 @@ class ModuleFullcalendar extends EventsExt
         // Get the background and foreground colors of the calendars
         foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
             $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal);
+                ->limit(1)->execute($cal)
+            ;
 
             $this->calConf[$cal]['calendar'] = $objBG->title; // @phpstan-ignore-line
 
             if ($objBG->bg_color) { // @phpstan-ignore-line
-                //[$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
+                // [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
                 $cssColor = StringUtil::deserialize($objBG->bg_color)[0];
 
                 if (!empty($cssColor)) {
                     $this->calConf[$cal]['background'] .= '#'.$cssColor;
                 }
-//                if (!empty($cssOpacity)) {
-//                    $this->calConf[$cal]['background'] .= 'opacity:' . ($cssOpacity / 100) . ';';
-//                }
+                //                if (!empty($cssOpacity)) { $this->calConf[$cal]['background']
+                // .= 'opacity:' . ($cssOpacity / 100) . ';';               }
             }
 
             if ($objBG->fg_color) { // @phpstan-ignore-line
-                //[$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
+                // [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
                 $cssColor = StringUtil::deserialize($objBG->fg_color)[0];
 
                 if (!empty($cssColor)) {
                     $this->calConf[$cal]['foreground'] .= '#'.$cssColor;
                 }
-//                if (!empty($cssOpacity)) {
-//                    $this->calConf[$cal]['foreground'] .= 'opacity:' . ($cssOpacity / 100) . ';';
-//                }
+                //                if (!empty($cssOpacity)) { $this->calConf[$cal]['foreground']
+                // .= 'opacity:' . ($cssOpacity / 100) . ';';               }
             }
         }
 
-        $this->strUrl = preg_replace('/\?.*$/', '', Environment::get('request'));
+        $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
         if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
@@ -187,7 +190,7 @@ class ModuleFullcalendar extends EventsExt
             $blnClearInput = true;
         }
 
-        $blnDynamicFormat = (!$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true));
+        $blnDynamicFormat = !$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true);
 
         // Create the date object
         try {
@@ -206,13 +209,14 @@ class ModuleFullcalendar extends EventsExt
             } else {
                 $this->Date = new Date();
             }
-        } catch (\OutOfBoundsException $e) {
+        } catch (\OutOfBoundsException) {
             /** @var PageError404 $objHandler */
             $objHandler = new $GLOBALS['TL_PTY']['error_404']();
             $objHandler->getResponse($objPage);
         }
 
-        // [$this->intStart, $this->intEnd, $strEmpty] = $this->getDatesFromFormat($this->Date, $this->cal_format);
+        // [$this->intStart, $this->intEnd, $strEmpty] =
+        // $this->getDatesFromFormat($this->Date, $this->cal_format);
         $arrFormats = $this->getDatesFromFormat($this->Date, $this->cal_format);
         $this->intStart = $arrFormats[0];
         $this->intEnd = $arrFormats[1];
@@ -254,7 +258,7 @@ class ModuleFullcalendar extends EventsExt
             $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/locale-all.js';
 
             /** @var FrontendTemplate|object $objTemplate */
-            $objTemplate = new FrontendTemplate(($this->cal_ctemplate ?: 'cal_fc_default'));
+            $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
             // Set some fullcalendar options
             $objTemplate->url = $this->strLink;
@@ -272,9 +276,7 @@ class ModuleFullcalendar extends EventsExt
             $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
             $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
 
-            // Set the formular
-            // $objTemplate->event_formular = \Form::getForm(1);
-
+            // Set the formular $objTemplate->event_formular = \Form::getForm(1);
             // Render the template
             $this->Template->fullcalendar = $objTemplate->parse();
         }
@@ -296,8 +298,8 @@ class ModuleFullcalendar extends EventsExt
     {
         $security = System::getContainer()->get('@security.helper');
 
-        $intStart = Input::post('start') ? strtotime(Input::post('start')) : $this->intStart;
-        $intEnd = Input::post('end') ? strtotime(Input::post('end')) : $this->intEnd;
+        $intStart = Input::post('start') ? strtotime((string) Input::post('start')) : $this->intStart;
+        $intEnd = Input::post('end') ? strtotime((string) Input::post('end')) : $this->intEnd;
 
         // Get all events
         $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $intStart, $intEnd, [$this->cal_holiday]);
@@ -342,11 +344,12 @@ class ModuleFullcalendar extends EventsExt
                         }
                     }
 
-                    // We take the "show from" time or the "event start" time to check the display duration limit
+                    // We take the "show from" time or the "event start" time to check the display
+                    // duration limit
                     $displayStart = $event['start'] ?: $event['startTime'];
 
                     if ('' !== $this->displayDuration) {
-                        $displayStop = strtotime($this->displayDuration, $displayStart);
+                        $displayStop = strtotime((string) $this->displayDuration, $displayStart);
 
                         if (false !== $displayStop && $displayStop < $currTime) {
                             continue;
@@ -364,7 +367,7 @@ class ModuleFullcalendar extends EventsExt
                     $allDay = $event['addTime'] ? false : true;
 
                     // Set title
-                    $title = html_entity_decode($event['title']);
+                    $title = html_entity_decode((string) $event['title']);
 
                     // Some options
                     $editable = $this->fc_editable && $security->getUser() instanceof FrontendUser;
@@ -452,7 +455,7 @@ class ModuleFullcalendar extends EventsExt
 
         if ($fields->numRows > 0) {
             while ($fields->next()) {
-                $ff[$fields->name] = substr($fields->name, 5); // @phpstan-ignore-line
+                $ff[$fields->name] = substr((string) $fields->name, 5); // @phpstan-ignore-line
                 $ff['t_'.$fields->name] = $fields->type; // @phpstan-ignore-line
             }
         }
@@ -463,7 +466,7 @@ class ModuleFullcalendar extends EventsExt
 
         // Replace the edit_* value with the db value
         foreach ($ff as $k => $v) {
-            $ff[$k] = strip_tags($event->$v);
+            $ff[$k] = strip_tags((string) $event->$v);
         }
 
         // Return the form fields
@@ -490,10 +493,10 @@ class ModuleFullcalendar extends EventsExt
     {
         if ($event = Input::post('event')) {
             foreach ($event as $k => $v) {
-                if (false === strpos($k, 'edit_', 0)) {
+                if (!str_contains((string) $k, 'edit_')) {
                     unset($event[$k]);
                 } else {
-                    $n = substr($k, 5);
+                    $n = substr((string) $k, 5);
                     $event[$n] = $v;
                     unset($event[$k]);
                 }
@@ -539,7 +542,7 @@ class ModuleFullcalendar extends EventsExt
         if ($event['endTime']) {
             $event['repeatEnd'] = $event['endTime'];
             // Set endDate only if it was set before...
-            if (\strlen($update_event->endDate)) {
+            if (\strlen((string) $update_event->endDate)) {
                 $event['endDate'] = $event['endDate'] ?: strtotime(date('d.m.Y', $event['endTime']));
             }
         }
@@ -556,7 +559,8 @@ class ModuleFullcalendar extends EventsExt
         // Update the event
         Database::getInstance()
             ->prepare('update tl_calendar_events %s where id=?')
-            ->set($event)->execute($id);
+            ->set($event)->execute($id)
+        ;
 
         return true;
     }

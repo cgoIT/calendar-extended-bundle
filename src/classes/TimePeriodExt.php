@@ -3,19 +3,20 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
 /**
  * Namespace.
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Classes;
 
 use Contao\StringUtil;
 use Contao\Widget;
@@ -59,7 +60,6 @@ class TimePeriodExt extends Widget
      * Add specific attributes.
      *
      * @param string $strKey
-     * @param mixed  $varValue
      */
     public function __set($strKey, $varValue): void
     {
@@ -98,13 +98,13 @@ class TimePeriodExt extends Widget
         $arrValues = [];
         $arrUnits = [];
 
-        //$arrValues[] = '<option value="">-</option>';
+        // $arrValues[] = '<option value="">-</option>';
         foreach ($this->arrValues as $arrValue) {
             $arrValues[] = sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrValue['value']),
-                (\is_array($this->varValue) && \in_array($arrValue['value'], $this->varValue, true) ? ' selected="selected"' : ''),
-                $arrValue['label']
+                \is_array($this->varValue) && \in_array($arrValue['value'], $this->varValue, true) ? ' selected="selected"' : '',
+                $arrValue['label'],
             );
         }
 
@@ -112,8 +112,8 @@ class TimePeriodExt extends Widget
             $arrUnits[] = sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrUnit['value']),
-                (\is_array($this->varValue) && \in_array($arrUnit['value'], $this->varValue, true) ? ' selected="selected"' : ''),
-                $arrUnit['label']
+                \is_array($this->varValue) && \in_array($arrUnit['value'], $this->varValue, true) ? ' selected="selected"' : '',
+                $arrUnit['label'],
             );
         }
 
@@ -127,16 +127,12 @@ class TimePeriodExt extends Widget
             implode('', $arrValues),
             $this->strName,
             implode('', $arrUnits),
-            $this->wizard
+            $this->wizard,
         );
     }
 
     /**
      * Do not validate unit fields.
-     *
-     * @param mixed $varInput
-     *
-     * @return mixed
      */
     protected function validator($varInput)
     {

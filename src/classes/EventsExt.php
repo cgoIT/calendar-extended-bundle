@@ -3,19 +3,20 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
 /**
  * Namespace.
  */
 
-namespace Cgoit\CalendarExtendedBundle;
+namespace Cgoit\CalendarExtendedBundle\Classes;
 
 use Contao\Calendar;
 use Contao\Config;
@@ -102,9 +103,9 @@ abstract class EventsExt extends Events
      * @param array<mixed>|null $arrParam
      * @param bool              $blnFeatured
      *
-     * @throws \Exception
-     *
      * @return array<mixed>
+     *
+     * @throws \Exception
      */
     protected function getAllEventsExt($arrCalendars, $intStart, $intEnd, $arrParam = null, $blnFeatured = null): array
     {
@@ -150,7 +151,7 @@ abstract class EventsExt extends Events
                     if (0 === $objEvents->recurrences) {
                         $objEvents->pos_cnt = 0;
                     } else {
-                        $objEvents->pos_cnt = (int) $eventRecurrences;
+                        $objEvents->pos_cnt = $eventRecurrences;
                     }
                 }
 
@@ -265,7 +266,7 @@ abstract class EventsExt extends Events
                         if (0 === $objEvents->recurrences) {
                             $objEvents->pos_cnt = 0;
                         } else {
-                            $objEvents->pos_cnt = (int) $eventRecurrences;
+                            $objEvents->pos_cnt = $eventRecurrences;
                         }
 
                         if ($objEvents->recurrences > 0 && $count++ >= $objEvents->recurrences) {
@@ -324,10 +325,9 @@ abstract class EventsExt extends Events
 
                             // date to search for
                             $findDate = $objEvents->startTime;
-                            //  $s = strtotime(date("d.m.Y", $objEvents->startTime));
-                            // $searchDate = mktime(0, 0, 0, date('m', $s), date('d', $s), date('Y', $s));
-
-                            // store old date values for later reset
+                            //  $s = strtotime(date("d.m.Y", $objEvents->startTime)); $searchDate = mktime(0,
+                            // 0, 0, date('m', $s), date('d', $s), date('Y', $s)); store old date values for
+                            // later reset
                             $oldDate = [];
 
                             if (\is_array($arrEventSkipInfo[$objEvents->id][$findDate])) {
@@ -338,12 +338,12 @@ abstract class EventsExt extends Events
                                 $objEvents->cssClass .= $cssClass ? $cssClass.' ' : '';
 
                                 if ('hide' === $action) {
-                                    //continue the while since we don't want to show the event
+                                    // continue the while since we don't want to show the event
                                     continue;
                                 }
 
                                 if ('move' === $action) {
-                                    //just add the css class to the event
+                                    // just add the css class to the event
                                     $objEvents->cssClass .= 'moved';
 
                                     // keep old date. we have to reset it later for the next recurrence
@@ -370,12 +370,12 @@ abstract class EventsExt extends Events
                                         $newEnd = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->endTime)
                                             .' EventsExt.php'.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
 
-                                        //set the new values
-                                        $objEvents->startTime = strtotime($newDate, strtotime($newStart));
-                                        $objEvents->endTime = strtotime($newDate, strtotime($newEnd));
+                                        // set the new values
+                                        $objEvents->startTime = strtotime((string) $newDate, strtotime($newStart));
+                                        $objEvents->endTime = strtotime((string) $newDate, strtotime($newEnd));
                                     } else {
-                                        $objEvents->startTime = strtotime($newDate, $objEvents->startTime);
-                                        $objEvents->endTime = strtotime($newDate, $objEvents->endTime);
+                                        $objEvents->startTime = strtotime((string) $newDate, $objEvents->startTime);
+                                        $objEvents->endTime = strtotime((string) $newDate, $objEvents->endTime);
                                     }
                                 }
                             }
@@ -455,13 +455,13 @@ abstract class EventsExt extends Events
 
                             // new start time
                             $strNewDate = $fixedDate['new_repeat'];
-                            $strNewTime = (\strlen($fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time);
+                            $strNewTime = \strlen((string) $fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time;
                             $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
                             $objEvents->startTime = $newDateStart->tstamp;
                             $dateNextStart = date('Ymd', $objEvents->startTime);
 
                             // new end time
-                            $strNewTime = (\strlen($fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time);
+                            $strNewTime = \strlen((string) $fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time;
                             $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
 
                             // use the multi-day span of the event
@@ -503,7 +503,8 @@ abstract class EventsExt extends Events
             // run thru all holiday calendars
             foreach ($arrHolidays as $id) {
                 $objAE = $this->Database->prepare('SELECT allowEvents FROM tl_calendar WHERE id = ?')
-                    ->limit(1)->execute($id);
+                    ->limit(1)->execute($id)
+                ;
                 $allowEvents = 1 === $objAE->allowEvents; // @phpstan-ignore-line
 
                 // Get the events of the current period
@@ -520,8 +521,7 @@ abstract class EventsExt extends Events
                     }
 
                     /**
-                     * Multi-day event
-                     * first we have to find all free days.
+                     * Multi-day event first we have to find all free days.
                      */
                     $span = Calendar::calculateSpan($objEvents->startTime, $objEvents->endTime);
 

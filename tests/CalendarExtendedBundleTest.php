@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
 namespace Cgoit\BfvWidgetBundle\Tests;
@@ -22,6 +23,6 @@ class CalendarExtendedBundleTest extends TestCase
     {
         $bundle = new CalendarExtendedBundle();
 
-        $this->assertInstanceOf('Cgoit\CalendarExtendedBundle\CalendarExtendedBundle', $bundle);
+        $this->assertInstanceOf(CalendarExtendedBundle::class, $bundle);
     }
 }

@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
-//namespace Cgoit\CalendarExtendedBundle;
+// namespace Cgoit\CalendarExtendedBundle;
 
 /*
  * Add palettes to tl_module
@@ -25,7 +26,7 @@ use NotificationCenter\Model\Notification;
 $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'] = str_replace(
     ';{redirect_legend}',
     ';{config_ext_legend},cal_holiday,show_holiday,ignore_urlparameter;{redirect_legend}',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar']
+    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'],
 );
 $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'] .= ';{filter_legend},filter_fields';
 
@@ -34,7 +35,7 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'] = $GLOBALS['TL_DCA']['t
 $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'] = str_replace(
     ';{redirect_legend}',
     ',showDate,hideEmptyDays,use_navigation,linkCurrent,cal_times,cal_times_range,cellhight;{redirect_legend}',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable']
+    $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'],
 );
 
 // Palette for yearview
@@ -42,14 +43,14 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = $GLOBALS['TL_DCA']['tl
 $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = str_replace(
     ';{redirect_legend}',
     ',use_horizontal,use_navigation,linkCurrent;{protected_legend:hide}',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview']
+    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'],
 );
 
 // Palette for eventlist
 $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'] = str_replace(
     ';{template_legend:hide}',
     ';{config_ext_legend},cal_holiday,show_holiday,ignore_urlparameter,cal_format_ext,displayDuration,range_date,showRecurrences,hide_started,pubTimeRecurrences,showOnlyNext;{template_legend:hide}',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist']
+    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'],
 );
 $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'] .= ';{filter_legend},filter_fields';
 
@@ -57,12 +58,12 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'] .= ';{filter_legend},fi
 $GLOBALS['TL_DCA']['tl_module']['palettes']['eventreader'] = str_replace(
     '{config_legend},cal_calendar',
     '{config_legend},cal_calendar,cal_holiday',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['eventreader']
+    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['eventreader'],
 );
 
 // Palette for registration
 $GLOBALS['TL_DCA']['tl_module']['palettes']['evr_registration'] = '{title_legend},name,headline,type;{registration_legend},nc_notification,regtype;{filter_legend},filter_fields';
-//'{redirect_legend},jumpTo;{template_legend:hide},cal_ctemplate,customTpl;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+// '{redirect_legend},jumpTo;{template_legend:hide},cal_ctemplate,customTpl;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
 /*
  * Add fields to tl_module
@@ -340,14 +341,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [
  *
  * @copyright  Kester Mielke 2011
  */
-class calendar_Ext extends Backend
+class tl_module extends \Contao\Backend
 {
     /**
      * Import the back end user object.
      */
     public function __construct()
     {
-        parent::__construct();
         $this->import('BackendUser', 'User');
     }
 
@@ -367,8 +367,8 @@ class calendar_Ext extends Backend
         $event_fields = [];
 
         foreach ($arr_fields as $k => $v) {
-            if (strlen($GLOBALS['TL_LANG']['tl_calendar_events'][$k][0])) {
-                $label = strlen($v['label']) ? $v['label'] : $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0];
+            if (strlen((string) $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0])) {
+                $label = strlen((string) $v['label']) ? $v['label'] : $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0];
                 $event_fields[$k] = $label;
             }
         }
@@ -403,9 +403,7 @@ class calendar_Ext extends Backend
      */
     public function getTimeRange()
     {
-        $columnFields = null;
-
-        $columnFields = [
+        return [
             'time_from' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_module']['time_range_from'],
                 'exclude' => true,
@@ -421,8 +419,6 @@ class calendar_Ext extends Backend
                 'eval' => ['rgxp' => 'time', 'doNotCopy' => true, 'style' => 'width:120px', 'datepicker' => true, 'tl_class' => 'wizard'],
             ],
         ];
-
-        return $columnFields;
     }
 
     /**
@@ -430,9 +426,7 @@ class calendar_Ext extends Backend
      */
     public function getRange()
     {
-        $columnFields = null;
-
-        $columnFields = [
+        return [
             'date_from' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_module']['range_from'],
                 'exclude' => true,
@@ -448,21 +442,15 @@ class calendar_Ext extends Backend
                 'eval' => ['rgxp' => 'datim', 'doNotCopy' => true, 'style' => 'width:120px', 'datepicker' => true, 'tl_class' => 'wizard'],
             ],
         ];
-
-        return $columnFields;
     }
 
     /**
-     * @param $varValue
-     *
      * @throws Exception
-     *
-     * @return mixed
      */
     public function checkDuration($varValue)
     {
         if ('' !== $varValue) {
-            if (($timestamp = date('dmY', strtotime($varValue, time()))) === date('dmY', time())) {
+            if (($timestamp = date('dmY', strtotime((string) $varValue, time()))) === date('dmY', time())) {
                 throw new Exception($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
             }
         }
@@ -471,16 +459,12 @@ class calendar_Ext extends Backend
     }
 
     /**
-     * @param $varValue
-     *
      * @throws Exception
-     *
-     * @return mixed
      */
     public function checkCalFormat($varValue)
     {
         if ('' !== $varValue) {
-            if (($timestamp = date('dmYHis', strtotime($varValue, time()))) === date('dmYHis', time())) {
+            if (($timestamp = date('dmYHis', strtotime((string) $varValue, time()))) === date('dmYHis', time())) {
                 throw new Exception($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
             }
         }

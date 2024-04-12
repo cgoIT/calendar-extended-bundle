@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
  */
 
 /*
@@ -17,11 +18,11 @@ declare(strict_types=1);
 $GLOBALS['TL_DCA']['tl_calendar']['palettes']['default'] = str_replace(
     '{title_legend},title,jumpTo;',
     '{title_legend},title,jumpTo,uniqueEvents;{extended_type_legend},isHolidayCal;{extended_legend},bg_color,fg_color;',
-    $GLOBALS['TL_DCA']['tl_calendar']['palettes']['default']
+    (string) $GLOBALS['TL_DCA']['tl_calendar']['palettes']['default'],
 );
 
-array_insert($GLOBALS['TL_DCA']['tl_calendar']['palettes']['__selector__'], 99, 'isHolidayCal');
-array_insert($GLOBALS['TL_DCA']['tl_calendar']['subpalettes'], 99, ['isHolidayCal' => 'allowEvents']);
+\Contao\ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar']['palettes']['__selector__'], 99, 'isHolidayCal');
+\Contao\ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar']['subpalettes'], 99, ['isHolidayCal' => 'allowEvents']);
 
 // Hinzufügen der Feld-Konfiguration
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['bg_color'] = [

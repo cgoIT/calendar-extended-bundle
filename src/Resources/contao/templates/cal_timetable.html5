@@ -1,4 +1,3 @@
-
 <div class="timetable">
 
 	<?php if ($this->use_navigation): ?>
@@ -29,16 +28,16 @@
 		<?php if ($this->cal_times): ?>
 			<td>
 				<div class="times" style="position:relative;">
-				<?php foreach ($this->times as $i => $time): ?>
+				<?php foreach ($this->times as $time): ?>
 				<div class="time <?php echo $time['class']; ?>" style="<?php echo $time['style']; ?>"><?php echo $time['label']; ?></div>
 				<?php endforeach; ?>
 				</div>
 			</td>
 		<?php endif; ?>
-		<?php foreach ($this->weekday as $i => $day): ?>
+		<?php foreach ($this->weekday as $day): ?>
 			<td class="<?php echo $day['class']; ?>">
 				<div class="events" style="position:relative;">
-				<?php foreach ($day['events'] as $i => $event): ?>
+				<?php foreach ($day['events'] as $event): ?>
 					<?php if ($event): ?>
 						<div class="event<?php if ($event['class']): echo $event['class']; endif; ?>" style="overflow:hidden;<?php echo $event['bgstyle']; ?><?php if ($event['style']): echo $event['style']; endif; ?>" title="<?php echo $event['title']; ?>">
 							<div class="event_title <?php echo $event['fgstyle']; ?>">
