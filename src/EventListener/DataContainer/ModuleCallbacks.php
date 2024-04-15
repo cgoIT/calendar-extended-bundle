@@ -12,6 +12,7 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
+use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\Backend;
 use Contao\BackendUser;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
@@ -52,12 +53,12 @@ class ModuleCallbacks extends Backend
         return $event_fields;
     }
 
-    //    /**     * @return array     */    public function listNotifications()    { 
-    //    if (!class_exists('leads\leads')) {            return null;        }
-    // $return = [];         $objNotifications = Notification::findAll(); if (null
-    // !== $objNotifications) {            while ($objNotifications->next()) { 
-    // $return[$objNotifications->id] = $objNotifications->title;         }      }   
-    //    return $return;    }
+    //    /**     * @return array     */    public function listNotifications()    {
+    // if (!class_exists('leads\leads')) {            return null;        } $return =
+    // [];         $objNotifications = Notification::findAll(); if (null !==
+    // $objNotifications) {            while ($objNotifications->next()) {
+    // $return[$objNotifications->id] = $objNotifications->title;         }      }
+    // return $return;    }
 
     /**
      * @return array|null
@@ -109,11 +110,11 @@ class ModuleCallbacks extends Backend
      * @throws Exception
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.displayDuration.save')]
-    public function checkDuration(mixed $varValue, DataContainer $dc)
+    public function checkDuration(mixed $varValue, DataContainer $dc): mixed
     {
         if ('' !== $varValue) {
             if (($timestamp = date('dmY', strtotime((string) $varValue, time()))) === date('dmY', time())) {
-                throw new Exception($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
+                throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
             }
         }
 
@@ -124,11 +125,11 @@ class ModuleCallbacks extends Backend
      * @throws Exception
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_format_ext.save')]
-    public function checkCalFormat(mixed $varValue, DataContainer $dc)
+    public function checkCalFormat(mixed $varValue, DataContainer $dc): mixed
     {
         if ('' !== $varValue) {
             if (($timestamp = date('dmYHis', strtotime((string) $varValue, time()))) === date('dmYHis', time())) {
-                throw new Exception($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
+                throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_module']['displayDurationError2'].': '.$timestamp);
             }
         }
 
@@ -138,10 +139,10 @@ class ModuleCallbacks extends Backend
     /**
      * Return all calendar templates as array.
      *
-     * @return array
+     * @return array<mixed>
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_ctemplate.options')]
-    public function getCalendarTemplates()
+    public function getCalendarTemplates(): array
     {
         return $this->getTemplateGroup('cal_');
     }
@@ -149,10 +150,10 @@ class ModuleCallbacks extends Backend
     /**
      * Get all calendars and return them as array.
      *
-     * @return array
+     * @return array<mixed>
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_calendar.options')]
-    public function getCalendars()
+    public function getCalendars(): array
     {
         if (!$this->User->isAdmin && !is_array($this->User->calendars)) {
             return [];
@@ -173,10 +174,10 @@ class ModuleCallbacks extends Backend
     /**
      * Get all calendars and return them as array.
      *
-     * @return array
+     * @return array<mixed>
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_holiday.options')]
-    public function getHolidays()
+    public function getHolidays(): array
     {
         if (!$this->User->isAdmin && !is_array($this->User->calendars)) {
             return [];

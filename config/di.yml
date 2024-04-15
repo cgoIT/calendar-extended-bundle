@@ -5,6 +5,7 @@ services:
         public: false
         bind:
             $db: '@database_connection'
+            $requestStack: '@request_stack'
 
     Cgoit\CalendarExtendedBundle\:
         resource: ../src/*

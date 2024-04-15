@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Cgoit\CalendarExtendedBundle\Models\CalendarEventsModelExt;
 use Cgoit\CalendarExtendedBundle\Models\CalendarLeadsModel;
 use Contao\ArrayUtil;
@@ -16,11 +17,14 @@ use Contao\Input;
 use Contao\Message;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CalendarEventsCallbacks extends Backend
 {
-    public function __construct(private readonly Connection $db)
-    {
+    public function __construct(
+        private readonly Connection $db,
+        private readonly RequestStack $requestStack,
+    ) {
         parent::__construct();
         $this->import(BackendUser::class, 'User');
     }
@@ -99,7 +103,7 @@ class CalendarEventsCallbacks extends Backend
 
                 if (count($nonUniqueEvents) > 0) {
                     Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'].' ('.implode(',', $nonUniqueEvents).')');
-                    $this->redirect($this->addToUrl());
+                    $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
                 }
             }
         }
@@ -108,7 +112,7 @@ class CalendarEventsCallbacks extends Backend
     }
 
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit')]
-    public function adjustTime(DataContainer $dc)
+    public function adjustTime(DataContainer $dc): void
     {
         // Return if there is no active record (override all)
         if (!$dc->activeRecord) {
@@ -171,7 +175,7 @@ class CalendarEventsCallbacks extends Backend
                     $intTimeStampA = strtotime($a['new_repeat'].$a['new_start']);
                     $intTimeStampB = strtotime($b['new_repeat'].$b['new_start']);
 
-                    return $intTimeStampA === $intTimeStampB;
+                    return $intTimeStampA <=> $intTimeStampB;
                 },
             );
 
@@ -185,7 +189,7 @@ class CalendarEventsCallbacks extends Backend
                 try {
                     $newDate = new Date($fixedDate['new_repeat']);
                 } catch (Exception) {
-                    return false;
+                    return;
                 }
 
                 // $new_fix_date = strtotime($fixedDate['new_repeat']);
@@ -541,7 +545,7 @@ class CalendarEventsCallbacks extends Backend
                         }
 
                         // Find the date and replace it
-                        if (array_key_exists($dateToFind, $arrDates)) {
+                        if (!empty($arrDates) && array_key_exists($dateToFind, $arrDates)) {
                             $arrDates[$dateToFind] = date('d.m.Y H:i', $dateToSave);
                         }
 
@@ -572,7 +576,11 @@ class CalendarEventsCallbacks extends Backend
         if (count($maxRepeatEnd) > 1) {
             $arrSet['repeatEnd'] = max($maxRepeatEnd);
         }
-        $arrAllDates = $arrDates + $arrFixDates;
+        $arrAllDates = [];
+        if (!empty($arrDates)) {
+            $arrAllDates += $arrDates;
+        }
+        $arrAllDates += $arrFixDates;
         ksort($arrAllDates);
         // Set the array of dates
         $arrSet['repeatDates'] = $arrAllDates;
@@ -591,11 +599,11 @@ class CalendarEventsCallbacks extends Backend
      * @throws Exception
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.recurring.save')]
-    public function checkRecurring(mixed $value, DataContainer $dc)
+    public function checkRecurring(mixed $value, DataContainer $dc): mixed
     {
         if ($value) {
             if ($dc->activeRecord->recurring && $dc->activeRecord->recurringExt) {
-                throw new Exception($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
+                throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
             }
         }
 
@@ -608,11 +616,11 @@ class CalendarEventsCallbacks extends Backend
      * @throws Exception
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.useExceptions.save')]
-    public function checkExceptions(mixed $value, DataContainer $dc)
+    public function checkExceptions(mixed $value, DataContainer $dc): mixed
     {
         if ($value) {
             if (!$dc->activeRecord->recurring && !$dc->activeRecord->recurringExt) {
-                throw new Exception($GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions']);
+                throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions']);
             }
         }
 
@@ -634,7 +642,7 @@ class CalendarEventsCallbacks extends Backend
             $values[0]['curr'] = 0;
             $values[0]['free'] = 0;
 
-            return $values;
+            return serialize($values);
         }
 
         $eid = (int) $dc->activeRecord->id;
@@ -708,8 +716,10 @@ class CalendarEventsCallbacks extends Backend
      * listMultiExceptions().
      *
      * Read the list of exception dates from the db to fill the select list
+     *
+     * @return array<mixed>
      */
-    public function listMultiExceptions($var1)
+    public function listMultiExceptions(DataContainer $var1): array
     {
         $columnFields = null;
         $activeRecord = $var1->activeRecord;
@@ -724,9 +734,8 @@ class CalendarEventsCallbacks extends Backend
             // Probably an AJAX request where activeRecord is not available
             if (null === $activeRecord) {
                 $activeRecord = $this->db
-                    ->prepare("SELECT * FROM {$var1->strTable} WHERE id=?")
-                    ->limit(1)
-                    ->execute(Input::get('id'))
+                    ->prepare("SELECT * FROM {$var1->table} WHERE id=?")
+                    ->executeQuery(Input::get('id'))
                 ;
             }
 
@@ -859,15 +868,19 @@ class CalendarEventsCallbacks extends Backend
         }
 
         // add the field to the columnFields array
-        ArrayUtil::arrayInsert($columnFields, 0, ['exception' => $firstField]);
+        if (!empty($firstField)) {
+            ArrayUtil::arrayInsert($columnFields, 0, ['exception' => $firstField]);
+        }
 
         return $columnFields;
     }
 
     /**
      * listFixedDates().
+     *
+     * @return array<mixed>
      */
-    public function listFixedDates($var1)
+    public function listFixedDates(DataContainer $var1): array
     {
         return [
             'new_repeat' => [
