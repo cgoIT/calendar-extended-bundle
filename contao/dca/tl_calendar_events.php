@@ -12,132 +12,85 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-use Contao\ArrayUtil;
+use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsMCWCallbacks;
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
-// foreach
-// ($GLOBALS['TL_DCA']['tl_calendar_events']['config']['onsubmit_callback'] as $k
-// => $v) {    if ('tl_calendar_events' === $v[0] && 'adjustTime' === $v[1]) {
-// unset($GLOBALS['TL_DCA']['tl_calendar_events']['config']['onsubmit_callback'][$k]);
-// 
-// ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar_events']['config']['onsubmit_callback'],
-// 0, [            ['tl_calendar_events_ext', 'adjustTime'],
-// ['tl_calendar_events_ext', 'checkOverlapping'],        ]);    }
+foreach ($GLOBALS['TL_DCA']['tl_calendar_events']['palettes'] as $name => $palette) {
+    if (!is_string($palette)) {
+        continue;
+    }
 
-foreach ($GLOBALS['TL_DCA']['tl_calendar_events']['palettes'] as &$palette) {
-    $palette = str_replace('endDate', 'endDate,hideOnWeekend', (string) $palette);
+    PaletteManipulator::create()->addField('hideOnWeekend', 'endDate')
+        ->applyToPalette($name, 'tl_calendar_events')
+    ;
 }
 
-$GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'] = str_replace(
-    'addTime,',
-    'showOnFreeDay,addTime,',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'],
-);
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'] = str_replace(
-    'addTime,',
-    'showOnFreeDay,addTime,',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'],
-);
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'] = str_replace(
-    'addTime,',
-    'showOnFreeDay,addTime,',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'],
-);
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'] = str_replace(
-    'addTime,',
-    'showOnFreeDay,addTime,',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'],
-);
-
-if (class_exists('leads\leads')) {
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{regform_legend},useRegistration;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{regform_legend},useRegistration;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{regform_legend},useRegistration;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{regform_legend},useRegistration;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'],
-    );
-} else {
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['default'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['article'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['internal'],
-    );
-    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'] = str_replace(
-        '{recurring_legend},recurring;',
-        '{location_legend},location_name,location_str,location_plz,location_ort;{contact_legend},location_link,location_contact,location_mail;{recurring_legend},recurring;{recurring_legend_ext},recurringExt;{repeatFixedDates_legend},repeatFixedDates;{exception_legend},useExceptions;',
-        (string) $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['external'],
-    );
+foreach (['default', 'article', 'internal', 'external'] as $palette) {
+    PaletteManipulator::create()->addField('showOnFreeDay', 'addTime', PaletteManipulator::POSITION_BEFORE)
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
+    PaletteManipulator::create()->addLegend('contact_legend', 'recurring_legend', PaletteManipulator::POSITION_BEFORE)
+        ->addField('location_link', 'contact_legend', PaletteManipulator::POSITION_APPEND)
+        ->addField('location_contact', 'location_link')
+        ->addField('location_mail', 'location_contact')
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
+    PaletteManipulator::create()->addLegend('location_legend', 'contact_legend', PaletteManipulator::POSITION_BEFORE)
+        ->addField('location_name', 'location_legend', PaletteManipulator::POSITION_APPEND)
+        ->addField('location_str', 'location_name')
+        ->addField('location_ort', 'location_str')
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
+    PaletteManipulator::create()->addLegend('recurring_legend_ext', 'recurring_legend')
+        ->addField('recurringExt', 'recurring_legend_ext', PaletteManipulator::POSITION_APPEND)
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
+    PaletteManipulator::create()->addLegend('repeatFixedDates_legend', 'recurring_legend_ext')
+        ->addField('repeatFixedDates', 'repeatFixedDates_legend', PaletteManipulator::POSITION_APPEND)
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
 }
 
-// change the default palettes
-ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'], 99, 'recurringExt');
-ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'], 99, 'useExceptions');
-ArrayUtil::arrayInsert($GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'], 99, 'useRegistration');
-
-// change the default palettes
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['recurring'] = str_replace(
-    'repeatEach,recurrences',
-    'hideOnWeekend,repeatEach,recurrences,repeatWeekday,repeatEnd',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['recurring'],
+$GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'] = array_merge(
+    ['recurringExt', 'useExceptions', 'useRegistration'],
+    $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'],
 );
 
-// change the default palettes
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['addTime'] = str_replace(
-    'startTime,endTime',
-    'ignoreEndTime,startTime,endTime',
-    (string) $GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['addTime'],
-);
+PaletteManipulator::create()->addField('hideOnWeekend', 'recurring')
+    ->addField('repeatWeekday', 'recurrences', PaletteManipulator::POSITION_APPEND)
+    ->addField('repeatEnd', 'repeatWeekday')
+    ->applyToSubpalette('recurring', 'tl_calendar_events')
+;
+
+PaletteManipulator::create()->addField('ignoreEndTime', 'startTime', PaletteManipulator::POSITION_BEFORE)
+    ->applyToSubpalette('addTime', 'tl_calendar_events')
+;
+
+$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['recurringExt'] = 'repeatEachExt,recurrences,repeatEnd';
+$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useExceptions'] = 'repeatExceptionsInt,repeatExceptionsPer,repeatExceptions';
+$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useRegistration'] = 'regconfirm,regperson,regform,regstartdate,regenddate';
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatWeekday'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatWeekday'],
     'exclude' => true,
     'filter' => true,
     'inputType' => 'checkbox',
     'options' => [1, 2, 3, 4, 5, 6, 0],
     'reference' => &$GLOBALS['TL_LANG']['DAYS'],
-    'eval' => ['multiple' => true, 'tl_class' => 'clr'],
+    'eval' => ['multiple' => true, 'tl_class' => 'w50'],
     'sql' => "varchar(128) NOT NULL default ''",
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatFixedDates'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatFixedDates'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsCallbacks::class, 'listFixedDates'],
+        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listFixedDates'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ignoreEndTime'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['ignoreEndTime'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -146,15 +99,13 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ignoreEndTime'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['useExceptions'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['useExceptions'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'long clr'],
     'sql' => "char(1) NOT NULL default ''",
-    ´];
+];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['showOnFreeDay'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['showOnFreeDay'],
     'exclude' => true,
     'filter' => false,
     'inputType' => 'checkbox',
@@ -162,7 +113,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['showOnFreeDay'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['weekday'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['weekday'],
     'exclude' => true,
     'filter' => true,
     'inputType' => 'select',
@@ -172,7 +122,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['weekday'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurring'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['recurring'],
     'exclude' => true,
     'filter' => true,
     'inputType' => 'checkbox',
@@ -181,18 +130,16 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurring'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEach'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatEach'],
     'default' => 1,
     'exclude' => true,
     'inputType' => 'timePeriod',
     'options' => ['days', 'weeks', 'months', 'years'],
     'reference' => &$GLOBALS['TL_LANG']['tl_calendar_events'],
-    'eval' => ['mandatory' => true, 'rgxp' => 'natural', 'minval' => 1, 'tl_class' => 'w50'],
+    'eval' => ['mandatory' => true, 'rgxp' => 'natural', 'minval' => 1, 'tl_class' => 'clr w50'],
     'sql' => "varchar(64) NOT NULL default ''",
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['hideOnWeekend'],
     'exclude' => true,
     'filter' => false,
     'inputType' => 'checkbox',
@@ -200,13 +147,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
     'sql' => "char(1) NOT NULL default ''",
 ];
 
-// change the default palettes
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['recurringExt'] = 'repeatEachExt,recurrences,repeatEnd';
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useExceptions'] = 'repeatExceptionsInt,repeatExceptionsPer,repeatExceptions';
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useRegistration'] = 'regconfirm,regperson,regform,regstartdate,regenddate';
-
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['useRegistration'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['useRegistration'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'w50'],
@@ -214,7 +155,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['useRegistration'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regconfirm'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['regconfirm'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -223,21 +163,19 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regconfirm'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regperson'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['regperson'],
     'default' => 0,
     'exclude' => true,
     'filter' => false,
     'inputType' => 'multiColumnWizard',
     'eval' => [
         'tl_class' => 'w50 clr',
-        'columnsCallback' => [CalendarEventsCallbacks::class, 'setMaxPerson'],
+        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'setMaxPerson'],
         'buttons' => ['add' => false, 'new' => false, 'up' => false, 'down' => false, 'delete' => false, 'copy' => false],
     ],
     'sql' => 'blob NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regform'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['regform'],
     'exclude' => true,
     'filter' => true,
     'inputType' => 'select',
@@ -246,7 +184,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regform'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regstartdate'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['regstartdate'],
     'default' => time(),
     'exclude' => true,
     'inputType' => 'text',
@@ -255,7 +192,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regstartdate'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regenddate'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['regenddate'],
     'default' => time(),
     'exclude' => true,
     'inputType' => 'text',
@@ -264,7 +200,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regenddate'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurringExt'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['recurringExt'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'long clr'],
@@ -272,7 +207,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurringExt'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_name'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_name'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -281,7 +215,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_name'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_str'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -290,7 +223,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_plz'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_plz'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -299,7 +231,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_plz'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_ort'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_ort'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -308,7 +239,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_ort'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_link'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -317,7 +247,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_contact'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -326,7 +255,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['location_mail'],
     'exclude' => true,
     'search' => true,
     'inputType' => 'text',
@@ -336,7 +264,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
 
 // new repeat options for events
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEachExt'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatEachExt'],
     'exclude' => true,
     'inputType' => 'timePeriodExt',
     'options' => [
@@ -351,7 +278,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEachExt'] = [
 
 // added submitOnChange to recurrences
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurrences'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['recurrences'],
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['mandatory' => true, 'rgxp' => 'digit', 'submitOnChange' => true, 'tl_class' => 'w50'],
@@ -360,11 +286,10 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurrences'] = [
 
 // list of exceptions
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptions'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -372,11 +297,10 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptions'] = [
 
 // list of exceptions
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsInt'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptionsInt'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -384,11 +308,10 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsInt'] = [
 
 // list of exceptions
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsPer'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptionsPer'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -408,17 +331,8 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['exceptionList'] = [
 
 // display the end of the recurrences (read only)
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEnd'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['repeatEnd'],
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['readonly' => true, 'rgxp' => 'date', 'tl_class' => 'clr'],
     'sql' => "int(10) unsigned NOT NULL default '0'",
 ];
-
-// /* * Class tl_calendar_events_ext. * * Provide miscellaneous methods that are
-// used by the data configuration array. * * @copyright  Kester Mielke 2009-2018
-// */ class tl_calendar_events extends Backend {    /**     * Import the back end
-// user object.     */    public function __construct()    {
-// $this->import('BackendUser', 'User');    } public function
-// getWeekday($varValue)    {        if ('' === $varValue) {       return 9;
-//   }         return $varValue;    }

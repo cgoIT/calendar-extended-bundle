@@ -12,44 +12,63 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
+
 // Palette for calendar
-$GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'] = str_replace(
-    ';{redirect_legend}',
-    ';{config_ext_legend},cal_holiday,show_holiday,ignore_urlparameter;{redirect_legend}',
-    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'],
-);
-$GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'] .= ';{filter_legend},filter_fields';
+PaletteManipulator::create()->addLegend('config_ext_legend', 'redirect_legend', PaletteManipulator::POSITION_BEFORE)
+    ->addField('cal_holiday', 'config_ext_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('show_holiday', 'cal_holiday')
+    ->addField('ignore_urlparameter', 'show_holiday')
+    ->applyToPalette('calendar', 'tl_module')
+;
+PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
+    ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('calendar', 'tl_module')
+;
 
 // Palette for timetable
 $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'];
-$GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'] = str_replace(
-    ';{redirect_legend}',
-    ',showDate,hideEmptyDays,use_navigation,linkCurrent,cal_times,cal_times_range,cellhight;{redirect_legend}',
-    $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'],
-);
+PaletteManipulator::create()->addField('showDate', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('hideEmptyDays', 'showDate')
+    ->addField('use_navigation', 'hideEmptyDays')
+    ->addField('linkCurrent', 'use_navigation')
+    ->addField('cal_times', 'linkCurrent')
+    ->addField('cal_times_range', 'cal_times')
+    ->addField('cellhight', 'cal_times_range')
+    ->applyToPalette('timetable', 'tl_module')
+;
 
 // Palette for yearview
 $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'];
-$GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = str_replace(
-    ';{redirect_legend}',
-    ',use_horizontal,use_navigation,linkCurrent;{protected_legend:hide}',
-    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'],
-);
+PaletteManipulator::create()->addField('use_horizontal', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('use_navigation', 'use_horizontal')
+    ->addField('linkCurrent', 'use_navigation')
+    ->applyToPalette('yearview', 'tl_module')
+;
 
 // Palette for eventlist
-$GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'] = str_replace(
-    ';{template_legend:hide}',
-    ';{config_ext_legend},cal_holiday,show_holiday,ignore_urlparameter,cal_format_ext,displayDuration,range_date,showRecurrences,hide_started,pubTimeRecurrences,showOnlyNext;{template_legend:hide}',
-    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'],
-);
-$GLOBALS['TL_DCA']['tl_module']['palettes']['eventlist'] .= ';{filter_legend},filter_fields';
+PaletteManipulator::create()->addLegend('config_ext_legend', 'config_legend')
+    ->addField('cal_holiday', 'config_ext_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('show_holiday', 'cal_holiday')
+    ->addField('ignore_urlparameter', 'show_holiday')
+    ->addField('cal_format_ext', 'ignore_urlparameter')
+    ->addField('displayDuration', 'cal_format_ext')
+    ->addField('range_date', 'displayDuration')
+    ->addField('showRecurrences', 'range_date')
+    ->addField('hide_started', 'showRecurrences')
+    ->addField('pubTimeRecurrences', 'hide_started')
+    ->addField('showOnlyNext', 'pubTimeRecurrences')
+    ->applyToPalette('eventlist', 'tl_module')
+;
+PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
+    ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('eventlist', 'tl_module')
+;
 
 // Palette for eventreader
-$GLOBALS['TL_DCA']['tl_module']['palettes']['eventreader'] = str_replace(
-    '{config_legend},cal_calendar',
-    '{config_legend},cal_calendar,cal_holiday',
-    (string) $GLOBALS['TL_DCA']['tl_module']['palettes']['eventreader'],
-);
+PaletteManipulator::create()->addField('cal_holiday', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('eventreader', 'tl_module')
+;
 
 // Palette for registration
 $GLOBALS['TL_DCA']['tl_module']['palettes']['evr_registration'] = '{title_legend},name,headline,type;{registration_legend},nc_notification,regtype;{filter_legend},filter_fields';
@@ -58,7 +77,6 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['evr_registration'] = '{title_legend
  * Add fields to tl_module
  */
 $GLOBALS['TL_DCA']['tl_module']['fields']['regtype'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['regtype'],
     'exclude' => true,
     'filter' => true,
     'default' => 0,
@@ -70,7 +88,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['regtype'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_calendar'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_calendar'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['mandatory' => true, 'multiple' => true],
@@ -78,7 +95,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_calendar'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_holiday'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_holiday'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['mandatory' => false, 'multiple' => true, 'tl_class' => 'long'],
@@ -86,7 +102,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_holiday'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['show_holiday'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['show_holiday'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -95,7 +110,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['show_holiday'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['ignore_urlparameter'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -104,7 +118,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['ignore_urlparameter'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['pubTimeRecurrences'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['pubTimeRecurrences'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -113,7 +126,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['pubTimeRecurrences'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_format_ext'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_format_ext'],
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['tl_class' => 'w50'],
@@ -121,7 +133,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_format_ext'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['displayDuration'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['displayDuration'],
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['tl_class' => 'w50'],
@@ -129,7 +140,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['displayDuration'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showOnlyNext'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['showOnlyNext'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -138,7 +148,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showOnlyNext'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showRecurrences'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['showRecurrences'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -147,7 +156,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showRecurrences'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['use_horizontal'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['use_horizontal'],
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -156,7 +164,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['use_horizontal'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['use_navigation'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['use_navigation'],
     'default' => 1,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -165,7 +172,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['use_navigation'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showDate'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['showDate'],
     'default' => 1,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -174,7 +180,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showDate'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['linkCurrent'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['linkCurrent'],
     'default' => 1,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -183,7 +188,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['linkCurrent'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hideEmptyDays'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['hideEmptyDays'],
     'default' => 1,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -192,7 +196,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hideEmptyDays'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_times'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
@@ -201,7 +204,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times'] = [
 
 // list of exceptions
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_times_range'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
@@ -213,7 +215,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cellhight'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cellhight'],
     'default' => 60,
     'exclude' => true,
     'inputType' => 'text',
@@ -222,7 +223,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cellhight'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hide_started'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['hide_started'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
@@ -231,7 +231,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hide_started'] = [
 
 // list of exceptions
 $GLOBALS['TL_DCA']['tl_module']['fields']['range_date'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['range_date'],
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
@@ -254,7 +253,6 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '
     {expert_legend:hide},guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_ctemplate'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['cal_ctemplate'],
     'default' => 'cal_fc_default',
     'exclude' => true,
     'inputType' => 'select',
@@ -263,7 +261,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_ctemplate'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['eventLimit'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['eventLimit'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'clr w50'],
@@ -271,7 +268,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['eventLimit'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['fc_editable'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['fc_editable'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'clr w50'],
@@ -279,7 +275,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['fc_editable'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessHours'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['businessHours'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
@@ -287,7 +282,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['businessHours'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbers'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['weekNumbers'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
@@ -295,18 +289,13 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbers'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbersWithinDays'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['weekNumbersWithinDays'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
     'sql' => "char(1) NOT NULL default ''",
 ];
 
-/*
- * Filter
- */
 $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [
-    'label' => &$GLOBALS['TL_LANG']['tl_module']['filter_fields'],
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'long', 'multiple' => true],

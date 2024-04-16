@@ -12,6 +12,8 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
+namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
+
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\Backend;
 use Contao\BackendUser;
@@ -44,8 +46,8 @@ class ModuleCallbacks extends Backend
         $event_fields = [];
 
         foreach ($arr_fields as $k => $v) {
-            if (strlen((string) $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0])) {
-                $label = strlen((string) $v['label']) ? $v['label'] : $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0];
+            if (\strlen((string) $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0])) {
+                $label = \strlen((string) $v['label']) ? $v['label'] : $GLOBALS['TL_LANG']['tl_calendar_events'][$k][0];
                 $event_fields[$k] = $label;
             }
         }
@@ -106,9 +108,6 @@ class ModuleCallbacks extends Backend
         ];
     }
 
-    /**
-     * @throws Exception
-     */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.displayDuration.save')]
     public function checkDuration(mixed $varValue, DataContainer $dc): mixed
     {
@@ -121,9 +120,6 @@ class ModuleCallbacks extends Backend
         return $varValue;
     }
 
-    /**
-     * @throws Exception
-     */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_format_ext.save')]
     public function checkCalFormat(mixed $varValue, DataContainer $dc): mixed
     {
@@ -155,7 +151,7 @@ class ModuleCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_calendar.options')]
     public function getCalendars(): array
     {
-        if (!$this->User->isAdmin && !is_array($this->User->calendars)) {
+        if (!$this->User->isAdmin && !\is_array($this->User->calendars)) {
             return [];
         }
 
@@ -179,7 +175,7 @@ class ModuleCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_holiday.options')]
     public function getHolidays(): array
     {
-        if (!$this->User->isAdmin && !is_array($this->User->calendars)) {
+        if (!$this->User->isAdmin && !\is_array($this->User->calendars)) {
             return [];
         }
 
