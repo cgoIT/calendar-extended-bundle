@@ -23,35 +23,26 @@ use Contao\Model\Collection;
  */
 class CalendarEventsModelExt extends CalendarEventsModel
 {
-    /**
-     * Find events of the current period by their parent ID.
-     *
-     * @param int          $intPid     The calendar ID
-     * @param int          $intStart   The start date as Unix timestamp
-     * @param int          $intEnd     The end date as Unix timestamp
-     * @param array<mixed> $arrOptions An optional options array
-     *
-     * @return Collection|array<CalendarEventsModel>|CalendarEventsModel|null A collection of models or null if there are no events
-     */
-    public static function findCurrentByPid($intPid, $intStart, $intEnd, array $arrOptions = [])
-    {
-        $t = static::$strTable;
-        $intStart = (int) $intStart;
-        $intEnd = (int) $intEnd;
-
-        $arrColumns = ["$t.pid=? AND (($t.startTime>=$intStart AND $t.startTime<=$intEnd) OR ($t.endTime>=$intStart AND $t.endTime<=$intEnd) OR ($t.startTime<=$intStart AND $t.endTime>=$intEnd) OR (($t.recurring=1 OR $t.recurringExt=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$intStart) AND $t.startTime<=$intEnd) OR ($t.repeatFixedDates is not null AND $t.repeatEnd>=$intStart))"];
-
-        if (!static::isPreviewMode($arrOptions)) {
-            $time = Date::floorToMinute();
-            $arrColumns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
-        }
-
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "$t.startTime";
-        }
-
-        return static::findBy($arrColumns, $intPid, $arrOptions);
-    }
+    //    /**     * Find events of the current period by their parent ID.     *     *
+    // @param int          $arrIds     The calendar ID     * @param int $intStart The
+    // start date as Unix timestamp     * @param int          $arrIds     The end
+    // date as Unix timestamp     * @param array<mixed> $arrOptions An optional
+    // options array     *     * @return
+    // Collection|array<CalendarEventsModel>|CalendarEventsModel|null A collection of
+    // models or null if there are no events     */    public static function
+    // findCurrentByPid($intPid, $intStart, $intEnd, array $arrOptions = [])    { $t
+    // = static::$strTable;        $intStart = (int) $intStart;        $intEnd =
+    // (int) $intEnd;         $arrColumns = ["$t.pid=? AND (($t.startTime>=$intStart
+    // AND $t.startTime<=$intEnd) OR ($t.endTime>=$intStart AND $t.endTime<=$intEnd)
+    // OR ($t.startTime<=$intStart AND $t.endTime>=$intEnd) OR (($t.recurring=1 OR
+    // $t.recurringExt=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$intStart) AND
+    // $t.startTime<=$intEnd) OR ($t.repeatFixedDates is not null AND
+    // $t.repeatEnd>=$intStart))"];         if (!static::isPreviewMode($arrOptions))
+    // {            $time = Date::floorToMinute();            $arrColumns[] =
+    // "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time +
+    // 60)."') AND $t.published='1'";        }         if
+    // (!isset($arrOptions['order'])) {     $arrOptions['order'] = "$t.startTime";  }
+    //         return static::findBy($arrColumns, $intPid, $arrOptions);    }
 
     /**
      * Find upcoming events by their parent IDs.

@@ -4,8 +4,8 @@ services:
         autowire: true
         public: false
         bind:
-            $db: '@database_connection'
             $requestStack: '@request_stack'
+            $maxRepeatCount: '%cgoit_calendar_extended.max_repeat_count%'
 
     Cgoit\CalendarExtendedBundle\:
         resource: ../src/*

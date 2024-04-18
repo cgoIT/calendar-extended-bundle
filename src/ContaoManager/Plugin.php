@@ -22,12 +22,13 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\ContaoManager;
 
-use Cgoit\CalendarExtendedBundle\CalendarExtendedBundle;
+use Cgoit\CalendarExtendedBundle\CgoitCalendarExtendedBundle;
 use Contao\CalendarBundle\ContaoCalendarBundle;
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
+use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
 
 /**
  * Plugin for the Contao Manager.
@@ -37,12 +38,12 @@ class Plugin implements BundlePluginInterface
     public function getBundles(ParserInterface $parser)
     {
         return [
-            BundleConfig::create(CalendarExtendedBundle::class)
+            BundleConfig::create(CgoitCalendarExtendedBundle::class)
                 ->setLoadAfter(
                     [
                         ContaoCoreBundle::class,
                         ContaoCalendarBundle::class,
-                        'MenAtWork\MultiColumnWizard',
+                        MultiColumnWizard::class,
                     ],
                 ),
         ];

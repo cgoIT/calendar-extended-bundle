@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 /**
  * Configures the Contao calendar bundle.
  */
-class CalendarExtendedBundle extends Bundle
+class CgoitCalendarExtendedBundle extends Bundle
 {
     public function getPath(): string
     {

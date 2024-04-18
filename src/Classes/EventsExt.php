@@ -18,8 +18,8 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Classes;
 
-use Cgoit\CalendarExtendedBundle\Models\CalendarEventsModelExt;
 use Contao\Calendar;
+use Contao\CalendarEventsModel;
 use Contao\Config;
 use Contao\Date;
 use Contao\Events;
@@ -133,7 +133,7 @@ abstract class EventsExt extends Events
 
         foreach ($arrCalendars as $id) {
             // Get the events of the current period
-            $objEvents = CalendarEventsModelExt::findCurrentByPid($id, $intStart, $intEnd, ['showFeatured' => $blnFeatured]);
+            $objEvents = CalendarEventsModel::findCurrentByPid($id, $intStart, $intEnd, ['showFeatured' => $blnFeatured]);
 
             if (null === $objEvents) {
                 continue;
@@ -509,7 +509,7 @@ abstract class EventsExt extends Events
                 $allowEvents = 1 === $objAE->allowEvents;
 
                 // Get the events of the current period
-                $objEvents = CalendarEventsModelExt::findCurrentByPid($id, $intStart, $intEnd);
+                $objEvents = CalendarEventsModel::findCurrentByPid($id, $intStart, $intEnd);
 
                 if (null === $objEvents) {
                     continue;

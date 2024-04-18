@@ -14,15 +14,15 @@ declare(strict_types=1);
 
 namespace Cgoit\BfvWidgetBundle\Tests;
 
-use Cgoit\CalendarExtendedBundle\CalendarExtendedBundle;
+use Cgoit\CalendarExtendedBundle\CgoitCalendarExtendedBundle;
 use PHPUnit\Framework\TestCase;
 
 class CalendarExtendedBundleTest extends TestCase
 {
     public function testCanBeInstantiated(): void
     {
-        $bundle = new CalendarExtendedBundle();
+        $bundle = new CgoitCalendarExtendedBundle();
 
-        $this->assertInstanceOf(CalendarExtendedBundle::class, $bundle);
+        $this->assertInstanceOf(CgoitCalendarExtendedBundle::class, $bundle);
     }
 }
