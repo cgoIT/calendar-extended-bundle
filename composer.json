@@ -31,9 +31,7 @@
     "php": "^8.1 || ^8.2 || ^8.3",
     "contao/core-bundle": "^4.13",
     "contao/calendar-bundle": "^4.13",
-    "menatwork/contao-multicolumnwizard-bundle": "^3.6",
-    "terminal42/notification_center": "^1.7",
-    "terminal42/contao-leads": "^3.0"
+    "menatwork/contao-multicolumnwizard-bundle": "^3.6"
   },
   "require-dev": {
     "contao/manager-plugin": "^2.0",
