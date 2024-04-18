@@ -12,6 +12,7 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
+use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\ModuleCallbacks;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 // Palette for calendar
@@ -70,23 +71,11 @@ PaletteManipulator::create()->addField('cal_holiday', 'config_legend', PaletteMa
     ->applyToPalette('eventreader', 'tl_module')
 ;
 
-// Palette for registration
-$GLOBALS['TL_DCA']['tl_module']['palettes']['evr_registration'] = '{title_legend},name,headline,type;{registration_legend},nc_notification,regtype;{filter_legend},filter_fields';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
 /*
  * Add fields to tl_module
  */
-$GLOBALS['TL_DCA']['tl_module']['fields']['regtype'] = [
-    'exclude' => true,
-    'filter' => true,
-    'default' => 0,
-    'inputType' => 'radio',
-    'options' => [1, 0],
-    'reference' => &$GLOBALS['TL_LANG']['tl_module']['regtypes'],
-    'eval' => ['tl_class' => 'w50 m12', 'chosen' => true],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_calendar'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -244,14 +233,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['range_date'] = [
 /*
  * Fullcalendar
  */
-// Palette for fullcalendar
-$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '
-    {title_legend},name,headline,type;
-    {config_legend},cal_calendar;
-    {template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;
-    {protected_legend:hide},protected;
-    {expert_legend:hide},guests,cssID,space';
-
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_ctemplate'] = [
     'default' => 'cal_fc_default',
     'exclude' => true,

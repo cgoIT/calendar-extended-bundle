@@ -36,17 +36,11 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['contact_legend'] = 'Contact informati
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_link'] = ['Link to location', 'e.g. a link to a webpage of the location. (http://www.link.de)'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_contact'] = ['Contact', 'Name of a contact.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_mail'] = ['E-Mail', 'E-Mail address of the contact.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['useRegistration'] = ['Registration', 'Activate registration for this Event.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regconfirm'] = ['Register / Unregister with confirmation', 'You need to create pages with a module "Confirmation register/unregister".'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regform'] = ['Registerform', 'The selected form will be inserted into the modified event template.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regperson'] = ['Number of participants', 'Count of min and max participants, registrations and free places.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatWeekday'] = ['Weekday', 'Select the weekday if event is recurring daily. No selection means all.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['mini'] = 'min';
 $GLOBALS['TL_LANG']['tl_calendar_events']['maxi'] = 'max';
 $GLOBALS['TL_LANG']['tl_calendar_events']['curr'] = 'current';
 $GLOBALS['TL_LANG']['tl_calendar_events']['free'] = 'free';
-$GLOBALS['TL_LANG']['tl_calendar_events']['regstartdate'] = ['Deadline register', 'After that date, no more registration is possible.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regenddate'] = ['Deadline unregister', 'After this date, is not possible to remove a registration for free.'];
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['first'] = 'every first';
 $GLOBALS['TL_LANG']['tl_calendar_events']['second'] = 'every second';
@@ -69,7 +63,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['recurring_legend_ext'] = 'Recurrence 
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatFixedDates_legend'] = 'Recurrence settings (irregular)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Define exceptions for the recurrences';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Exception settings (extended)';
-$GLOBALS['TL_LANG']['tl_calendar_events']['regform_legend'] = 'Register via a form';
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'No option for recurrences is active.';

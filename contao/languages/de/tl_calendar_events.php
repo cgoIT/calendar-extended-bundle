@@ -36,17 +36,11 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['contact_legend'] = 'Kontaktinformatio
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_link'] = ['Link auf Veranstaltungsort', 'z.B. ein Link auf eine Webseite des Veranstaltungsorts (http://www.link.de)'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_contact'] = ['Kontaktperson', 'Name einer Kontaktperson.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_mail'] = ['E-Mail', 'E-Mail Adresse der Kontaktperson.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['useRegistration'] = ['Anmeldung', 'Aktivierung der Anmeldung für dieses Event.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regconfirm'] = ['Anmeldung / Abmeldung mit Bestätigung', 'Es muss je eine Seite mit einem Modul "Bestätigung Anmeldung / Abmeldung" erstellt werden.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regform'] = ['Anmeldeformular', 'Das gewählte Anmeldeformular wird im angepassten Event Template eingefügt.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regperson'] = ['Anzahl Teilnehmer', 'Anzahl der min. und max, Teilnehmer, Anmeldungen und freie Plätze. '];
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatWeekday'] = ['Wochentag', 'Auswahl der Wochentage bei täglicher Wiederholung. Alle Tage, wenn keine Auswahl getroffen wird.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['mini'] = 'minimal';
 $GLOBALS['TL_LANG']['tl_calendar_events']['maxi'] = 'maximal';
 $GLOBALS['TL_LANG']['tl_calendar_events']['curr'] = 'aktuell';
 $GLOBALS['TL_LANG']['tl_calendar_events']['free'] = 'frei';
-$GLOBALS['TL_LANG']['tl_calendar_events']['regstartdate'] = ['Anmeldeschluss', 'Nach diesem Zeitpunkt ist keine Anmeldung mehr möglich.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['regenddate'] = ['Abmeldeschluss', 'Nach diesem Zeitpunkt ist keine kostenlose Abmeldung mehr möglich.'];
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['first'] = 'jeden ersten';
 $GLOBALS['TL_LANG']['tl_calendar_events']['second'] = 'jeden zweiten';
@@ -69,7 +63,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['recurring_legend_ext'] = 'Wiederholun
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatFixedDates_legend'] = 'Wiederholungen (unregelmäßig)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Ausnahmen für Wiederholungen';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Ausnahmen für Wiederholungen';
-$GLOBALS['TL_LANG']['tl_calendar_events']['regform_legend'] = 'Anmeldung über ein Formular';
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Es kann nur eine der Optionen für die Wiederholungen aktiv sein.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'Keine Option für Wiederholungen aktiv.';

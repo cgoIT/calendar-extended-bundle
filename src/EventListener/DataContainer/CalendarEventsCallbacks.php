@@ -2,18 +2,26 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
+ *
+ * @copyright  Copyright (c) Kester Mielke
+ * @copyright  Copyright (c) 2024, cgoIT
+ * @author     Kester Mielke
+ * @author     cgoIT <https://cgo-it.de>
+ * @license    LGPL-3.0-or-later
+ */
+
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Cgoit\CalendarExtendedBundle\Models\CalendarEventsModelExt;
-use Cgoit\CalendarExtendedBundle\Models\CalendarLeadsModel;
 use Contao\Backend;
 use Contao\BackendUser;
 use Contao\CalendarModel;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
 use Contao\Date;
-use Contao\FormModel;
 use Contao\Message;
 use Contao\StringUtil;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -614,53 +622,5 @@ class CalendarEventsCallbacks extends Backend
         }
 
         return $value;
-    }
-
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.regperson.load')]
-    public function getMaxPerson(mixed $value, DataContainer $dc): string
-    {
-        $values = StringUtil::deserialize($value);
-
-        if (!\is_array($values)) {
-            $values = [];
-            $values[0]['mini'] = 0;
-            $values[0]['maxi'] = 0;
-            $values[0]['curr'] = 0;
-            $values[0]['free'] = 0;
-
-            return serialize($values);
-        }
-
-        $eid = (int) $dc->activeRecord->id;
-        $fid = (int) $dc->activeRecord->regform;
-        $regCount = CalendarLeadsModel::regCountByFormEvent($fid, $eid);
-
-        $values[0]['curr'] = (int) $regCount;
-        $values[0]['mini'] = $values[0]['mini'] ? (int) $values[0]['mini'] : 0;
-        $values[0]['maxi'] = $values[0]['maxi'] ? (int) $values[0]['maxi'] : 0;
-        $useMaxi = $values[0]['maxi'] > 0 ? true : false;
-        $values[0]['free'] = $useMaxi ? $values[0]['maxi'] - $values[0]['curr'] : 0;
-
-        return serialize($values);
-    }
-
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.regform.options')]
-    public function listRegForms(DataContainer|null $dc): mixed
-    {
-        if ($this->User->isAdmin) {
-            $objForms = FormModel::findAll();
-        } else {
-            $objForms = FormModel::findMultipleByIds($this->User->forms);
-        }
-
-        $return = [];
-
-        if (null !== $objForms) {
-            while ($objForms->next()) {
-                $return[$objForms->id] = $objForms->title;
-            }
-        }
-
-        return $return;
     }
 }

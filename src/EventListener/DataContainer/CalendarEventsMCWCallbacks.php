@@ -16,7 +16,6 @@ namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Contao\ArrayUtil;
 use Contao\Backend;
-use Contao\DataContainer;
 use Contao\Date;
 use Contao\Input;
 use Contao\StringUtil;
@@ -25,40 +24,6 @@ use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
 
 class CalendarEventsMCWCallbacks extends Backend
 {
-    /**
-     * @return array
-     */
-    public function setMaxPerson(MultiColumnWizard $mcw)
-    {
-        return [
-            'mini' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['mini'],
-                'default' => '0',
-                'exclude' => true,
-                'inputType' => 'text',
-                'eval' => ['style' => 'width:60px'],
-            ],
-            'maxi' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['maxi'],
-                'exclude' => true,
-                'inputType' => 'text',
-                'eval' => ['style' => 'width:60px'],
-            ],
-            'curr' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['curr'],
-                'exclude' => true,
-                'inputType' => 'text',
-                'eval' => ['style' => 'width:60px', 'disabled' => 'true'],
-            ],
-            'free' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['free'],
-                'exclude' => true,
-                'inputType' => 'text',
-                'eval' => ['style' => 'width:60px', 'disabled' => 'true'],
-            ],
-        ];
-    }
-
     /**
      * listMultiExceptions().
      *

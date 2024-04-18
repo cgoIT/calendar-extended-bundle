@@ -47,10 +47,6 @@ $GLOBALS['TL_LANG']['tl_module']['time_range_from'] = ['Time from', 'Starttime f
 $GLOBALS['TL_LANG']['tl_module']['time_range_to'] = ['Time to', 'Endtime for timetable.'];
 
 $GLOBALS['TL_LANG']['tl_module']['cellhight'] = ['Row height of events', 'Height of the cell of an event in px per hour. Standard is 1px per minute and thus 60px at an interval of 1 hour.'];
-$GLOBALS['TL_LANG']['tl_module']['regform'] = ['Notifications', 'Please choose a notifications.'];
-$GLOBALS['TL_LANG']['tl_module']['regtype'] = ['Kind of confirmation', 'Please choose the kind of the confirmation.'];
-$GLOBALS['TL_LANG']['tl_module']['regtypes'][1] = 'Confirm register';
-$GLOBALS['TL_LANG']['tl_module']['regtypes'][0] = 'Confirm unregister';
 $GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'] = ['ignore url parameter', 'No parameter (date, week, month, ...) will be added to the URL.'];
 
 $GLOBALS['TL_LANG']['tl_module']['filter_fields'] = ['Filtering events', 'Select fields that can be filtered in the frontend template.'];
@@ -61,10 +57,3 @@ $GLOBALS['TL_LANG']['tl_module']['filter_fields'] = ['Filtering events', 'Select
 $GLOBALS['TL_LANG']['tl_module']['displayDurationError'] = 'Error parsing strtotime value.';
 $GLOBALS['TL_LANG']['tl_module']['displayDurationError2'] = 'Error in strtotime value. Result is current day.';
 $GLOBALS['TL_LANG']['tl_module']['config_ext_legend'] = 'Module configuration (extended)';
-$GLOBALS['TL_LANG']['tl_module']['registration_legend'] = 'Register / Unregister (notification and type)';
-
-$GLOBALS['TL_LANG']['tl_module']['regerror']['param'] = 'There was an error with the parameters.';
-$GLOBALS['TL_LANG']['tl_module']['regerror']['noevt'] = 'The event is no longer present.';
-$GLOBALS['TL_LANG']['tl_module']['regerror']['daevt'] = 'The event is currently not active.';
-$GLOBALS['TL_LANG']['tl_module']['regerror']['dline'] = 'The registration deadline is reached. A cancellation is no longer possible in this way.';
-$GLOBALS['TL_LANG']['tl_module']['regerror']['admin'] = 'Please contact the administrator.';

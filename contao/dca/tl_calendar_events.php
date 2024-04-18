@@ -52,7 +52,7 @@ foreach (['default', 'article', 'internal', 'external'] as $palette) {
 }
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'] = array_merge(
-    ['recurringExt', 'useExceptions', 'useRegistration'],
+    ['recurringExt', 'useExceptions'],
     $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'],
 );
 
@@ -68,7 +68,6 @@ PaletteManipulator::create()->addField('ignoreEndTime', 'startTime', PaletteMani
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['recurringExt'] = 'repeatEachExt,recurrences,repeatEnd';
 $GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useExceptions'] = 'repeatExceptionsInt,repeatExceptionsPer,repeatExceptions';
-$GLOBALS['TL_DCA']['tl_calendar_events']['subpalettes']['useRegistration'] = 'regconfirm,regperson,regform,regstartdate,regenddate';
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatWeekday'] = [
     'exclude' => true,
@@ -145,58 +144,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
     'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['useRegistration'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['submitOnChange' => true, 'tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regconfirm'] = [
-    'default' => 0,
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50 m12'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regperson'] = [
-    'default' => 0,
-    'exclude' => true,
-    'filter' => false,
-    'inputType' => 'multiColumnWizard',
-    'eval' => [
-        'tl_class' => 'w50 clr',
-        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'setMaxPerson'],
-        'buttons' => ['add' => false, 'new' => false, 'up' => false, 'down' => false, 'delete' => false, 'copy' => false],
-    ],
-    'sql' => 'blob NULL',
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regform'] = [
-    'exclude' => true,
-    'filter' => true,
-    'inputType' => 'select',
-    'eval' => ['mandatory' => true, 'tl_class' => 'w50 m12', 'includeBlankOption' => true, 'chosen' => true],
-    'sql' => "int(10) unsigned NOT NULL default '0'",
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regstartdate'] = [
-    'default' => time(),
-    'exclude' => true,
-    'inputType' => 'text',
-    'eval' => ['rgxp' => 'datim', 'mandatory' => false, 'doNotCopy' => true, 'datepicker' => true, 'tl_class' => 'w50 wizard'],
-    'sql' => 'int(10) unsigned NULL',
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['regenddate'] = [
-    'default' => time(),
-    'exclude' => true,
-    'inputType' => 'text',
-    'eval' => ['rgxp' => 'datim', 'mandatory' => false, 'doNotCopy' => true, 'datepicker' => true, 'tl_class' => 'w50 wizard'],
-    'sql' => 'int(10) unsigned NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurringExt'] = [

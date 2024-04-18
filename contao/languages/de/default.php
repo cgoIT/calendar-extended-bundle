@@ -15,8 +15,6 @@ declare(strict_types=1);
 /*
  * Miscellaneous
  */
-$GLOBALS['TL_LANG']['MSC'][''] = '';
-
 $GLOBALS['TL_LANG']['MSC']['calendar_week'] = 'Kalenderwoche';
 $GLOBALS['TL_LANG']['MSC']['curr_week'] = 'Aktuelle Woche';
 $GLOBALS['TL_LANG']['MSC']['calendar_year'] = 'Jahr';
@@ -27,11 +25,6 @@ $GLOBALS['TL_LANG']['MSC']['cal_second'] = 'Dieser Termin wiederholt sich jeden 
 $GLOBALS['TL_LANG']['MSC']['cal_third'] = 'Dieser Termin wiederholt sich jeden dritten %s im Monat';
 $GLOBALS['TL_LANG']['MSC']['cal_fourth'] = 'Dieser Termin wiederholt sich jeden vierten %s im Monat';
 $GLOBALS['TL_LANG']['MSC']['cal_last'] = 'Dieser Termin wiederholt sich jeden letzten %s im Monat';
-
-$GLOBALS['TL_LANG']['MSC']['reginfo'] = 'Kurs kann wie geplant stattfinden. Bitte melden Sie sich an.';
-$GLOBALS['TL_LANG']['MSC']['regmini'] = 'Minimale Teilnehmerzahl ist noch nicht erreicht. Bitte melden Sie sich an.';
-$GLOBALS['TL_LANG']['MSC']['regmaxi'] = 'Maximale Teilnehmerzahl ist erreicht. Ein Anmeldung ist aktuell nicht mehr möglich.';
-$GLOBALS['TL_LANG']['MSC']['regdone'] = 'Anmeldeschluss. Es ist keine weitere Anmeldung mehr möglich.';
 
 $GLOBALS['TL_LANG']['tl_module']['confirm_drop'] = 'Möchten Sie das Event wirklich verschieben?';
 $GLOBALS['TL_LANG']['tl_module']['confirm_resize'] = 'Möchten Sie das Event wirklich ändern?';
