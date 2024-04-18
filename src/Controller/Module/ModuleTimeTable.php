@@ -368,7 +368,7 @@ class ModuleTimeTable extends EventsExt
 
             for ($i = $arrTimes['start']; $i <= $arrTimes['stop']; ++$i) {
                 $top = $cellhight * $counter;
-                $strHour = str_pad($i, 2, '0', STR_PAD_LEFT);
+                $strHour = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
                 $arrListTimes[$strHour]['top'] = $top;
                 $arrListTimes[$strHour]['class'] = 0 === $counter % 2 ? 'even' : 'odd';
                 $arrListTimes[$strHour]['label'] = "$i:00"; // top:".$top."px; position:relative;
