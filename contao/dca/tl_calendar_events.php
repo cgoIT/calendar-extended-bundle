@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsMCWCallbacks;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 foreach ($GLOBALS['TL_DCA']['tl_calendar_events']['palettes'] as $name => $palette) {
@@ -49,6 +48,10 @@ foreach (['default', 'article', 'internal', 'external'] as $palette) {
         ->addField('repeatFixedDates', 'repeatFixedDates_legend', PaletteManipulator::POSITION_APPEND)
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+    PaletteManipulator::create()->addLegend('exception_legend', 'repeatFixedDates_legend')
+        ->addField('useExceptions', 'exception_legend', PaletteManipulator::POSITION_APPEND)
+        ->applyToPalette((string) $palette, 'tl_calendar_events')
+    ;
 }
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'] = array_merge(
@@ -83,7 +86,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatFixedDates'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listFixedDates'],
+        'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listFixedDates'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -219,7 +222,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEachExt'] = [
     ],
     'reference' => &$GLOBALS['TL_LANG']['tl_calendar_events'],
     'eval' => ['mandatory' => true, 'tl_class' => 'w50'],
-    'default' => &$GLOBALS['TL_CONFIG']['tl_calendar_events']['weekdays'][date('w', time())],
     'sql' => 'text NULL',
 ];
 
@@ -236,7 +238,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptions'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -247,7 +249,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsInt'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',
@@ -258,7 +260,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsPer'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [CalendarEventsMCWCallbacks::class, 'listMultiExceptions'],
+        'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
     'sql' => 'blob NULL',

@@ -12,26 +12,18 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-/**
- * Namespace.
- */
+namespace Cgoit\CalendarExtendedBundle\Hook;
 
-namespace Cgoit\CalendarExtendedBundle\Classes;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
+use Contao\Module;
 
-use Contao\ModuleModel;
-
-/**
- * Class EventExt.
- *
- * @copyright  Kester Mielke 2010-2013
- */
-class EventUrls
+#[AsHook('getAllEvents')]
+class ModifyEventUrlHook
 {
     /**
-     * @param array<mixed> $arrEvents
-     * @param array<mixed> $arrCalendars
+     * @return array<mixed>
      */
-    public function modifyEventUrl(array $arrEvents, array $arrCalendars, int $intStart, int $intEnd, ModuleModel $objModule): mixed
+    public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Module $objModule): array
     {
         if (1 === (int) $objModule->ignore_urlparameter) {
             return $arrEvents;

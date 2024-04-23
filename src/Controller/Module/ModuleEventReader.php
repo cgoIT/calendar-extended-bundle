@@ -32,6 +32,9 @@ use Contao\Form;
 use Contao\FrontendTemplate;
 use Contao\FrontendUser;
 use Contao\Input;
+use Contao\Model;
+use Contao\Model\Collection;
+use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -48,6 +51,11 @@ class ModuleEventReader extends EventsExt
      * @var string
      */
     protected $strTemplate = 'mod_event';
+
+    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
+    {
+        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
+    }
 
     /**
      * Display a wildcard in the back end.

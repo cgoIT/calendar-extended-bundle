@@ -36,5 +36,22 @@ class CgoitCalendarExtendedExtension extends Extension
 
         // Configuration
         $container->setParameter('cgoit_calendar_extended.max_repeat_count', (int) $config['max_repeat_count']);
+        $container->setParameter('cgoit_calendar_extended.filter_fields', $config['filter_fields']);
+        $container->setParameter('cgoit_calendar_extended.exceptions.max_count', (int) $config['exceptions']['max_count']);
+        $container->setParameter('cgoit_calendar_extended.exceptions.move_days', (int) $config['exceptions']['move_days']);
+        $container->setParameter('cgoit_calendar_extended.exceptions.move_times', $config['exceptions']['move_times']);
+
+        $container->setParameter('cgoit_calendar_extended.month_array', array_reduce(range(1, 12),
+            static function ($arr, $monthNr) {
+                $arr[$monthNr] = date('F', mktime(0, 0, 0, $monthNr, 1));
+
+                return $arr;
+            },
+            [],
+        ));
+
+        $container->setParameter('cgoit_calendar_extended.day_array', [
+            'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+        ]);
     }
 }

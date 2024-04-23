@@ -17,14 +17,19 @@ namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\Backend;
 use Contao\BackendUser;
+use Contao\CalendarBundle\Security\ContaoCalendarPermissions;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
 use Contao\System;
 
 class ModuleCallbacks extends Backend
 {
-    public function __construct()
-    {
+    /**
+     * @param array<string> $arrFilterFields
+     */
+    public function __construct(
+        private readonly array $arrFilterFields,
+    ) {
         parent::__construct();
         $this->import(BackendUser::class, 'User');
     }
@@ -40,8 +45,15 @@ class ModuleCallbacks extends Backend
         System::loadLanguageFile('tl_calendar_events');
 
         // Get the event fields
-        $arr_fields = $GLOBALS['TL_CONFIG']['tl_calendar_events']['filter']
-            ?: $GLOBALS['TL_DCA']['tl_calendar_events']['fields'];
+        if (!empty($this->arrFilterFields)) {
+            $arr_fields = [];
+
+            foreach ($this->arrFilterFields as $field) {
+                $arr_fields[$field] = [];
+            }
+        } else {
+            $arr_fields = $GLOBALS['TL_DCA']['tl_calendar_events']['fields'];
+        }
 
         $event_fields = [];
 
@@ -54,13 +66,6 @@ class ModuleCallbacks extends Backend
 
         return $event_fields;
     }
-
-    //    /**     * @return array     */    public function listNotifications()    {
-    // if (!class_exists('leads\leads')) {            return null;        } $return =
-    // [];         $objNotifications = Notification::findAll(); if (null !==
-    // $objNotifications) {            while ($objNotifications->next()) {
-    // $return[$objNotifications->id] = $objNotifications->title;         }      }
-    // return $return;    }
 
     /**
      * @return array|null
@@ -133,57 +138,42 @@ class ModuleCallbacks extends Backend
     }
 
     /**
-     * Return all calendar templates as array.
-     *
-     * @return array<mixed>
-     */
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_ctemplate.options')]
-    public function getCalendarTemplates(): array
-    {
-        return $this->getTemplateGroup('cal_');
-    }
-
-    /**
      * Get all calendars and return them as array.
      *
      * @return array<mixed>
      */
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_calendar.options')]
+    #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_calendar.options', priority: -100)]
     public function getCalendars(): array
     {
-        if (!$this->User->isAdmin && !\is_array($this->User->calendars)) {
-            return [];
-        }
-
-        $arrCalendars = [];
-        $objCalendars = $this->Database->execute('SELECT id, title FROM tl_calendar WHERE isHolidayCal != 1 ORDER BY title');
-
-        while ($objCalendars->next()) {
-            if ($this->User->isAdmin || $this->User->hasAccess($objCalendars->id, 'calendars')) {
-                $arrCalendars[$objCalendars->id] = $objCalendars->title;
-            }
-        }
-
-        return $arrCalendars;
+        return $this->doGetCalendars();
     }
 
     /**
-     * Get all calendars and return them as array.
+     * Get all holiday calendars and return them as array.
      *
      * @return array<mixed>
      */
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.cal_holiday.options')]
     public function getHolidays(): array
     {
+        return $this->doGetCalendars(true);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function doGetCalendars(bool $holiday = false): array
+    {
         if (!$this->User->isAdmin && !\is_array($this->User->calendars)) {
             return [];
         }
 
         $arrCalendars = [];
-        $objCalendars = $this->Database->execute('SELECT id, title FROM tl_calendar WHERE isHolidayCal = 1 ORDER BY title');
+        $objCalendars = $this->Database->execute(sprintf('SELECT id, title FROM tl_calendar WHERE isHolidayCal %s 1 ORDER BY title', $holiday ? '=' : '!='));
+        $security = System::getContainer()->get('security.helper');
 
         while ($objCalendars->next()) {
-            if ($this->User->isAdmin || $this->User->hasAccess($objCalendars->id, 'calendars')) {
+            if ($security->isGranted(ContaoCalendarPermissions::USER_CAN_EDIT_CALENDAR, $objCalendars->id)) {
                 $arrCalendars[$objCalendars->id] = $objCalendars->title;
             }
         }

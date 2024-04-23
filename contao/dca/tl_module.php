@@ -12,7 +12,6 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\ModuleCallbacks;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 // Palette for calendar
@@ -76,13 +75,6 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},na
 /*
  * Add fields to tl_module
  */
-$GLOBALS['TL_DCA']['tl_module']['fields']['cal_calendar'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['mandatory' => true, 'multiple' => true],
-    'sql' => 'text NULL',
-];
-
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_holiday'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -197,7 +189,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
     'inputType' => 'multiColumnWizard',
     'eval' => [
         'tl_class' => 'clr w50',
-        'columnsCallback' => [ModuleCallbacks::class, 'getTimeRange'],
+        'columnsCallback' => ['calendar_extended.module.callbacks', 'getTimeRange'],
         'buttons' => ['up' => false, 'down' => false, 'copy' => false],
     ],
     'sql' => 'text NULL',
@@ -223,7 +215,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['range_date'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'columnsCallback' => [ModuleCallbacks::class, 'getRange'],
+        'columnsCallback' => ['calendar_extended.module.callbacks', 'getRange'],
         'buttons' => ['up' => false, 'down' => false, 'copy' => false],
         'tl_class' => 'clr',
     ],
@@ -233,14 +225,6 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['range_date'] = [
 /*
  * Fullcalendar
  */
-$GLOBALS['TL_DCA']['tl_module']['fields']['cal_ctemplate'] = [
-    'default' => 'cal_fc_default',
-    'exclude' => true,
-    'inputType' => 'select',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "varchar(32) NOT NULL default ''",
-];
-
 $GLOBALS['TL_DCA']['tl_module']['fields']['eventLimit'] = [
     'exclude' => true,
     'inputType' => 'checkbox',

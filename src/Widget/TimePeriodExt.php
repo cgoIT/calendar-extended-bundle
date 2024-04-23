@@ -12,19 +12,13 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-/**
- * Namespace.
- */
-
-namespace Cgoit\CalendarExtendedBundle\Classes;
+namespace Cgoit\CalendarExtendedBundle\Widget;
 
 use Contao\StringUtil;
 use Contao\Widget;
 
 /**
  * Class TimePeriodExt.
- *
- * @copyright  Kester Mielke 2010-2013
  */
 class TimePeriodExt extends Widget
 {
@@ -64,16 +58,19 @@ class TimePeriodExt extends Widget
     public function __set($strKey, $varValue): void
     {
         switch ($strKey) {
-            case 'value':
-                $this->varValue = StringUtil::deserialize($varValue);
-                break;
-
             case 'maxlength':
-                $this->arrAttributes[$strKey] = $varValue > 0 ? $varValue : '';
+                if ($varValue > 0) {
+                    $this->arrAttributes['maxlength'] = $varValue;
+                }
                 break;
 
             case 'mandatory':
-                $this->arrConfiguration['mandatory'] = $varValue ? true : false;
+                if ($varValue) {
+                    $this->arrAttributes['required'] = 'required';
+                } else {
+                    unset($this->arrAttributes['required']);
+                }
+                parent::__set($strKey, $varValue);
                 break;
 
             case 'options':
@@ -98,21 +95,28 @@ class TimePeriodExt extends Widget
         $arrValues = [];
         $arrUnits = [];
 
-        // $arrValues[] = '<option value="">-</option>';
+        if (empty($this->arrValues)) {
+            $this->arrValues = [['value' => '', 'label' => '-']];
+        }
+
         foreach ($this->arrValues as $arrValue) {
             $arrValues[] = sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrValue['value']),
-                \is_array($this->varValue) && \in_array($arrValue['value'], $this->varValue, true) ? ' selected="selected"' : '',
+                $this->isSelectedExt($arrValue, 'value'),
                 $arrValue['label'],
             );
+        }
+
+        if (empty($this->arrUnits)) {
+            $this->arrUnits = [['value' => '', 'label' => '-']];
         }
 
         foreach ($this->arrUnits as $arrUnit) {
             $arrUnits[] = sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrUnit['value']),
-                \is_array($this->varValue) && \in_array($arrUnit['value'], $this->varValue, true) ? ' selected="selected"' : '',
+                $this->isSelectedExt($arrUnit, 'unit'),
                 $arrUnit['label'],
             );
         }
@@ -122,10 +126,12 @@ class TimePeriodExt extends Widget
         }
 
         return sprintf(
-            '<select name="%s[value]" class="tl_select_interval" onfocus="Backend.getScrollOffset();">%s</select> <select name="%s[unit]" class="tl_select_interval" onfocus="Backend.getScrollOffset();">%s</select>%s',
+            '<select name="%s[value]" class="tl_select_interval" onfocus="Backend.getScrollOffset();"%s>%s</select> <select name="%s[unit]" class="tl_select_interval" onfocus="Backend.getScrollOffset();"%s>%s</select>%s',
             $this->strName,
+            $this->getAttribute('disabled'),
             implode('', $arrValues),
             $this->strName,
+            $this->getAttribute('disabled'),
             implode('', $arrUnits),
             $this->wizard,
         );
@@ -143,5 +149,25 @@ class TimePeriodExt extends Widget
         }
 
         return $varInput;
+    }
+
+    /**
+     * Only check against the unit values (see #7246).
+     *
+     * @param array<mixed> $arrOption The options array
+     *
+     * @return string The "selected" attribute or an empty string
+     */
+    private function isSelectedExt(array $arrOption, string $strValueKey)
+    {
+        if (empty($this->varValue) && empty($_POST) && ($arrOption['default'] ?? null)) {
+            return Widget::optionSelected('1', 1);
+        }
+
+        if (empty($this->varValue) || !\is_array($this->varValue)) {
+            return '';
+        }
+
+        return Widget::optionSelected($arrOption['value'] ?? null, $this->varValue[$strValueKey] ?? null);
     }
 }

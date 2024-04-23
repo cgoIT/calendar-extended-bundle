@@ -26,6 +26,9 @@ use Contao\FilesModel;
 use Contao\FrontendTemplate;
 use Contao\FrontendUser;
 use Contao\Input;
+use Contao\Model;
+use Contao\Model\Collection;
+use Contao\ModuleModel;
 use Contao\PageError404;
 use Contao\PageModel;
 use Contao\Pagination;
@@ -56,6 +59,11 @@ class ModuleEventlist extends EventsExt
      * @var string
      */
     protected $strTemplate = 'mod_eventlist';
+
+    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
+    {
+        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
+    }
 
     /**
      * Display a wildcard in the back end.
@@ -240,7 +248,7 @@ class ModuleEventlist extends EventsExt
         // getAllEventsExt function...
         $showRecurrences = !(1 === (int) $this->showRecurrences);
 
-        $security = System::getContainer()->get('@security.helper');
+        $security = System::getContainer()->get('security.helper');
 
         if ($security->getUser() instanceof FrontendUser) {
             // calendar-extended-bundel assets

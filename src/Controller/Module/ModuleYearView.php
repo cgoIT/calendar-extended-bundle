@@ -21,6 +21,9 @@ use Contao\Date;
 use Contao\Environment;
 use Contao\FrontendTemplate;
 use Contao\Input;
+use Contao\Model;
+use Contao\Model\Collection;
+use Contao\ModuleModel;
 use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
@@ -66,6 +69,11 @@ class ModuleYearView extends EventsExt
      * @var string
      */
     protected $strTemplate = 'mod_calendar';
+
+    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
+    {
+        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
+    }
 
     /**
      * Do not show the module if no calendar has been selected.

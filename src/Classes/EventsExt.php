@@ -23,6 +23,10 @@ use Contao\CalendarEventsModel;
 use Contao\Config;
 use Contao\Date;
 use Contao\Events;
+use Contao\Model;
+use Contao\Model\Collection;
+use Contao\ModuleModel;
+use Contao\PageModel;
 use Contao\StringUtil;
 
 /**
@@ -62,8 +66,6 @@ use Contao\StringUtil;
  * @property bool         $showDate
  * @property bool         $hideEmptyDays
  * @property bool         $use_horizontal
- *
- * @copyright  Kester Mielke 2010-2013
  */
 abstract class EventsExt extends Events
 {
@@ -73,6 +75,17 @@ abstract class EventsExt extends Events
      * @var string
      */
     protected $strTemplate = '';
+
+    /**
+     * @param array<mixed> $arrMonth
+     */
+    public function __construct(
+        private readonly array $arrMonth,
+        Collection|Model|ModuleModel $objModule,
+        string $strColumn = 'main',
+    ) {
+        parent::__construct($objModule, $strColumn);
+    }
 
     /**
      * Get all events of a certain period.
@@ -110,6 +123,9 @@ abstract class EventsExt extends Events
      */
     protected function getAllEventsExt($arrCalendars, $intStart, $intEnd, $arrParam = null, $blnFeatured = null): array
     {
+        /** @var PageModel $objPage */
+        global $objPage;
+
         // set default values...
         $arrHolidays = null;
         $showRecurrences = true;
@@ -117,6 +133,9 @@ abstract class EventsExt extends Events
         if (!\is_array($arrCalendars)) {
             return [];
         }
+
+        // Include all events of the day, expired events will be filtered out later
+        $intStart = strtotime(date('Y-m-d', $intStart).' 00:00:00');
 
         $this->arrEvents = [];
 
@@ -239,16 +258,11 @@ abstract class EventsExt extends Events
                         continue;
                     }
 
-                    // list of months we need
-                    $arrMonth = [1 => 'january', 2 => 'february', 3 => 'march', 4 => 'april', 5 => 'may', 6 => 'jun',
-                        7 => 'july', 8 => 'august', 9 => 'september', 10 => 'october', 11 => 'november', 12 => 'december',
-                    ];
-
                     $count = 0;
 
                     // start and end time of the event
-                    $eventStartTime = Date::parse($GLOBALS['TL_CONFIG']['timeFormat'], $objEvents->startTime);
-                    $eventEndTime = Date::parse($GLOBALS['TL_CONFIG']['timeFormat'], $objEvents->endTime);
+                    $eventStartTime = Date::parse($objPage->timeFormat, $objEvents->startTime);
+                    $eventEndTime = Date::parse($objPage->timeFormat, $objEvents->endTime);
 
                     // now we have to take care about the exception dates to skip
                     if ($objEvents->useExceptions) {
@@ -292,7 +306,7 @@ abstract class EventsExt extends Events
                             $year = 13 === $intmonth ? $intyear + 1 : $intyear;
                             $month = 13 === $intmonth ? 1 : $intmonth;
 
-                            $strtotime = $arg.' '.$unit.' of '.$arrMonth[$month].' '.$year;
+                            $strtotime = $arg.' '.$unit.' of '.$this->arrMonth[$month].' '.$year;
                             $startTime = strtotime($strtotime.' '.$eventStartTime, $objEvents->startTime);
                             $endTime = strtotime($strtotime.' '.$eventEndTime, $objEvents->endTime);
 
@@ -300,7 +314,7 @@ abstract class EventsExt extends Events
 
                             if ($chkmonth !== $month) {
                                 $addmonth = false;
-                                $strtotime = 'first day of '.$arrMonth[$month].' '.$year;
+                                $strtotime = 'first day of '.$this->arrMonth[$month].' '.$year;
                                 $objEvents->startTime = strtotime($strtotime.' '.$eventStartTime, $startTime);
                                 $objEvents->endTime = strtotime($strtotime.' '.$eventEndTime, $endTime);
                             } else {
@@ -319,7 +333,7 @@ abstract class EventsExt extends Events
 
                         $oldDate = null;
                         // check if there is any exception
-                        if (\is_array($arrEventSkipInfo[$objEvents->id])) {
+                        if (\array_key_exists($objEvents->id, $arrEventSkipInfo) && \is_array($arrEventSkipInfo[$objEvents->id])) {
                             // modify the css class of the exceptions
                             $objEvents->cssClass = $masterCSSClass;
                             $objEvents->moveReason = null;
@@ -331,7 +345,7 @@ abstract class EventsExt extends Events
                             // later reset
                             $oldDate = [];
 
-                            if (\is_array($arrEventSkipInfo[$objEvents->id][$findDate])) {
+                            if (\array_key_exists($findDate, $arrEventSkipInfo[$objEvents->id]) && \is_array($arrEventSkipInfo[$objEvents->id][$findDate])) {
                                 // $r = $searchDate;
                                 $r = $findDate;
                                 $action = $arrEventSkipInfo[$objEvents->id][$r]['action'];
@@ -352,7 +366,7 @@ abstract class EventsExt extends Events
                                     $oldDate['endTime'] = $objEvents->endTime;
 
                                     // also keep the old values in the row
-                                    $objEvents->oldDate = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->startTime);
+                                    $objEvents->oldDate = Date::parse($objPage->dateFormat, $objEvents->startTime);
 
                                     // value to add to the old date
                                     $newDate = $arrEventSkipInfo[$objEvents->id][$r]['new_exception'];
@@ -362,14 +376,14 @@ abstract class EventsExt extends Events
 
                                     // check if we have to change the time of the event
                                     if ($arrEventSkipInfo[$objEvents->id][$r]['new_start']) {
-                                        $objEvents->oldStartTime = Date::parse($GLOBALS['TL_CONFIG']['timeFormat'], $objEvents->startTime);
-                                        $objEvents->oldEndTime = Date::parse($GLOBALS['TL_CONFIG']['timeFormat'], $objEvents->endTime);
+                                        $objEvents->oldStartTime = Date::parse($objPage->timeFormat, $objEvents->startTime);
+                                        $objEvents->oldEndTime = Date::parse($objPage->timeFormat, $objEvents->endTime);
 
                                         // get the date of the event and add the new time to the new date
-                                        $newStart = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->startTime)
-                                            .' EventsExt.php'.$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
-                                        $newEnd = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $objEvents->endTime)
-                                            .' EventsExt.php'.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
+                                        $newStart = Date::parse($objPage->dateFormat, $objEvents->startTime)
+                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
+                                        $newEnd = Date::parse($objPage->dateFormat, $objEvents->endTime)
+                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
 
                                         // set the new values
                                         $objEvents->startTime = strtotime((string) $newDate, strtotime($newStart));
@@ -456,14 +470,14 @@ abstract class EventsExt extends Events
 
                             // new start time
                             $strNewDate = $fixedDate['new_repeat'];
-                            $strNewTime = \strlen((string) $fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time;
-                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
+                            $strNewTime = !empty($fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time;
+                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
                             $objEvents->startTime = $newDateStart->tstamp;
                             $dateNextStart = date('Ymd', $objEvents->startTime);
 
                             // new end time
-                            $strNewTime = \strlen((string) $fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time;
-                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' EventsExt.php'.$strNewTime), Config::get('datimFormat'));
+                            $strNewTime = !empty($fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time;
+                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
 
                             // use the multi-day span of the event
                             if ($orgDateSpan > 0) {
@@ -501,7 +515,7 @@ abstract class EventsExt extends Events
         }
 
         if (null !== $arrHolidays) {
-            // run thru all holiday calendars
+            // run through all holiday calendars
             foreach ($arrHolidays as $id) {
                 $objAE = $this->Database->prepare('SELECT allowEvents FROM tl_calendar WHERE id = ?')
                     ->limit(1)->execute($id)

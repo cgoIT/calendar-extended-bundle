@@ -16,14 +16,23 @@ namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Contao\ArrayUtil;
 use Contao\Backend;
+use Contao\Config;
 use Contao\Date;
 use Contao\Input;
 use Contao\StringUtil;
-use Contao\System;
+use Doctrine\DBAL\Connection;
 use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
 
 class CalendarEventsMCWCallbacks extends Backend
 {
+    public function __construct(
+        private readonly Connection $db,
+        private readonly int $exceptionsMoveDays,
+        private readonly array $exceptionsMoveTimes,
+    ) {
+        parent::__construct();
+    }
+
     /**
      * listMultiExceptions().
      *
@@ -44,8 +53,7 @@ class CalendarEventsMCWCallbacks extends Backend
         if (Input::get('id')) {
             // Probably an AJAX request where activeRecord is not available
             if (null === $activeRecord) {
-                $db = System::getContainer()->get('database_connection');
-                $activeRecord = $db
+                $activeRecord = $this->db
                     ->prepare("SELECT * FROM {$mcw->dataContainer->table} WHERE id=?")
                     ->executeQuery(Input::get('id'))
                 ;
@@ -58,7 +66,7 @@ class CalendarEventsMCWCallbacks extends Backend
                     if ('repeatExceptions' === $mcw->id) {
                         // fill array for option date
                         foreach (array_keys($arrDates) as $k) {
-                            $date = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $k);
+                            $date = Date::parse(Config::get('dateFormat'), $k);
                             $arrSource1[$k] = $date;
                         }
                     }
@@ -70,7 +78,7 @@ class CalendarEventsMCWCallbacks extends Backend
             }
 
             // fill array for option new date
-            $moveDays = (int) $GLOBALS['TL_CONFIG']['tl_calendar_events']['moveDays'] ?: 7;
+            $moveDays = $this->exceptionsMoveDays ?: 7;
             $start = $moveDays * -1;
             $end = $moveDays * 2;
 
@@ -79,14 +87,14 @@ class CalendarEventsMCWCallbacks extends Backend
                 ++$start;
             }
 
-            [$start, $end, $interval] = explode('|', (string) $GLOBALS['TL_CONFIG']['tl_calendar_events']['moveTimes']);
+            [$start, $end, $interval] = [$this->exceptionsMoveTimes['from'], $this->exceptionsMoveTimes['to'], $this->exceptionsMoveTimes['interval']];
 
             // fill array for option new time
-            $start = strtotime($start);
-            $end = strtotime($end);
+            $start = strtotime((string) $start);
+            $end = strtotime((string) $end);
 
             while ($start <= $end) {
-                $newTime = Date::parse($GLOBALS['TL_CONFIG']['timeFormat'], $start);
+                $newTime = Date::parse(Config::get('timeFormat'), $start);
                 $arrSource4[$newTime] = $newTime;
                 $start = strtotime('+ '.$interval.' minutes', $start);
             }
