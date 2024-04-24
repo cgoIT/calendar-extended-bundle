@@ -12,10 +12,6 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleCalendar;
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleEventlist;
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleEventMenu;
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleEventReader;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullcalendar;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleTimeTable;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleYearView;
@@ -36,12 +32,6 @@ use Cgoit\CalendarExtendedBundle\Widget\TimePeriodExt;
 $GLOBALS['FE_MOD']['events']['timetable'] = ModuleTimeTable::class;
 $GLOBALS['FE_MOD']['events']['yearview'] = ModuleYearView::class;
 $GLOBALS['FE_MOD']['events']['fullcalendar'] = ModuleFullcalendar::class;
-
-// Replace Contao Module
-//$GLOBALS['FE_MOD']['events']['calendar'] = ModuleCalendar::class;
-$GLOBALS['FE_MOD']['events']['eventlist'] = ModuleEventlist::class;
-$GLOBALS['FE_MOD']['events']['eventmenu'] = ModuleEventMenu::class;
-//$GLOBALS['FE_MOD']['events']['eventreader'] = ModuleEventReader::class;
 
 /*
  * BACK END FORM FIELDS

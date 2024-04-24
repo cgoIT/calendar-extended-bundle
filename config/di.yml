@@ -6,13 +6,10 @@ services:
         bind:
             $db: '@database_connection'
             $requestStack: '@request_stack'
-            $securityHelper: '@security.helper'
             $maxRepeatCount: '%cgoit_calendar_extended.max_repeat_count%'
             $maxExceptionsCount: '%cgoit_calendar_extended.exceptions.max_count%'
             $exceptionsMoveDays: '%cgoit_calendar_extended.exceptions.move_days%'
             $exceptionsMoveTimes: '%cgoit_calendar_extended.exceptions.move_times%'
-            $arrMonth: '%cgoit_calendar_extended.month_array%'
-            $arrDay: '%cgoit_calendar_extended.day_array%'
             $arrFilterFields: '%cgoit_calendar_extended.filter_fields%'
 
     Cgoit\CalendarExtendedBundle\:
@@ -25,3 +22,11 @@ services:
     calendar_extended.module.callbacks:
         class: Cgoit\CalendarExtendedBundle\EventListener\DataContainer\ModuleCallbacks
         public: true
+
+    Cgoit\CalendarExtendedBundle\Migration\RenameFieldsMigration:
+        tags:
+            - { name: contao.migration }
+
+    Cgoit\CalendarExtendedBundle\Migration\CopyHolidayCalendarsMigration:
+        tags:
+            - { name: contao.migration }

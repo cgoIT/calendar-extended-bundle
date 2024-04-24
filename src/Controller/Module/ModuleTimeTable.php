@@ -369,7 +369,7 @@ class ModuleTimeTable extends EventsExt
                 $arrTimes['stop'] = substr((string) $timerange['time_to'], 0, 2);
             }
 
-            $cellhight = $this->cellhight ?: 60;
+            $cellhight = $this->cellheight ?: 60;
 
             $arrListTimes = [];
             $counter = 0;

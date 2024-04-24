@@ -15,10 +15,8 @@ declare(strict_types=1);
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 // Palette for calendar
-PaletteManipulator::create()->addLegend('config_ext_legend', 'redirect_legend', PaletteManipulator::POSITION_BEFORE)
-    ->addField('cal_holiday', 'config_ext_legend', PaletteManipulator::POSITION_APPEND)
-    ->addField('show_holiday', 'cal_holiday')
-    ->addField('ignore_urlparameter', 'show_holiday')
+PaletteManipulator::create()->addField('hide_holiday', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('calendar', 'tl_module')
 ;
 PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
@@ -34,7 +32,7 @@ PaletteManipulator::create()->addField('showDate', 'config_legend', PaletteManip
     ->addField('linkCurrent', 'use_navigation')
     ->addField('cal_times', 'linkCurrent')
     ->addField('cal_times_range', 'cal_times')
-    ->addField('cellhight', 'cal_times_range')
+    ->addField('cellheight', 'cal_times_range')
     ->applyToPalette('timetable', 'tl_module')
 ;
 
@@ -43,21 +41,14 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = $GLOBALS['TL_DCA']['tl
 PaletteManipulator::create()->addField('use_horizontal', 'config_legend', PaletteManipulator::POSITION_APPEND)
     ->addField('use_navigation', 'use_horizontal')
     ->addField('linkCurrent', 'use_navigation')
+    ->addField('hide_holiday', 'linkCurrent')
+    ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('yearview', 'tl_module')
 ;
 
 // Palette for eventlist
-PaletteManipulator::create()->addLegend('config_ext_legend', 'config_legend')
-    ->addField('cal_holiday', 'config_ext_legend', PaletteManipulator::POSITION_APPEND)
-    ->addField('show_holiday', 'cal_holiday')
-    ->addField('ignore_urlparameter', 'show_holiday')
-    ->addField('cal_format_ext', 'ignore_urlparameter')
-    ->addField('displayDuration', 'cal_format_ext')
-    ->addField('range_date', 'displayDuration')
-    ->addField('showRecurrences', 'range_date')
-    ->addField('hide_started', 'showRecurrences')
-    ->addField('pubTimeRecurrences', 'hide_started')
-    ->addField('showOnlyNext', 'pubTimeRecurrences')
+PaletteManipulator::create()->addField('hide_holiday', 'config_legend', PaletteManipulator::POSITION_APPEND)
+    ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('eventlist', 'tl_module')
 ;
 PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
@@ -65,70 +56,21 @@ PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', Pale
     ->applyToPalette('eventlist', 'tl_module')
 ;
 
-// Palette for eventreader
-PaletteManipulator::create()->addField('cal_holiday', 'config_legend', PaletteManipulator::POSITION_APPEND)
-    ->applyToPalette('eventreader', 'tl_module')
-;
+// Palette for eventreader aletteManipulator::create()->addField('cal_holiday',
+// 'config_legend', PaletteManipulator::POSITION_APPEND)
+// ->applyToPalette('eventreader', 'tl_module')
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
-/*
- * Add fields to tl_module
- */
-$GLOBALS['TL_DCA']['tl_module']['fields']['cal_holiday'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['mandatory' => false, 'multiple' => true, 'tl_class' => 'long'],
-    'sql' => 'text NULL',
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['show_holiday'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['hide_holiday'] = [
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
     'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['ignore_urlparameter'] = [
-    'default' => 0,
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['pubTimeRecurrences'] = [
-    'default' => 0,
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['cal_format_ext'] = [
-    'exclude' => true,
-    'inputType' => 'text',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "varchar(128) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['displayDuration'] = [
-    'exclude' => true,
-    'inputType' => 'text',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "varchar(128) NOT NULL default ''",
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showOnlyNext'] = [
-    'default' => 0,
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['showRecurrences'] = [
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',
@@ -195,31 +137,12 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
     'sql' => 'text NULL',
 ];
 
-$GLOBALS['TL_DCA']['tl_module']['fields']['cellhight'] = [
+$GLOBALS['TL_DCA']['tl_module']['fields']['cellheight'] = [
     'default' => 60,
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['tl_class' => 'w50'],
     'sql' => "varchar(10) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['hide_started'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-// list of exceptions
-$GLOBALS['TL_DCA']['tl_module']['fields']['range_date'] = [
-    'exclude' => true,
-    'inputType' => 'multiColumnWizard',
-    'eval' => [
-        'columnsCallback' => ['calendar_extended.module.callbacks', 'getRange'],
-        'buttons' => ['up' => false, 'down' => false, 'copy' => false],
-        'tl_class' => 'clr',
-    ],
-    'sql' => 'text NULL',
 ];
 
 /*

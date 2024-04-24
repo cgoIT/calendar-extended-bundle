@@ -31,16 +31,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class CalendarEventsCallbacks extends Backend
 {
-    /**
-     * @param array<mixed> $arrMonth
-     * @param array<mixed> $arrDay
-     */
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly int $maxRepeatCount,
         private readonly int $maxExceptionsCount,
-        private readonly array $arrMonth,
-        private readonly array $arrDay,
     ) {
         parent::__construct();
     }
@@ -253,7 +247,7 @@ class CalendarEventsCallbacks extends Backend
     public function defaultRepeatEachExt(mixed $value, DataContainer $dc): mixed
     {
         if (empty($value)) {
-            $value = $this->arrMonth[date('w', time())];
+            $value = $GLOBALS['TL_LANG']['MONTHS'][date('n', time()) - 1];
         }
 
         return $value;
@@ -431,7 +425,7 @@ class CalendarEventsCallbacks extends Backend
                             ++$year;
                         }
 
-                        $timetoadd = $arg.' '.$unit.' of '.$this->arrMonth[$month].' '.$year;
+                        $timetoadd = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
                         $strtotime = strtotime($timetoadd, $next);
 
                         if (false === $strtotime) {
@@ -457,7 +451,7 @@ class CalendarEventsCallbacks extends Backend
                     $end = $arrSet['repeatEnd'];
 
                     while ($next <= $end) {
-                        $timetoadd = $arg.' '.$unit.' of '.$this->arrMonth[$month].' '.$year;
+                        $timetoadd = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
                         $strtotime = strtotime($timetoadd, $next);
 
                         if (false === $strtotime) {
@@ -531,7 +525,7 @@ class CalendarEventsCallbacks extends Backend
     {
         if ($activeRecord->repeatExceptionsInt) {
             // weekday
-            $unit = $this->arrDay[$activeRecord->weekday];
+            $unit = $GLOBALS['TL_LANG']['DAYS'][$activeRecord->weekday];
 
             // exception rules
             $rows = StringUtil::deserialize($activeRecord->repeatExceptionsInt, true);
@@ -551,7 +545,7 @@ class CalendarEventsCallbacks extends Backend
                 $year = (int) date('Y', $searchNext);
 
                 while ($searchNext <= $searchEnd) {
-                    $strDateToFind = $arg.' '.$unit.' of '.$this->arrMonth[$month].' '.$year;
+                    $strDateToFind = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
                     $strDateToFind = strtotime($strDateToFind);
                     $searchNext = strtotime(date('d.m.Y', $strDateToFind).' '.date('H:i', $arrSet['startTime']));
 

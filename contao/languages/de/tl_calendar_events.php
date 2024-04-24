@@ -15,7 +15,7 @@ declare(strict_types=1);
 /*
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_calendar_events']['showOnFreeDay'] = ['Event immer anzeigen', 'Event wird auch an freien Tagen angezeigt, wenn es der Kalender erlaubt.'];
+$GLOBALS['TL_LANG']['tl_calendar_events']['showOnFreeDay'] = ['Event immer anzeigen', 'Event wird auch an freien Tagen (in den Ferien) angezeigt, wenn es der Kalender erlaubt.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['hideOnWeekend'] = ['Nur an Werktagen', 'Event wird an Wochenenden nicht angezeigt.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['recurringExt'] = ['Event wiederholen (erweitert)', 'Ein wiederkehrendes Event erstellen.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatEachExt'] = ['Erweitertes Intervall', 'Hier können Sie das Wiederholungsintervall festlegen.'];
@@ -72,7 +72,7 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['new_exception'] = 'verschieben um';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception'] = 'Datum';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exceptionFr'] = 'Von';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exceptionTo'] = 'Bis';
-$GLOBALS['TL_LANG']['tl_calendar_events']['exceptionInt'] = 'Jeden X ';
+$GLOBALS['TL_LANG']['tl_calendar_events']['exceptionInt'] = 'Jeden X. ';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exceptionPer'] = 'Zeitraum';
 $GLOBALS['TL_LANG']['tl_calendar_events']['action'] = 'Aktion';
 $GLOBALS['TL_LANG']['tl_calendar_events']['move'] = 'verschieben';

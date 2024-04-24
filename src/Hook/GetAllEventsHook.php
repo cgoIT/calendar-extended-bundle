@@ -15,15 +15,12 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Hook;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
-use Contao\Calendar;
 use Contao\CalendarModel;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
-use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\Date;
 use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Symfony\Component\Security\Core\Security;
 
 #[AsHook(hook: 'getAllEvents', priority: -100)]
 class GetAllEventsHook
@@ -34,32 +31,28 @@ class GetAllEventsHook
     protected $calConf = [];
 
     /**
-     * @param array<mixed> $arrMonth
-     */
-    public function __construct(
-        private readonly array $arrMonth,
-        private readonly Security $securityHelper,
-    ) {
-    }
-
-    /**
      * @return array<mixed>
      */
-    public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objEvents): array
+    public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
-        $objEvents->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($objEvents->cal_holiday, true));
-
         // Read and apply the calendar config (title and colors)
-        $this->getCalendarConfig($objEvents);
+        $this->getCalendarConfig($objModule);
         $arrEvents = $this->applyCalendarConfig($arrEvents);
 
-        return $this->handleExceptions($arrEvents);
+        $arrEvents = $this->handleExceptions($arrEvents);
+
+        $arrEvents = $this->hideEventsDuringHolidays($arrEvents);
+        $arrEvents = $this->hideHolidayEvents($arrEvents, $objModule);
+
+        $arrEvents = $this->handleShowOnlyNext($arrEvents, $objModule);
+
+        return $this->compactEvents($arrEvents);
     }
 
-    private function getCalendarConfig(Events $objEvents): void
+    private function getCalendarConfig(Events $objModule): void
     {
         // Get the background and foreground colors of the calendars
-        foreach (array_merge($objEvents->cal_calendar, $objEvents->cal_holiday) as $cal) {
+        foreach ($objModule->cal_calendar as $cal) {
             $objCalendar = CalendarModel::findById($cal);
 
             $this->calConf[$cal]['calendar'] = $objCalendar->title;
@@ -103,10 +96,10 @@ class GetAllEventsHook
                     if (isset($this->calConf[$event['pid']])) {
                         $conf = $this->calConf[$event['pid']];
                         $event['calendar_title'] = $conf['calendar'];
-                        if (!empty($conf['bg_color'])) {
+                        if (!empty($conf['background'])) {
                             $event['bgstyle'] = $conf['background'];
                         }
-                        if (!empty($conf['fg_color'])) {
+                        if (!empty($conf['foreground'])) {
                             $event['fgstyle'] = $conf['foreground'];
                         }
                     }
@@ -122,11 +115,35 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function handleRecurringExt(array $arrEvents, Events $objEvents, int $intStart, int $intEnd): array
+    private function handleShowOnlyNext(array $arrEvents, Events $objModule): array
     {
-        /** @var PageModel */
-        global $objPage;
+        if (!empty($objModule->showOnlyNext)) {
+            $currentTimestamp = time();
 
+            $arrRunningEvents = [];
+
+            foreach ($arrEvents as &$eventsOnDay) {
+                foreach ($eventsOnDay as $startTime => &$events) {
+                    foreach ($events as $pos => &$event) {
+                        $timeToCompare = $objModule->hideRunning ? $startTime + $event['endTime'] - $event['startTime'] : $startTime;
+
+                        if ($timeToCompare > $currentTimestamp) {
+                            $key = $event['pid'].'_'.$event['id'];
+                            if (\array_key_exists($key, $arrRunningEvents)) {
+                                $cnt = $arrRunningEvents[$key];
+                            } else {
+                                $cnt = 0;
+                            }
+
+                            $arrRunningEvents[$key] = ++$cnt;
+                            if ($cnt > 1) {
+                                unset($events[$pos]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         return $arrEvents;
     }
@@ -143,7 +160,7 @@ class GetAllEventsHook
 
         $eventsToAdd = [];
 
-        foreach ($arrEvents as $day => &$eventsOnDay) {
+        foreach ($arrEvents as &$eventsOnDay) {
             foreach ($eventsOnDay as $startTime => &$events) {
                 foreach ($events as $pos => &$event) {
                     if (!empty($event['useExceptions']) && !empty($event['exceptionList'])) {
@@ -184,31 +201,106 @@ class GetAllEventsHook
                                 $event['month'] = Date::parse('F', $newStartTime);
 
                                 $weekday = Date::parse('w', $newStartTime);
-                                if (empty($event['hideOnWeekend']) || ($weekday !== '0' && $weekday !== '6')) {
+                                if (empty($event['hideOnWeekend']) || ('0' !== $weekday && '6' !== $weekday)) {
                                     $eventsToAdd[] = $event;
                                 }
                             }
 
                             unset($events[$pos]);
                         }
+                    }
 
-                        if (!empty($event['repeatWeekday'])) {
-                            $weekdays = StringUtil::deserialize($event['repeatWeekday'], true);
-                            $eventWeekday = Date::parse('w', $startTime);
-                            if (!\in_array($eventWeekday, $weekdays, true)) {
-                                unset($events[$pos]);
-                            }
+                    if (!empty($event['repeatWeekday'])) {
+                        $weekdays = StringUtil::deserialize($event['repeatWeekday'], true);
+                        $eventWeekday = Date::parse('w', $startTime);
+                        if (!\in_array($eventWeekday, $weekdays, true)) {
+                            unset($events[$pos]);
                         }
                     }
 
                     if (!empty($event['hideOnWeekend'])) {
                         $weekday = Date::parse('w', $startTime);
-                        if ($weekday === '0' || $weekday === '6') {
+                        if ('0' === $weekday || '6' === $weekday) {
                             unset($events[$pos]);
                         }
                     }
                 }
+            }
+        }
 
+        unset($event);
+
+        foreach ($eventsToAdd as $event) {
+            $this->addEvent($arrEvents, $event);
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function hideEventsDuringHolidays(array $arrEvents): array
+    {
+        $arrHolidayCalendars = $this->getHolidayCalendarIds();
+
+        if (!empty($arrHolidayCalendars)) {
+            foreach ($arrEvents as &$eventsOnDay) {
+                foreach ($eventsOnDay as &$events) {
+                    $eventPids = array_column($events, 'pid');
+                    $dayIsAHoliday = !empty(array_filter($eventPids, static fn ($pid) => \in_array($pid, $arrHolidayCalendars, true)));
+
+                    foreach ($events as $pos => $event) {
+                        $isHolidayEvent = \in_array($event['pid'], $arrHolidayCalendars, true);
+
+                        if (!$isHolidayEvent && $dayIsAHoliday && empty($event['showOnFreeDay'])) {
+                            unset($events[$pos]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function hideHolidayEvents(array $arrEvents, Events $objModule): array
+    {
+        if (!empty($objModule->hide_holiday)) {
+            $arrHolidayCalendars = $this->getHolidayCalendarIds();
+
+            if (!empty($arrHolidayCalendars)) {
+                foreach ($arrEvents as &$eventsOnDay) {
+                    foreach ($eventsOnDay as &$events) {
+                        foreach ($events as $pos => $event) {
+                            if (\in_array((int) $event['pid'], $arrHolidayCalendars, true)) {
+                                unset($events[$pos]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function compactEvents(array $arrEvents): array
+    {
+        foreach ($arrEvents as $day => &$eventsOnDay) {
+            foreach ($eventsOnDay as $startTime => &$events) {
                 if (empty($events)) {
                     unset($eventsOnDay[$startTime]);
                 }
@@ -217,12 +309,6 @@ class GetAllEventsHook
             if (empty($eventsOnDay)) {
                 unset($arrEvents[$day]);
             }
-        }
-
-        unset($event);
-
-        foreach ($eventsToAdd as $event) {
-            $this->addEvent($arrEvents, $event);
         }
 
         return $arrEvents;
@@ -249,31 +335,17 @@ class GetAllEventsHook
     }
 
     /**
-     * Sort out protected archives.
-     *
-     * @param array<mixed> $arrCalendars
-     *
-     * @return array<mixed>
+     * @return array<int>
      */
-    private function sortOutProtected(array $arrCalendars): array
+    private function getHolidayCalendarIds(): array
     {
-        if (empty($arrCalendars)) {
-            return $arrCalendars;
+        $arrHolidayCalendars = [];
+        $objHolidayCalendars = CalendarModel::findBy(['isHolidayCal=?'], ['1']);
+
+        foreach ($objHolidayCalendars as $objHolidayCalendar) {
+            $arrHolidayCalendars[] = (int) $objHolidayCalendar->id;
         }
 
-        $objCalendar = CalendarModel::findMultipleByIds($arrCalendars);
-        $arrCalendars = [];
-
-        if (null !== $objCalendar) {
-            while ($objCalendar->next()) {
-                if ($objCalendar->protected && !$this->securityHelper->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($objCalendar->groups, true))) {
-                    continue;
-                }
-
-                $arrCalendars[] = $objCalendar->id;
-            }
-        }
-
-        return $arrCalendars;
+        return $arrHolidayCalendars;
     }
 }
