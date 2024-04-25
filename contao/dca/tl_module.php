@@ -187,5 +187,5 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'long', 'multiple' => true],
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];

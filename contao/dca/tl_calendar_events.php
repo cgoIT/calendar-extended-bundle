@@ -59,8 +59,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'] = array_mer
     $GLOBALS['TL_DCA']['tl_calendar_events']['palettes']['__selector__'],
 );
 
-PaletteManipulator::create()->addField('hideOnWeekend', 'recurring')
-    ->addField('repeatWeekday', 'recurrences', PaletteManipulator::POSITION_APPEND)
+PaletteManipulator::create()->addField('repeatWeekday', 'recurring', PaletteManipulator::POSITION_APPEND)
     ->addField('repeatEnd', 'repeatWeekday')
     ->applyToSubpalette('recurring', 'tl_calendar_events')
 ;
@@ -87,9 +86,10 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatFixedDates'] = [
     'inputType' => 'multiColumnWizard',
     'eval' => [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listFixedDates'],
-        'buttons' => ['up' => false, 'down' => false],
+        'buttons' => ['up' => false, 'down' => false, 'move' => false],
+        'minCount' => 0,
     ],
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ignoreEndTime'] = [
@@ -241,7 +241,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptions'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 // list of exceptions
@@ -252,7 +252,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsInt'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 // list of exceptions
@@ -263,19 +263,15 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsPer'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'blob NULL',
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatDates'] = [
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['allRecurrences'] = [
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['exceptionList'] = [
-    'sql' => 'blob NULL',
+    'sql' => 'text NULL',
 ];
 
 // display the end of the recurrences (read only)

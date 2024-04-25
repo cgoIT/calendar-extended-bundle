@@ -36,7 +36,7 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['contact_legend'] = 'Contact informati
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_link'] = ['Link to location', 'e.g. a link to a webpage of the location. (http://www.link.de)'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_contact'] = ['Contact', 'Name of a contact.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['location_mail'] = ['E-Mail', 'E-Mail address of the contact.'];
-$GLOBALS['TL_LANG']['tl_calendar_events']['repeatWeekday'] = ['Weekday', 'Select the weekday if event is recurring daily. No selection means all.'];
+$GLOBALS['TL_LANG']['tl_calendar_events']['repeatWeekday'] = ['Weekday', 'Select the weekday if event is recurring every X days. No selection means all.'];
 $GLOBALS['TL_LANG']['tl_calendar_events']['mini'] = 'min';
 $GLOBALS['TL_LANG']['tl_calendar_events']['maxi'] = 'max';
 $GLOBALS['TL_LANG']['tl_calendar_events']['curr'] = 'current';
@@ -81,3 +81,5 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['cssclass'] = 'Css class';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_start'] = 'Start time';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_end'] = 'End time';
 $GLOBALS['TL_LANG']['tl_calendar_events']['reason'] = 'Reason';
+
+$GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'] = 'This event is repeated at %s. The next event will take place on &lt;time datetime=&quot;%s&quot;&gt;%s&lt;/time&gt;.';

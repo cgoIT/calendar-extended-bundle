@@ -59,8 +59,8 @@ class CalendarEventsMCWCallbacks extends Backend
                 ;
             }
 
-            if ($activeRecord->repeatDates) {
-                $arrDates = StringUtil::deserialize($activeRecord->repeatDates);
+            if (!empty($activeRecord->allRecurrences)) {
+                $arrDates = StringUtil::deserialize($activeRecord->allRecurrences);
 
                 if (\is_array($arrDates)) {
                     if ('repeatExceptions' === $mcw->id) {
@@ -213,19 +213,19 @@ class CalendarEventsMCWCallbacks extends Backend
                 'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['new_start'],
                 'exclude' => true,
                 'inputType' => 'text',
-                'eval' => ['rgxp' => 'time', 'datepicker' => true, 'doNotCopy' => true, 'style' => 'width:40px'],
+                'eval' => ['rgxp' => 'time', 'datepicker' => true, 'doNotCopy' => true, 'style' => 'width:70px'],
             ],
             'new_end' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['new_end'],
                 'exclude' => true,
                 'inputType' => 'text',
-                'eval' => ['rgxp' => 'time', 'datepicker' => true, 'doNotCopy' => true, 'style' => 'width:40px'],
+                'eval' => ['rgxp' => 'time', 'datepicker' => true, 'doNotCopy' => true, 'style' => 'width:70px'],
             ],
             'reason' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['reason'],
                 'exclude' => true,
                 'inputType' => 'text',
-                'eval' => ['doNotCopy' => true, 'style' => 'width:350px'],
+                'eval' => ['doNotCopy' => true, 'style' => 'width:450px'],
             ],
         ];
     }

@@ -15,12 +15,17 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Hook;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use Contao\Calendar;
+use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
+use Contao\ContentModel;
+use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Date;
 use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Contao\System;
 
 #[AsHook(hook: 'getAllEvents', priority: -100)]
 class GetAllEventsHook
@@ -28,13 +33,23 @@ class GetAllEventsHook
     /**
      * @var array<mixed>
      */
-    protected $calConf = [];
+    private array $calConf = [];
+
+    private int|false $intTodayBegin = false;
+
+    private int|false $intTodayEnd = false;
 
     /**
      * @return array<mixed>
      */
     public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
+        // Add events from recurringExt
+        $arrEvents = $this->handleExtendedRecurrences($arrEvents, $arrCalendars, $timeStart, $timeEnd, $objModule);
+
+        // Add fixed dates
+        $arrEvents = $this->handleFixedDatesRecurrences($arrEvents, $arrCalendars, $timeStart, $timeEnd, $objModule);
+
         // Read and apply the calendar config (title and colors)
         $this->getCalendarConfig($objModule);
         $arrEvents = $this->applyCalendarConfig($arrEvents);
@@ -46,7 +61,7 @@ class GetAllEventsHook
 
         $arrEvents = $this->handleShowOnlyNext($arrEvents, $objModule);
 
-        return $this->compactEvents($arrEvents);
+        return $this->compactAndSortEvents($arrEvents);
     }
 
     private function getCalendarConfig(Events $objModule): void
@@ -105,6 +120,131 @@ class GetAllEventsHook
                     }
                 }
             }
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     * @param array<mixed> $arrCalendars
+     *
+     * @return array<mixed>
+     */
+    private function handleExtendedRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
+    {
+        $eventsToAdd = [];
+
+        $t = 'tl_calendar_events';
+        $time = time();
+        $arrRecurringEvents = CalendarEventsModel::findBy(
+            [
+                "$t.pid IN (".implode(', ', $arrCalendars).')',
+                "$t.recurringExt=?",
+                "$t.published='1' AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)",
+            ],
+            ['1'],
+        );
+        if (!empty($arrRecurringEvents)) {
+            foreach ($arrRecurringEvents as $objEvent) {
+                $allRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
+
+                foreach ($allRecurrences as $recurrence) {
+                    if ($recurrence['int_start'] >= $timeStart && $recurrence['int_start'] <= $timeEnd) {
+                        $key = Date::parse('Ymd', $recurrence['int_start']);
+                        if (\array_key_exists($key, $arrEvents) && \array_key_exists($recurrence['int_start'], $arrEvents[$key])) {
+                            $alreadyInArray = false;
+
+                            foreach ($arrEvents[$key][$recurrence['int_start']] as $event) {
+                                if ($event['id'] === $objEvent->id) {
+                                    $alreadyInArray = true;
+                                    break;
+                                }
+                            }
+
+                            if ($alreadyInArray) {
+                                continue;
+                            }
+                        }
+
+                        $eventsToAdd = array_merge($eventsToAdd,
+                            $this->createEvents($objEvent, $objModule,
+                                $recurrence['int_start'], $recurrence['int_end'], false));
+                    }
+                }
+            }
+        }
+
+        foreach ($eventsToAdd as $event) {
+            $this->addEvent($arrEvents, $event);
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function handleFixedDatesRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
+    {
+        /** @var PageModel */
+        global $objPage;
+
+        $eventsToAdd = [];
+
+        $t = 'tl_calendar_events';
+        $time = time();
+        $arrEventsWithFixedRepeats = CalendarEventsModel::findBy(
+            [
+                "$t.pid IN (".implode(', ', $arrCalendars).')',
+                "$t.repeatFixedDates IS NOT NULL",
+                "$t.repeatFixedDates !=?",
+                "$t.published='1' AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)",
+            ],
+            [''],
+        );
+        if (!empty($arrEventsWithFixedRepeats)) {
+            foreach ($arrEventsWithFixedRepeats as $objEvent) {
+                $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates, true);
+
+                foreach ($arrFixedDates as $date) {
+                    $intStart = $date['new_repeat'];
+                    if (!empty($date['new_start']) && $objEvent->addTime) {
+                        $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_start']);
+                    }
+                    if (!empty($date['new_end']) && $objEvent->addTime) {
+                        $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_end']);
+                    }
+                    $intEnd = $intStart;
+
+                    if ($intStart >= $timeStart && $intStart <= $timeEnd) {
+                        $key = Date::parse('Ymd', $intStart);
+                        if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
+                            $alreadyInArray = false;
+
+                            foreach ($arrEvents[$key][$intStart] as $event) {
+                                if ($event['id'] === $objEvent->id) {
+                                    $alreadyInArray = true;
+                                    break;
+                                }
+                            }
+
+                            if ($alreadyInArray) {
+                                continue;
+                            }
+                        }
+
+                        $eventsToAdd = array_merge($eventsToAdd,
+                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, true));
+                    }
+                }
+            }
+        }
+
+        foreach ($eventsToAdd as $event) {
+            $this->addEvent($arrEvents, $event);
         }
 
         return $arrEvents;
@@ -297,7 +437,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function compactEvents(array $arrEvents): array
+    private function compactAndSortEvents(array $arrEvents): array
     {
         foreach ($arrEvents as $day => &$eventsOnDay) {
             foreach ($eventsOnDay as $startTime => &$events) {
@@ -311,7 +451,159 @@ class GetAllEventsHook
             }
         }
 
+        if (!empty($arrEvents)) {
+            foreach (array_keys($arrEvents) as $key) {
+                ksort($arrEvents[$key]);
+            }
+        }
+
         return $arrEvents;
+    }
+
+    /**
+     * @return array<mixed>
+     *
+     * @throws \Exception
+     */
+    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, bool $isFixedDate): array
+    {
+        /** @var PageModel */
+        global $objPage;
+
+        System::loadLanguageFile('tl_calendar_events');
+
+        $eventsToAdd = [];
+
+        $intDate = $intStart;
+        $strDate = Date::parse($objPage->dateFormat, $intStart);
+        $strDay = $GLOBALS['TL_LANG']['DAYS'][date('w', $intStart)];
+        $strMonth = $GLOBALS['TL_LANG']['MONTHS'][date('n', $intStart) - 1];
+        $span = Calendar::calculateSpan($intStart, $intEnd);
+
+        if ($span > 0) {
+            $strDate = Date::parse($objPage->dateFormat, $intStart).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->dateFormat, $intEnd);
+            $strDay = '';
+        }
+
+        $strTime = '';
+
+        if ($objEvent->addTime) {
+            if ($span > 0) {
+                $strDate = Date::parse($objPage->datimFormat, $intStart).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->datimFormat, $intEnd);
+            } elseif ($intStart === $intEnd) {
+                $strTime = Date::parse($objPage->timeFormat, $intStart);
+            } else {
+                $strTime = Date::parse($objPage->timeFormat, $intStart).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse($objPage->timeFormat, $intEnd);
+            }
+        }
+
+        [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intStart, $strDate, $strTime, $isFixedDate);
+
+        $arrEvent = $objEvent->row();
+
+        $arrEvent['startDate'] = $intStart;
+        $arrEvent['startTime'] = $intStart;
+        $arrEvent['endDate'] = $intEnd;
+        $arrEvent['endTime'] = $intEnd;
+        $arrEvent['date'] = $strDate;
+        $arrEvent['time'] = $strTime;
+        $arrEvent['datetime'] = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $intStart) : date('Y-m-d', $intStart);
+        $arrEvent['day'] = $strDay;
+        $arrEvent['month'] = $strMonth;
+        $arrEvent['parent'] = $objEvent->pid;
+        $arrEvent['calendar'] = $objEvent->getRelated('pid');
+        $arrEvent['link'] = $objEvent->title;
+        $arrEvent['target'] = '';
+        $arrEvent['title'] = StringUtil::specialchars($objEvent->title, true);
+        $arrEvent['href'] = Events::generateEventUrl($objEvent);
+        $arrEvent['class'] = $objEvent->cssClass ? ' '.$objEvent->cssClass : '';
+        $arrEvent['recurring'] = $recurring;
+        $arrEvent['until'] = $until;
+        $arrEvent['begin'] = $intStart;
+        $arrEvent['end'] = $intEnd;
+        $arrEvent['effectiveEndTime'] = $arrEvent['endTime'];
+        $arrEvent['details'] = '';
+        $arrEvent['hasTeaser'] = false;
+
+        // Set open-end events to 23:59:59, so they run until the end of the day (see #4476)
+        if ($intStart === $intEnd && $objEvent->addTime) {
+            $arrEvent['effectiveEndTime'] = strtotime(date('Y-m-d', $arrEvent['endTime']).' 23:59:59');
+        }
+
+        // Override the link target
+        if ('external' === $objEvent->source && $objEvent->target) {
+            $arrEvent['target'] = ' target="_blank" rel="noreferrer noopener"';
+        }
+
+        // Clean the RTE output
+        if ($arrEvent['teaser']) {
+            $arrEvent['hasTeaser'] = true;
+            $arrEvent['teaser'] = StringUtil::encodeEmail($arrEvent['teaser']);
+        }
+
+        // Display the "read more" button for external/article links
+        if ('default' !== $objEvent->source) {
+            $arrEvent['hasDetails'] = true;
+        }
+
+        // Compile the event text
+        else {
+            $id = $objEvent->id;
+
+            $arrEvent['details'] = static function () use ($id) {
+                $strDetails = '';
+                $objElement = ContentModel::findPublishedByPidAndTable($id, 'tl_calendar_events');
+
+                if (null !== $objElement) {
+                    while ($objElement->next()) {
+                        $strDetails .= Controller::getContentElement($objElement->current());
+                    }
+                }
+
+                return $strDetails;
+            };
+
+            $arrEvent['hasDetails'] = static fn () => ContentModel::countPublishedByPidAndTable($id, 'tl_calendar_events') > 0;
+        }
+
+        // Get today's start and end timestamp
+        if (!$this->intTodayBegin) {
+            $this->intTodayBegin = strtotime('00:00:00');
+        }
+
+        if (!$this->intTodayEnd) {
+            $this->intTodayEnd = strtotime('23:59:59');
+        }
+
+        // Mark past and upcoming events (see #3692)
+        if ($intEnd < $this->intTodayBegin) {
+            $arrEvent['class'] .= ' bygone';
+        } elseif ($intStart > $this->intTodayEnd) {
+            $arrEvent['class'] .= ' upcoming';
+        } else {
+            $arrEvent['class'] .= ' current';
+        }
+
+        if (1 === $arrEvent['featured']) {
+            $arrEvent['class'] .= ' featured';
+        }
+
+        $eventsToAdd[] = $arrEvent;
+
+        // Multi-day event
+        if (!$objModule->cal_noSpan) {
+            for ($i = 1; $i <= $span; ++$i) {
+                $intDate = strtotime('+1 day', $intDate);
+
+                if ($intDate > $intEnd) {
+                    break;
+                }
+
+                $eventsToAdd[] = $arrEvent;
+            }
+        }
+
+        return $eventsToAdd;
     }
 
     /**
