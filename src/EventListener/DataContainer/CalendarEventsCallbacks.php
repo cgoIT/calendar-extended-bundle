@@ -586,6 +586,7 @@ class CalendarEventsCallbacks extends Backend
 
                     $row['new_start'] = $row['new_start'] ?: date('H:i', $activeRecord->startTime); // '00:00';
                     $row['new_end'] = $row['new_end'] ?: date('H:i', $activeRecord->endTime); // '23:59';
+
                     // Set endtime to starttime always...
                     if ($activeRecord->ignoreEndTime) {
                         $row['new_end'] = '';
@@ -684,11 +685,6 @@ class CalendarEventsCallbacks extends Backend
                 }
                 $row['exception_date'] = date('d.m.Y H:i', (int) $row['exception']);
 
-                //                $dateToFind = strtotime(date('d.m.Y', (int)
-                // $row['exception']).' '.date('H:i', $activeRecord->startTime));
-                // $dateToSave = strtotime(date('d.m.Y', (int) $row['exception']).'
-                // '.$row['new_start']);    $dateToSaveEnd = strtotime(date('d.m.Y', (int)
-                // $row['exception']).' '.$row['new_end']); Set endtime to starttime always...
                 if ($activeRecord->ignoreEndTime) {
                     $row['new_end'] = '';
                 }
@@ -697,14 +693,8 @@ class CalendarEventsCallbacks extends Backend
                     $newDate = strtotime((string) $row['new_exception'], (int) $row['exception']);
 
                     if ($newDate > $currentEndDate) {
-                        //                        $arrSet['repeatEnd'] = $newDate;
                         $maxRepeatEnd[] = $newDate;
                     }
-
-                    //                    // Find the date and replace it                    if
-                    // (\array_key_exists($dateToFind, $arrAllRecurrences)) {
-                    // $arrAllRecurrences[$dateToFind] = $this->getRecurrenceArray($dateToSave,
-                    // $dateToSaveEnd, $row['reason'] ?: '');                    }
                 }
 
                 if (\count($exceptionRows) < $this->maxExceptionsCount) {
