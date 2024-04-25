@@ -381,9 +381,9 @@ abstract class EventsExt extends Events
 
                                         // get the date of the event and add the new time to the new date
                                         $newStart = Date::parse($objPage->dateFormat, $objEvents->startTime)
-                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
+                                            . ' EventsExt.php' .$arrEventSkipInfo[$objEvents->id][$r]['new_start'];
                                         $newEnd = Date::parse($objPage->dateFormat, $objEvents->endTime)
-                                            .' '.$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
+                                            . ' EventsExt.php' .$arrEventSkipInfo[$objEvents->id][$r]['new_end'];
 
                                         // set the new values
                                         $objEvents->startTime = strtotime((string) $newDate, strtotime($newStart));
@@ -471,13 +471,13 @@ abstract class EventsExt extends Events
                             // new start time
                             $strNewDate = $fixedDate['new_repeat'];
                             $strNewTime = !empty($fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : $orgDateStart->time;
-                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
+                            $newDateStart = new Date(strtotime(date('d.m.Y', $strNewDate) . ' EventsExt.php' .$strNewTime), Config::get('datimFormat'));
                             $objEvents->startTime = $newDateStart->tstamp;
                             $dateNextStart = date('Ymd', $objEvents->startTime);
 
                             // new end time
                             $strNewTime = !empty($fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : $orgDateEnd->time;
-                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate).' '.$strNewTime), Config::get('datimFormat'));
+                            $newDateEnd = new Date(strtotime(date('d.m.Y', $strNewDate) . ' EventsExt.php' .$strNewTime), Config::get('datimFormat'));
 
                             // use the multi-day span of the event
                             if ($orgDateSpan > 0) {

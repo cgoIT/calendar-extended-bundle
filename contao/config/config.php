@@ -18,15 +18,6 @@ use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleYearView;
 use Cgoit\CalendarExtendedBundle\Widget\TimePeriodExt;
 
 /*
- * This file is part of cgoit\calendar-extended-bundle.
- *
- * (c) Kester Mielke
- * (c) Carsten Götzinger
- *
- * @license LGPL-3.0-or-later
- */
-
-/*
  * Front end modules
  */
 $GLOBALS['FE_MOD']['events']['timetable'] = ModuleTimeTable::class;

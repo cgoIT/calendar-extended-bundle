@@ -1,13 +1,5 @@
 <?php
 
-/*
- * This file is part of CalendarExtendedBundle.
- *
- * Copyright (c) 2009-2018 Kester Mielke
- *
- * @license LGPL-3.0+
- */
-
 declare(strict_types=1);
 
 /*
