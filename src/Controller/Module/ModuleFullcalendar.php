@@ -14,19 +14,16 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Module;
 
-use Cgoit\CalendarExtendedBundle\Classes\EventsExt;
 use Cgoit\CalendarExtendedBundle\Models\CalendarEventsModelExt;
 use Contao\BackendTemplate;
+use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\Database;
 use Contao\Date;
 use Contao\Environment;
+use Contao\Events;
 use Contao\FrontendTemplate;
 use Contao\FrontendUser;
 use Contao\Input;
-use Contao\Model;
-use Contao\Model\Collection;
-use Contao\ModuleModel;
-use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -34,7 +31,7 @@ use Contao\System;
 /**
  * Front end module "calendar".
  */
-class ModuleFullcalendar extends EventsExt
+class ModuleFullcalendar extends Events
 {
     /**
      * Current date object.
@@ -42,11 +39,6 @@ class ModuleFullcalendar extends EventsExt
      * @var Date
      */
     protected $Date;
-
-    /**
-     * @var array<mixed>
-     */
-    protected $calConf = [];
 
     /**
      * @var int
@@ -72,11 +64,6 @@ class ModuleFullcalendar extends EventsExt
      */
     protected $strTemplate = 'mod_fc_fullcalendar';
 
-    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
-    {
-        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
-    }
-
     /**
      * Do not show the module if no calendar has been selected.
      *
@@ -92,72 +79,34 @@ class ModuleFullcalendar extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['fullcalendar'][0]).' ###';
+            $objTemplate->wildcard = '### '.$GLOBALS['TL_LANG']['FMD']['fullcalendar'][0].' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
-            $objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id='.$this->id;
+            $objTemplate->href = StringUtil::specialcharsUrl(System::getContainer()->get('router')->generate('contao_backend', ['do' => 'themes', 'table' => 'tl_module', 'act' => 'edit', 'id' => $this->id]));
 
             return $objTemplate->parse();
         }
 
         $this->cal_calendar = $this->sortOutProtected(StringUtil::deserialize($this->cal_calendar, true));
-        $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar) || !\is_array($this->cal_calendar)) {
             return '';
-        }
-
-        // Calendar filter
-        if (Input::get('cal')) {
-            // Create array of cal_id's to filter
-            $cals1 = explode(',', (string) Input::get('cal'));
-            // Check if the cal_id's are valid for this module
-            $cals2 = array_intersect($cals1, $this->cal_calendar);
-
-            if ($cals2) {
-                $this->cal_calendar = array_intersect($cals2, $this->cal_calendar);
-            }
-        }
-
-        // Get the background and foreground colors of the calendars
-        foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
-            $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal)
-            ;
-
-            $this->calConf[$cal]['calendar'] = $objBG->title;
-
-            if ($objBG->bg_color) {
-                // [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
-                $cssColor = StringUtil::deserialize($objBG->bg_color)[0];
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['background'] .= '#'.$cssColor;
-                }
-                //                if (!empty($cssOpacity)) { $this->calConf[$cal]['background']
-                // .= 'opacity:' . ($cssOpacity / 100) . ';';               }
-            }
-
-            if ($objBG->fg_color) {
-                // [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
-                $cssColor = StringUtil::deserialize($objBG->fg_color)[0];
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['foreground'] .= '#'.$cssColor;
-                }
-                //                if (!empty($cssOpacity)) { $this->calConf[$cal]['foreground']
-                // .= 'opacity:' . ($cssOpacity / 100) . ';';               }
-            }
         }
 
         $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
-        if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
+        if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
             /** @var PageModel $objTarget */
             $this->strLink = $objTarget->getFrontendUrl();
+        }
+
+        // Tag the calendars (see #2137)
+        if (System::getContainer()->has('fos_http_cache.http.symfony_response_tagger')) {
+            $responseTagger = System::getContainer()->get('fos_http_cache.http.symfony_response_tagger');
+            $responseTagger->addTags(array_map(static fn ($id) => 'contao.db.tl_calendar.'.$id, $this->cal_calendar));
         }
 
         return parent::generate();
@@ -171,18 +120,14 @@ class ModuleFullcalendar extends EventsExt
         /** @var PageModel $objPage */
         global $objPage;
 
-        $security = System::getContainer()->get('@security.helper');
-
         $blnClearInput = false;
 
-        $intYear = Input::get('year');
-        $intMonth = Input::get('month');
-        $intDay = Input::get('day');
+        $intYear = (int) Input::get('year');
+        $intMonth = (int) Input::get('month');
+        $intDay = (int) Input::get('day');
 
         // Jump to the current period
         if (!isset($_GET['year']) && !isset($_GET['month']) && !isset($_GET['day'])) {
-            $this->cal_format = 'cal_day';
-
             switch ($this->cal_format) {
                 case 'cal_year':
                     $intYear = date('Y');
@@ -200,7 +145,7 @@ class ModuleFullcalendar extends EventsExt
             $blnClearInput = true;
         }
 
-        $blnDynamicFormat = !$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true);
+        $blnDynamicFormat = (!$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true));
 
         // Create the date object
         try {
@@ -220,16 +165,11 @@ class ModuleFullcalendar extends EventsExt
                 $this->Date = new Date();
             }
         } catch (\OutOfBoundsException) {
-            /** @var PageError404 $objHandler */
-            $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->getResponse($objPage);
+            throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
-        // [$this->intStart, $this->intEnd, $strEmpty] =
+        //        list($intStart, $intEnd, $strEmpty) =
         // $this->getDatesFromFormat($this->Date, $this->cal_format);
-        $arrFormats = $this->getDatesFromFormat($this->Date, $this->cal_format);
-        $this->intStart = $arrFormats[0];
-        $this->intEnd = $arrFormats[1];
 
         if (isset($_POST['type'])) {
             /**
@@ -246,7 +186,7 @@ class ModuleFullcalendar extends EventsExt
             }
         } else {
             // calendar-extended-bundel assets
-            $assets_path = 'bundles/calendarextended';
+            $assets_path = 'bundles/cgoitcalendarextended';
             // fullcalendar 3.9.0
             $assets_fc = '/fullcalendar-3.9.0';
             // font-awesome 4.7.0
@@ -271,6 +211,8 @@ class ModuleFullcalendar extends EventsExt
             $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
             // Set some fullcalendar options
+            $security = System::getContainer()->get('security.helper');
+
             $objTemplate->url = $this->strLink;
             $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
             $objTemplate->defaultDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
@@ -306,13 +248,13 @@ class ModuleFullcalendar extends EventsExt
      */
     protected function fetchEvents(): void
     {
-        $security = System::getContainer()->get('@security.helper');
+        $security = System::getContainer()->get('security.helper');
 
         $intStart = Input::post('start') ? strtotime((string) Input::post('start')) : $this->intStart;
         $intEnd = Input::post('end') ? strtotime((string) Input::post('end')) : $this->intEnd;
 
         // Get all events
-        $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $intStart, $intEnd, [$this->cal_holiday]);
+        $arrAllEvents = $this->getAllEvents($this->cal_calendar, $intStart, $intEnd);
 
         // Sort the days
         $sort = 'descending' === $this->cal_order ? 'krsort' : 'ksort';
@@ -339,18 +281,15 @@ class ModuleFullcalendar extends EventsExt
                         continue;
                     }
 
-                    // Check if we have to show the current event
-                    if ($event['show']) {
-                        // Remove events outside time scope
-                        if ($this->pubTimeRecurrences && ($event['begin'] && $event['end'])) {
-                            // Step 2: get show from/until times
-                            $startTimeShow = strtotime(date('dmY').' ModuleFullcalendar.php'.date('Hi', $event['begin']));
-                            $endTimeShow = strtotime(date('dmY').' ModuleFullcalendar.php'.date('Hi', $event['end']));
+                    // Remove events outside time scope
+                    if ($this->pubTimeRecurrences && ($event['begin'] && $event['end'])) {
+                        // Step 2: get show from/until times
+                        $startTimeShow = strtotime(date('dmY').' '.date('Hi', $event['begin']));
+                        $endTimeShow = strtotime(date('dmY').' '.date('Hi', $event['end']));
 
-                            // Compare the times...
-                            if ($currTime < $startTimeShow || $currTime > $endTimeShow) {
-                                continue;
-                            }
+                        // Compare the times...
+                        if ($currTime < $startTimeShow || $currTime > $endTimeShow) {
+                            continue;
                         }
                     }
 
@@ -377,7 +316,7 @@ class ModuleFullcalendar extends EventsExt
                     $allDay = $event['addTime'] ? false : true;
 
                     // Set title
-                    $title = html_entity_decode((string) $event['title']);
+                    $title = StringUtil::specialchars((string) $event['title']);
 
                     // Some options
                     $editable = $this->fc_editable && $security->getUser() instanceof FrontendUser;
@@ -393,9 +332,9 @@ class ModuleFullcalendar extends EventsExt
                         $editable = false;
                         $recurring = true;
                     }
-                    $row = StringUtil::deserialize($event['repeatFixedDates']);
+                    $row = StringUtil::deserialize($event['repeatFixedDates'], true);
 
-                    if ($row[0]['new_repeat'] > 0) {
+                    if (!empty($row) && $row[0]['new_repeat'] > 0) {
                         $editable = false;
                         $recurring = true;
                     }
@@ -412,11 +351,7 @@ class ModuleFullcalendar extends EventsExt
                     // Set the icon
                     $icon = $recurring ? 'fa-repeat' : 'fa-calendar-o';
 
-                    // Set the colors of the calendar
-                    $bgstyle = $this->calConf[$event['pid']]['background'] ?: '';
-                    $fgstyle = $this->calConf[$event['pid']]['foreground'] ?: '';
-
-                    // Igone if this is not the first multi day entry
+                    // Ignore if this is not the first multi day entry
                     if (false === array_search($event['id'], $multiday_event, true)) {
                         // Add the event to array of events
                         $json_events[] = [
@@ -430,8 +365,8 @@ class ModuleFullcalendar extends EventsExt
                             'url' => $event['href'],
                             'editable' => $editable,
                             'icon' => $icon,
-                            'backgroundColor' => $bgstyle,
-                            'textColor' => $fgstyle,
+                            'backgroundColor' => $event['bgstyle'] ?? '',
+                            'textColor' => $event['fgstyle'] ?? '',
                         ];
                     }
 

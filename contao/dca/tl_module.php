@@ -41,8 +41,6 @@ $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = $GLOBALS['TL_DCA']['tl
 PaletteManipulator::create()->addField('use_horizontal', 'config_legend', PaletteManipulator::POSITION_APPEND)
     ->addField('use_navigation', 'use_horizontal')
     ->addField('linkCurrent', 'use_navigation')
-    ->addField('hide_holiday', 'linkCurrent')
-    ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('yearview', 'tl_module')
 ;
 
@@ -55,10 +53,6 @@ PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', Pale
     ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('eventlist', 'tl_module')
 ;
-
-// Palette for eventreader aletteManipulator::create()->addField('cal_holiday',
-// 'config_legend', PaletteManipulator::POSITION_APPEND)
-// ->applyToPalette('eventreader', 'tl_module')
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
@@ -130,7 +124,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'eval' => [
-        'tl_class' => 'clr w50',
+        'tl_class' => 'clr w100',
         'columnsCallback' => ['calendar_extended.module.callbacks', 'getTimeRange'],
         'buttons' => ['up' => false, 'down' => false, 'copy' => false],
     ],
@@ -141,7 +135,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cellheight'] = [
     'default' => 60,
     'exclude' => true,
     'inputType' => 'text',
-    'eval' => ['tl_class' => 'w50'],
+    'eval' => ['tl_class' => 'clr w50'],
     'sql' => "varchar(10) NOT NULL default ''",
 ];
 

@@ -51,7 +51,7 @@ class GetAllEventsHook
         $arrEvents = $this->handleFixedDatesRecurrences($arrEvents, $arrCalendars, $timeStart, $timeEnd, $objModule);
 
         // Read and apply the calendar config (title and colors)
-        $this->getCalendarConfig($objModule);
+        $this->calConf = Utils::getCalendarConfig($objModule);
         $arrEvents = $this->applyCalendarConfig($arrEvents);
 
         $arrEvents = $this->handleExceptions($arrEvents);
@@ -64,40 +64,6 @@ class GetAllEventsHook
         return $this->compactAndSortEvents($arrEvents);
     }
 
-    private function getCalendarConfig(Events $objModule): void
-    {
-        // Get the background and foreground colors of the calendars
-        foreach ($objModule->cal_calendar as $cal) {
-            $objCalendar = CalendarModel::findById($cal);
-
-            $this->calConf[$cal]['calendar'] = $objCalendar->title;
-
-            if (!empty($objCalendar->bg_color)) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objCalendar->bg_color, true);
-
-                if (!empty($cssColor)) {
-                    Utils::appendToArrayKey($this->calConf[$cal], 'background', 'background-color:#'.$cssColor.';');
-                }
-
-                if (!empty($cssOpacity)) {
-                    Utils::appendToArrayKey($this->calConf[$cal], 'background', 'opacity:'.($cssOpacity / 100).';');
-                }
-            }
-
-            if (!empty($objCalendar->fg_color)) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objCalendar->fg_color, true);
-
-                if (!empty($cssColor)) {
-                    Utils::appendToArrayKey($this->calConf[$cal], 'foreground', 'color:#'.$cssColor.';');
-                }
-
-                if (!empty($cssOpacity)) {
-                    Utils::appendToArrayKey($this->calConf[$cal], 'foreground', 'opacity:'.($cssOpacity / 100).';');
-                }
-            }
-        }
-    }
-
     /**
      * @param array<mixed> $arrEvents
      *
@@ -108,6 +74,9 @@ class GetAllEventsHook
         foreach ($arrEvents as &$timestamp) {
             foreach ($timestamp as &$events) {
                 foreach ($events as &$event) {
+                    $event['bgstyle'] = '';
+                    $event['fgstyle'] = '';
+
                     if (isset($this->calConf[$event['pid']])) {
                         $conf = $this->calConf[$event['pid']];
                         $event['calendar_title'] = $conf['calendar'];

@@ -14,17 +14,13 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Module;
 
-use Cgoit\CalendarExtendedBundle\Classes\EventsExt;
 use Contao\BackendTemplate;
-use Contao\Config;
+use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\Date;
 use Contao\Environment;
+use Contao\Events;
 use Contao\FrontendTemplate;
 use Contao\Input;
-use Contao\Model;
-use Contao\Model\Collection;
-use Contao\ModuleModel;
-use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -32,7 +28,7 @@ use Contao\System;
 /**
  * Class ModuleYearViewExt.
  */
-class ModuleYearView extends EventsExt
+class ModuleYearView extends Events
 {
     /**
      * Current date object.
@@ -52,11 +48,6 @@ class ModuleYearView extends EventsExt
     protected $yearEnd;
 
     /**
-     * @var array<mixed>
-     */
-    protected $calConf = [];
-
-    /**
      * Redirect URL.
      *
      * @var string
@@ -69,11 +60,6 @@ class ModuleYearView extends EventsExt
      * @var string
      */
     protected $strTemplate = 'mod_calendar';
-
-    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
-    {
-        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
-    }
 
     /**
      * Do not show the module if no calendar has been selected.
@@ -90,74 +76,34 @@ class ModuleYearView extends EventsExt
             /** @var BackendTemplate|object $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['yearview'][0]).' ###';
+            $objTemplate->wildcard = '### '.$GLOBALS['TL_LANG']['FMD']['yearview'][0].' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
-            $objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id='.$this->id;
+            $objTemplate->href = StringUtil::specialcharsUrl(System::getContainer()->get('router')->generate('contao_backend', ['do' => 'themes', 'table' => 'tl_module', 'act' => 'edit', 'id' => $this->id]));
 
             return $objTemplate->parse();
         }
 
         $this->cal_calendar = $this->sortOutProtected(StringUtil::deserialize($this->cal_calendar, true));
-        $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar) || !\is_array($this->cal_calendar)) {
             return '';
-        }
-
-        // Calendar filter
-        if (Input::get('cal')) {
-            // Create array of cal_id's to filter
-            $cals1 = explode(',', (string) Input::get('cal'));
-            // Check if the cal_id's are valid for this module
-            $cals2 = array_intersect($cals1, $this->cal_calendar);
-
-            if ($cals2) {
-                $this->cal_calendar = array_intersect($cals2, $this->cal_calendar);
-            }
-        }
-
-        // Get the background and foreground colors of the calendars
-        foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
-            $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal)
-            ;
-
-            $this->calConf[$cal]['calendar'] = $objBG->title;
-
-            if ($objBG->bg_color) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['background'] .= 'background-color:#'.$cssColor.';';
-                }
-
-                if (!empty($cssOpacity)) {
-                    $this->calConf[$cal]['background'] .= 'opacity:'.($cssOpacity / 100).';';
-                }
-            }
-
-            if ($objBG->fg_color) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['foreground'] .= 'color:#'.$cssColor.';';
-                }
-
-                if (!empty($cssOpacity)) {
-                    $this->calConf[$cal]['foreground'] .= 'opacity:'.($cssOpacity / 100).';';
-                }
-            }
         }
 
         $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
-        if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
+        if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
             /** @var PageModel $objTarget */
             $this->strLink = $objTarget->getFrontendUrl();
+        }
+
+        // Tag the calendars (see #2137)
+        if (System::getContainer()->has('fos_http_cache.http.symfony_response_tagger')) {
+            $responseTagger = System::getContainer()->get('fos_http_cache.http.symfony_response_tagger');
+            $responseTagger->addTags(array_map(static fn ($id) => 'contao.db.tl_calendar.'.$id, $this->cal_calendar));
         }
 
         return parent::generate();
@@ -168,22 +114,42 @@ class ModuleYearView extends EventsExt
      */
     protected function compile(): void
     {
+        $year = Input::get('year');
+
         // Create the date object
         try {
-            if (Input::get('year')) {
-                $intYear = Input::get('year');
-                $this->yearBegin = mktime(0, 0, 0, 1, 1, $intYear);
-                $this->Date = new Date($this->yearBegin);
+            $timeStamp = strtotime($year.'-01-01');
+            if (\is_string($year) && false !== $timeStamp) {
+                $this->Date = new Date($timeStamp);
             } else {
                 $this->Date = new Date();
             }
         } catch (\OutOfBoundsException) {
-            /** @var PageModel $objPage */
-            global $objPage;
+            throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
+        }
 
-            /** @var PageError404 $objHandler */
-            $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->getResponse($objPage);
+        $time = Date::floorToMinute();
+
+        // Find the boundaries
+        $blnShowUnpublished = System::getContainer()->get('contao.security.token_checker')->isPreviewMode();
+        $objMinMax = $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid IN('.implode(',', array_map('\intval', $this->cal_calendar)).')'.(!$blnShowUnpublished ? " AND published='1' AND (start='' OR start<=$time) AND (stop='' OR stop>$time)" : ''));
+        $dateFrom = $objMinMax->dateFrom;
+        $dateTo = $objMinMax->dateTo;
+        $repeatUntil = $objMinMax->repeatUntil;
+
+        if (isset($GLOBALS['TL_HOOKS']['findCalendarBoundaries']) && \is_array($GLOBALS['TL_HOOKS']['findCalendarBoundaries'])) {
+            foreach ($GLOBALS['TL_HOOKS']['findCalendarBoundaries'] as $callback) {
+                $this->import($callback[0]);
+                $this->{$callback[0]}->{$callback[1]}($dateFrom, $dateTo, $repeatUntil, $this);
+            }
+        }
+
+        $firstYear = date('Y', min($dateFrom, $time));
+        $lastYear = date('Y', max($dateTo, $repeatUntil, $time));
+
+        // The given year is out of scope
+        if ($year && ($year < $firstYear || $year > $lastYear)) {
+            throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
         // Get the Year and the week of the given date
@@ -191,18 +157,6 @@ class ModuleYearView extends EventsExt
         $this->yearBegin = mktime(0, 0, 0, 1, 1, $intYear);
         $this->yearEnd = mktime(23, 59, 59, 12, 31, $intYear);
 
-        // Get total count of weeks of the year f (($weeksTotal = date('W', mktime(0, 0,
-        // 0, 12, 31, $intYear))) === 1) {    $weeksTotal = date('W', mktime(0, 0, 0, 12,
-        // 24, $intYear));  time = Date::floorToMinute(); Find the boundaries objMinMax =
-        // $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS
-        // dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid
-        // IN('.implode(',', array_map('intval',
-        // $this->cal_calendar)).')'.(!BE_USER_LOGGED_IN ? " AND (start='' OR
-        // start<='$time') AND (stop='' OR stop>'".($time + 60)."') AND published='1'" :
-        // '')); intLeftBoundary = date('Y', $objMinMax->dateFrom); intRightBoundary =
-        // date('Y', max($objMinMax->dateTo, $objMinMax->repeatUntil));
-
-        /** @var FrontendTemplate|object $objTemplate */
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_yearview');
 
         $objTemplate->intYear = $intYear;
@@ -215,37 +169,35 @@ class ModuleYearView extends EventsExt
             // Get the current year and the week
             if ($this->linkCurrent) {
                 $currYear = date('Y', time());
-                $lblCurrent = $GLOBALS['TL_LANG']['MSC']['curr_year'];
 
-                $objTemplate->currHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'year='.$currYear;
-                $objTemplate->currTitle = $currYear;
-                $objTemplate->currLink = $lblCurrent;
+                $objTemplate->currHref = $this->strUrl.'?year='.$currYear;
+                $objTemplate->currTitle = StringUtil::specialchars($currYear);
+                $objTemplate->currLink = $GLOBALS['TL_LANG']['MSC']['curr_year'];
                 $objTemplate->currLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
             }
 
-            // Previous week
+            // Previous year
             $prevYear = $intYear - 1;
-            $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$prevYear;
-            // Only generate a link if there are events (see #4160)            if ($prevYear
-            // >= $intLeftBoundary)            {
-            $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'year='.$prevYear;
-            $objTemplate->prevTitle = $prevYear;
-            $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
-            $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
-            //            } Current week
+            if ($prevYear >= $firstYear) {
+                $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$prevYear;
+                $objTemplate->prevHref = $this->strUrl.'?year='.$prevYear;
+                $objTemplate->prevTitle = StringUtil::specialchars((string) $prevYear);
+                $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
+                $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
+            }
+
+            // Current year
             $objTemplate->current = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$intYear;
 
-            // Next month
+            // Next year
             $nextYear = $intYear + 1;
-            $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$nextYear;
-
-            // Only generate a link if there are events (see #4160)            if ($nextYear
-            // <= $intRightBoundary)            {
-            $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'year='.$nextYear;
-            $objTemplate->nextTitle = $nextYear;
-            $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
-            $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
-            //            }
+            if ($nextYear <= $lastYear) {
+                $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$nextYear;
+                $objTemplate->nextHref = $this->strUrl.'?year='.$nextYear;
+                $objTemplate->nextTitle = StringUtil::specialchars((string) $nextYear);
+                $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
+                $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
+            }
         }
 
         // Set week start day
@@ -286,10 +238,13 @@ class ModuleYearView extends EventsExt
      */
     protected function compileDays(int $currYear)
     {
+        /** @var PageModel */
+        global $objPage;
+
         $arrDays = [];
 
         // Get all events
-        $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $this->yearBegin, $this->yearEnd, [$this->cal_holiday]);
+        $arrAllEvents = $this->getAllEvents($this->cal_calendar, $this->yearBegin, $this->yearEnd);
 
         for ($m = 1; $m <= 12; ++$m) {
             for ($d = 1; $d <= 31; ++$d) {
@@ -300,67 +255,45 @@ class ModuleYearView extends EventsExt
                     // $intCurrentWeek = (int) date('W', $day);
 
                     $intKey = date('Ymd', strtotime(date('Y-m-d', $day)));
-                    $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $day)));
+                    $currDay = Date::parse($objPage->dateFormat, strtotime(date('Y-m-d', $day)));
                     $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
                     $class .= 0 === $d % 2 ? ' even' : ' odd';
                     $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
 
-                    if ($currDay === Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d')))) {
+                    if ($currDay === Date::parse($objPage->dateFormat, strtotime(date('Y-m-d')))) {
                         $class .= ' today';
                     }
 
                     if ($this->use_horizontal) {
                         $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
                         $arrDays[$m][0]['class'] = 'head';
-                        $arrDays[$m][$d]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
-                        $arrDays[$m][$d]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
-                        $arrDays[$m][$d]['day'] = $d;
-                        $arrDays[$m][$d]['class'] = $class;
-                    } else {
-                        $arrDays[$d][$m]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' ModuleYearView.php'.$d;
-                        $arrDays[$d][$m]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
-                        $arrDays[$d][$m]['day'] = $d;
-                        $arrDays[$d][$m]['class'] = $class;
                     }
+
+                    $arrDays[$d][$m]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
+                    $arrDays[$d][$m]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
+                    $arrDays[$d][$m]['day'] = $d;
+                    $arrDays[$d][$m]['class'] = $class;
                 } else {
                     if ($this->use_horizontal) {
                         $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
                         $arrDays[$m][0]['class'] = 'head';
-                        $arrDays[$m][$d]['label'] = '';
-                        $arrDays[$m][$d]['weekday'] = '';
-                        $arrDays[$m][$d]['day'] = '';
-                        $arrDays[$m][$d]['class'] = 'empty';
-                    } else {
-                        $arrDays[$d][$m]['label'] = '';
-                        $arrDays[$d][$m]['weekday'] = '';
-                        $arrDays[$d][$m]['day'] = '';
-                        $arrDays[$d][$m]['class'] = 'empty';
                     }
+
+                    $arrDays[$d][$m]['label'] = '';
+                    $arrDays[$d][$m]['weekday'] = '';
+                    $arrDays[$d][$m]['day'] = '';
+                    $arrDays[$d][$m]['class'] = 'empty';
+
                     $intKey = 'empty';
                 }
 
                 // Get all events of a day
                 $arrEvents = [];
 
-                if (\is_array($arrAllEvents[$intKey])) {
+                if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
                     foreach ($arrAllEvents[$intKey] as $v) {
-                        foreach ($v as $vv) {
-                            // set class recurring
-                            if ($vv['recurring'] || $vv['recurringExt']) {
-                                $vv['class'] .= ' recurring';
-                            }
-
-                            // set color from calendar
-                            $vv['calendar_title'] = $this->calConf[$vv['pid']]['calendar'];
-
-                            if ($this->calConf[$vv['pid']]['background']) {
-                                $vv['bgstyle'] = $this->calConf[$vv['pid']]['background'];
-                            }
-
-                            if ($this->calConf[$vv['pid']]['foreground']) {
-                                $vv['fgstyle'] = $this->calConf[$vv['pid']]['foreground'];
-                            }
-                            $arrEvents[] = $vv;
+                        if (!empty($v) && \is_array($v)) {
+                            $arrEvents = $v;
                         }
                     }
                 }

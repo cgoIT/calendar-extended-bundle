@@ -15,12 +15,55 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Classes;
 
 use Contao\CalendarEventsModel;
+use Contao\CalendarModel;
 use Contao\Date;
+use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
 
 class Utils
 {
+    /**
+     * @return array<mixed>
+     */
+    public static function getCalendarConfig(Events $objModule): array
+    {
+        $calConf = [];
+
+        // Get the background and foreground colors of the calendars
+        foreach ($objModule->cal_calendar as $cal) {
+            $objCalendar = CalendarModel::findById($cal);
+
+            $calConf[$cal]['calendar'] = $objCalendar->title;
+
+            if (!empty($objCalendar->bg_color)) {
+                [$cssColor, $cssOpacity] = StringUtil::deserialize($objCalendar->bg_color, true);
+
+                if (!empty($cssColor)) {
+                    self::appendToArrayKey($calConf[$cal], 'background', 'background-color:#'.$cssColor.';');
+                }
+
+                if (!empty($cssOpacity)) {
+                    self::appendToArrayKey($calConf[$cal], 'background', 'opacity:'.($cssOpacity / 100).';');
+                }
+            }
+
+            if (!empty($objCalendar->fg_color)) {
+                [$cssColor, $cssOpacity] = StringUtil::deserialize($objCalendar->fg_color, true);
+
+                if (!empty($cssColor)) {
+                    self::appendToArrayKey($calConf[$cal], 'foreground', 'color:#'.$cssColor.';');
+                }
+
+                if (!empty($cssOpacity)) {
+                    self::appendToArrayKey($calConf[$cal], 'foreground', 'opacity:'.($cssOpacity / 100).';');
+                }
+            }
+        }
+
+        return $calConf;
+    }
+
     /**
      * @return array<string>
      */

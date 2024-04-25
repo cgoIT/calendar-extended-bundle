@@ -12,19 +12,13 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullcalendar;
+// use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullcalendar;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleTimeTable;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleYearView;
 use Cgoit\CalendarExtendedBundle\Widget\TimePeriodExt;
 
-/*
- * Front end modules
- */
 $GLOBALS['FE_MOD']['events']['timetable'] = ModuleTimeTable::class;
 $GLOBALS['FE_MOD']['events']['yearview'] = ModuleYearView::class;
-$GLOBALS['FE_MOD']['events']['fullcalendar'] = ModuleFullcalendar::class;
+// $GLOBALS['FE_MOD']['events']['fullcalendar'] = ModuleFullcalendar::class;
 
-/*
- * BACK END FORM FIELDS
- */
 $GLOBALS['BE_FFL']['timePeriodExt'] = TimePeriodExt::class;

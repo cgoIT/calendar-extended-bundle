@@ -18,17 +18,14 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Module;
 
-use Cgoit\CalendarExtendedBundle\Classes\EventsExt;
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Contao\BackendTemplate;
-use Contao\Config;
+use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\Date;
 use Contao\Environment;
+use Contao\Events;
 use Contao\FrontendTemplate;
 use Contao\Input;
-use Contao\Model;
-use Contao\Model\Collection;
-use Contao\ModuleModel;
-use Contao\PageError404;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -36,7 +33,7 @@ use Contao\System;
 /**
  * Class ModuleTimeTableExt.
  */
-class ModuleTimeTable extends EventsExt
+class ModuleTimeTable extends Events
 {
     /**
      * Current date object.
@@ -56,11 +53,6 @@ class ModuleTimeTable extends EventsExt
     protected $weekEnd;
 
     /**
-     * @var array<mixed>
-     */
-    protected $calConf = [];
-
-    /**
      * Redirect URL.
      *
      * @var string
@@ -73,11 +65,6 @@ class ModuleTimeTable extends EventsExt
      * @var string
      */
     protected $strTemplate = 'mod_calendar';
-
-    public function __construct(Collection|Model|ModuleModel $objModule, string $strColumn = 'main')
-    {
-        parent::__construct((array) System::getContainer()->getParameter('cgoit_calendar_extended.month_array'), $objModule, $strColumn);
-    }
 
     /**
      * Do not show the module if no calendar has been selected.
@@ -93,74 +80,34 @@ class ModuleTimeTable extends EventsExt
         if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
             $objTemplate = new BackendTemplate('be_wildcard');
 
-            $objTemplate->wildcard = '### '.mb_strtoupper((string) $GLOBALS['TL_LANG']['FMD']['timetable'][0]).' ###';
+            $objTemplate->wildcard = '### '.$GLOBALS['TL_LANG']['FMD']['timetable'][0].' ###';
             $objTemplate->title = $this->headline;
             $objTemplate->id = $this->id;
             $objTemplate->link = $this->name;
-            $objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id='.$this->id;
+            $objTemplate->href = StringUtil::specialcharsUrl(System::getContainer()->get('router')->generate('contao_backend', ['do' => 'themes', 'table' => 'tl_module', 'act' => 'edit', 'id' => $this->id]));
 
             return $objTemplate->parse();
         }
 
         $this->cal_calendar = $this->sortOutProtected(StringUtil::deserialize($this->cal_calendar, true));
-        $this->cal_holiday = $this->sortOutProtected(StringUtil::deserialize($this->cal_holiday, true));
 
         // Return if there are no calendars
-        if (empty($this->cal_calendar)) {
+        if (empty($this->cal_calendar) || !\is_array($this->cal_calendar)) {
             return '';
-        }
-
-        // Calendar filter
-        if (Input::get('cal')) {
-            // Create array of cal_id's to filter
-            $cals1 = explode(',', (string) Input::get('cal'));
-            // Check if the cal_id's are valid for this module
-            $cals2 = array_intersect($cals1, $this->cal_calendar);
-
-            if ($cals2) {
-                $this->cal_calendar = array_intersect($cals2, $this->cal_calendar);
-            }
-        }
-
-        // Get the background and foreground colors of the calendars
-        foreach (array_merge($this->cal_calendar, $this->cal_holiday) as $cal) {
-            $objBG = $this->Database->prepare('select title, bg_color, fg_color from tl_calendar where id = ?')
-                ->limit(1)->execute($cal)
-            ;
-
-            $this->calConf[$cal]['calendar'] = $objBG->title;
-
-            if ($objBG->bg_color) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->bg_color);
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['background'] .= 'background-color:#'.$cssColor.';';
-                }
-
-                if (!empty($cssOpacity)) {
-                    $this->calConf[$cal]['background'] .= 'opacity:'.($cssOpacity / 100).';';
-                }
-            }
-
-            if ($objBG->fg_color) {
-                [$cssColor, $cssOpacity] = StringUtil::deserialize($objBG->fg_color);
-
-                if (!empty($cssColor)) {
-                    $this->calConf[$cal]['foreground'] .= 'color:#'.$cssColor.';';
-                }
-
-                if (!empty($cssOpacity)) {
-                    $this->calConf[$cal]['foreground'] .= 'opacity:'.($cssOpacity / 100).';';
-                }
-            }
         }
 
         $this->strUrl = preg_replace('/\?.*$/', '', (string) Environment::get('request'));
         $this->strLink = $this->strUrl;
 
-        if ($this->jumpTo && ($objTarget = $this->objModel->getRelated('jumpTo')) !== null) {
+        if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
             /** @var PageModel $objTarget */
             $this->strLink = $objTarget->getFrontendUrl();
+        }
+
+        // Tag the calendars (see #2137)
+        if (System::getContainer()->has('fos_http_cache.http.symfony_response_tagger')) {
+            $responseTagger = System::getContainer()->get('fos_http_cache.http.symfony_response_tagger');
+            $responseTagger->addTags(array_map(static fn ($id) => 'contao.db.tl_calendar.'.$id, $this->cal_calendar));
         }
 
         return parent::generate();
@@ -171,71 +118,68 @@ class ModuleTimeTable extends EventsExt
      */
     protected function compile(): void
     {
+        $month = Input::get('month');
+        $week = Input::get('week');
+        $day = Input::get('day');
+
         // Create the date object
         try {
-            // Respond to month
-            if (Input::get('month')) {
-                $this->Date = new Date((int) (Input::get('month').'01'), 'Ymd');
-            } // Respond to week
-            elseif (Input::get('week')) {
-                $selYear = (int) substr((string) Input::get('week'), 0, 4);
-                $selWeek = (int) substr((string) Input::get('week'), -2);
-                $selDay = 1 === $selWeek ? 4 : 1;
-                $dt = new \DateTime();
-                $dt->setISODate($selYear, $selWeek, $selDay);
-                $this->Date = new Date((int) $dt->format('Ymd'), 'Ymd');
-                unset($dt);
-            } // Respond to day
-            elseif (Input::get('day')) {
-                $this->Date = new Date((int) Input::get('day'), 'Ymd');
-            } // Fallback to today
-            else {
+            if (\is_string($month) && is_numeric($month)) {
+                $this->Date = new Date((int) $month, 'Ym');
+            } elseif (\is_string($week) && is_numeric($week)) {
+                $this->Date = $this->getWeekBeginAndEnd($week)[0];
+            } elseif (\is_string($day) && is_numeric($day)) {
+                $this->Date = new Date((int) $day, 'Ymd');
+            } else {
                 $this->Date = new Date();
             }
         } catch (\OutOfBoundsException) {
-            /** @var PageModel $objPage */
-            global $objPage;
-
-            /** @var PageError404 $objHandler */
-            $objHandler = new $GLOBALS['TL_PTY']['error_404']();
-            $objHandler->getResponse($objPage);
+            throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
         // Get the Year and the week of the given date
         $intYear = (int) date('o', $this->Date->tstamp);
         $intWeek = (int) date('W', $this->Date->tstamp);
 
-        $dt = new \DateTime();
-
-        // Set date to the first day of the given week
-        $dt->setISODate($intYear, $intWeek, 1);
-        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
-        $newYear = (int) date('Y', $newDate->tstamp);
-        $newMonth = (int) date('m', $newDate->tstamp);
-        $newDay = (int) date('d', $newDate->tstamp);
-        $this->weekBegin = mktime(0, 0, 0, $newMonth, $newDay, $newYear);
-
-        // Set date to the last day of the given week
-        $dt->setISODate($intYear, $intWeek, 7);
-        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
-        $newYear = (int) date('Y', $newDate->tstamp);
-        $newMonth = (int) date('m', $newDate->tstamp);
-        $newDay = (int) date('d', $newDate->tstamp);
-        $this->weekEnd = mktime(23, 59, 59, $newMonth, $newDay, $newYear);
-
-        unset($dt);
+        $this->setWeekStartAndEnd($intYear, $intWeek);
 
         // Get total count of weeks of the year
-        if (($weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear))) === '1') {
+        $weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear));
+        if ('1' === $weeksTotal) {
             $weeksTotal = date('W', mktime(0, 0, 0, 12, 24, $intYear));
         }
 
-        // $time = \Date::floorToMinute(); Find the boundaries objMinMax =
-        // $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS
-        // dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid
-        // IN('.implode(',', array_map('intval',
-        // $this->cal_calendar)).')'.(!BE_USER_LOGGED_IN ? " AND (start='' OR
-        // start<$time) AND (stop='' OR stop>$time) AND published=1" : ''));
+        $time = Date::floorToMinute();
+
+        // Find the boundaries
+        $blnShowUnpublished = System::getContainer()->get('contao.security.token_checker')->isPreviewMode();
+        $objMinMax = $this->Database->query('SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid IN('.implode(',', array_map('\intval', $this->cal_calendar)).')'.(!$blnShowUnpublished ? " AND published='1' AND (start='' OR start<=$time) AND (stop='' OR stop>$time)" : ''));
+        $dateFrom = $objMinMax->dateFrom;
+        $dateTo = $objMinMax->dateTo;
+        $repeatUntil = $objMinMax->repeatUntil;
+
+        if (isset($GLOBALS['TL_HOOKS']['findCalendarBoundaries']) && \is_array($GLOBALS['TL_HOOKS']['findCalendarBoundaries'])) {
+            foreach ($GLOBALS['TL_HOOKS']['findCalendarBoundaries'] as $callback) {
+                $this->import($callback[0]);
+                $this->{$callback[0]}->{$callback[1]}($dateFrom, $dateTo, $repeatUntil, $this);
+            }
+        }
+
+        $firstWeek = $this->getWeekBeginAndEnd(date('YW', min($dateFrom, $time)))[0];
+        $lastWeek = $this->getWeekBeginAndEnd(date('YW', max($dateTo, $repeatUntil, $time)))[1];
+
+        // The given month is out of scope
+        if ($week) {
+            [$weekBegin, $weekEnd] = $this->getWeekBeginAndEnd($week);
+            if ($weekBegin->tstamp < $firstWeek->tstamp || $weekEnd->tstamp > $lastWeek->tstamp) {
+                throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
+            }
+        }
+
+        // The given day is out of scope
+        if ($day && ($day < date('Ymd', min($dateFrom, $time)) || $day > date('Ymd', max($dateTo, $repeatUntil, $time)))) {
+            throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
+        }
 
         /** @var FrontendTemplate|object $objTemplate */
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_timetable');
@@ -256,40 +200,39 @@ class ModuleTimeTable extends EventsExt
                 $currYear = date('o');
                 $currWeek = (int) date('W');
                 $lblCurrent = $GLOBALS['TL_LANG']['MSC']['curr_week'];
-                $objTemplate->currHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$currYear.str_pad((string) $currWeek, 2, '0', STR_PAD_LEFT);
+                $objTemplate->currHref = $this->strUrl.'?week='.$currYear.str_pad((string) $currWeek, 2, '0', STR_PAD_LEFT);
                 $objTemplate->currTitle = StringUtil::specialchars($lblCurrent);
                 $objTemplate->currLink = $lblCurrent;
                 $objTemplate->currLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
             }
 
             // Previous week
-            $prevWeek = 1 === $intWeek ? $weeksTotal : $intWeek - 1;
+            $prevWeek = str_pad((string) (1 === $intWeek ? $weeksTotal : $intWeek - 1), 2, '0', STR_PAD_LEFT);
             $prevYear = 1 === $intWeek ? $intYear - 1 : $intYear;
-            $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$prevWeek.' '.$prevYear;
-            // $intPrevYm = (int) ($prevYear.str_pad($prevWeek, 2, 0, STR_PAD_LEFT));    if
-            // ($intPrevYm >= $intLeftBoundary)            {
-            $objTemplate->prevHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$prevYear.str_pad($prevWeek, 2, '0', STR_PAD_LEFT);
-            $objTemplate->prevTitle = StringUtil::specialchars($lblPrevious);
-            $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
-            $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
-            //            } Current week dateInfo =
-            // \Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $this->weekBegin).' - '.
-            // \Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], $this->weekEnd);
+
+            $prevWeekEnd = $this->getWeekBeginAndEnd($prevYear.$prevWeek)[1];
+            if ($prevWeekEnd->tstamp > $firstWeek->tstamp) {
+                $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$prevWeek.'/'.$prevYear;
+                $objTemplate->prevHref = $this->strUrl.'?week='.$prevYear.$prevWeek;
+                $objTemplate->prevTitle = StringUtil::specialchars($lblPrevious);
+                $objTemplate->prevLink = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
+                $objTemplate->prevLabel = $GLOBALS['TL_LANG']['MSC']['cal_previous'];
+            }
 
             $objTemplate->current = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$intWeek.' '.$intYear;
 
-            // Next month Next month
-            $nextWeek = $intWeek === (int) $weeksTotal ? 1 : $intWeek + 1;
+            // Next week
+            $nextWeek = str_pad((string) ($intWeek === (int) $weeksTotal ? 1 : $intWeek + 1), 2, '0', STR_PAD_LEFT);
             $nextYear = $intWeek === (int) $weeksTotal ? $intYear + 1 : $intYear;
-            $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$nextWeek.' '.$nextYear;
-            // $intNextYm = $nextYear.str_pad($nextWeek, 2, 0, STR_PAD_LEFT); Only generate a
-            // link if there are events (see #4160)            if ($intNextYm <=
-            // $intRightBoundary)            {
-            $objTemplate->nextHref = $this->strUrl.(Config::get('disableAlias') ? '?id='.Input::get('id').'&amp;' : '?').'week='.$nextYear.str_pad((string) $nextWeek, 2, '0', STR_PAD_LEFT);
-            $objTemplate->nextTitle = StringUtil::specialchars($lblNext);
-            $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
-            $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
-            //            }
+
+            $nextWeekBegin = $this->getWeekBeginAndEnd($nextYear.$nextWeek)[0];
+            if ($nextWeekBegin->tstamp < $lastWeek->tstamp) {
+                $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$nextWeek.'/'.$nextYear;
+                $objTemplate->nextHref = $this->strUrl.'?week='.$nextYear.$nextWeek;
+                $objTemplate->nextTitle = StringUtil::specialchars($lblNext);
+                $objTemplate->nextLink = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
+                $objTemplate->nextLabel = $GLOBALS['TL_LANG']['MSC']['cal_next'];
+            }
         }
 
         // Set week start day
@@ -311,6 +254,9 @@ class ModuleTimeTable extends EventsExt
      */
     protected function compileDays()
     {
+        /** @var PageModel */
+        global $objPage;
+
         $arrDays = [];
 
         // if we start on Sunday we have to go back one day
@@ -319,7 +265,7 @@ class ModuleTimeTable extends EventsExt
         }
 
         // Get all events
-        $arrAllEvents = $this->getAllEventsExt($this->cal_calendar, $this->weekBegin, $this->weekEnd, [$this->cal_holiday]);
+        $arrAllEvents = $this->getAllEvents($this->cal_calendar, $this->weekBegin, $this->weekEnd);
 
         // we create the array of times
         if ($this->cal_times) {
@@ -328,13 +274,10 @@ class ModuleTimeTable extends EventsExt
             $arrTimes['stop'] = '00:00';
 
             for ($i = 0; $i < 7; ++$i) {
-                $intCurrentDay = ($i + $this->cal_startDay) % 7;
-
                 $intKey = date('Ymd', strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
-                $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
 
                 // Here we have to get the valid times
-                if (\is_array($arrAllEvents[$intKey])) {
+                if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
                     // Here we have to get the valid times
                     foreach ($arrAllEvents[$intKey] as $v) {
                         foreach ($v as $vv) {
@@ -369,18 +312,18 @@ class ModuleTimeTable extends EventsExt
                 $arrTimes['stop'] = substr((string) $timerange['time_to'], 0, 2);
             }
 
-            $cellhight = $this->cellheight ?: 60;
+            $cellheight = $this->cellheight ?: 60;
 
             $arrListTimes = [];
             $counter = 0;
 
             for ($i = $arrTimes['start']; $i <= $arrTimes['stop']; ++$i) {
-                $top = $cellhight * $counter;
+                $top = $cellheight * $counter;
                 $strHour = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
                 $arrListTimes[$strHour]['top'] = $top;
                 $arrListTimes[$strHour]['class'] = 0 === $counter % 2 ? 'even' : 'odd';
                 $arrListTimes[$strHour]['label'] = "$i:00"; // top:".$top."px; position:relative;
-                $arrListTimes[$strHour]['style'] = 'height:'.$cellhight.'px;top:'.$top.'px;';
+                $arrListTimes[$strHour]['style'] = 'height:'.$cellheight.'px;top:'.$top.'px;';
                 ++$counter;
             }
         }
@@ -389,14 +332,14 @@ class ModuleTimeTable extends EventsExt
             $intCurrentDay = ($i + $this->cal_startDay) % 7;
 
             $intKey = date('Ymd', strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
-            $currDay = Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
+            $currDay = Date::parse($objPage->dateFormat, strtotime(date('Y-m-d', $this->weekBegin)." +$i day"));
 
             $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
             $class .= 0 === $intCurrentDay % 2 ? ' even' : ' odd';
             $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
             $class .= 0 === $intCurrentDay ? ' last' : '';
 
-            if ($currDay === Date::parse($GLOBALS['TL_CONFIG']['dateFormat'], strtotime(date('Y-m-d')))) {
+            if ($currDay === Date::parse($objPage->dateFormat, strtotime(date('Y-m-d')))) {
                 $class .= ' today';
             }
 
@@ -412,7 +355,7 @@ class ModuleTimeTable extends EventsExt
             // Get all events of a day
             $arrEvents = [];
 
-            if (\is_array($arrAllEvents[$intKey])) {
+            if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
                 foreach ($arrAllEvents[$intKey] as $v) {
                     foreach ($v as $vv) {
                         // set class recurring
@@ -420,32 +363,21 @@ class ModuleTimeTable extends EventsExt
                             $vv['class'] .= ' recurring';
                         }
 
-                        // set color from calendar
-                        $vv['calendar_title'] = $this->calConf[$vv['pid']]['calendar'];
-
-                        if ($this->calConf[$vv['pid']]['background']) {
-                            $vv['bgstyle'] = $this->calConf[$vv['pid']]['background'];
-                        }
-
-                        if ($this->calConf[$vv['pid']]['foreground']) {
-                            $vv['fgstyle'] = $this->calConf[$vv['pid']]['foreground'];
-                        }
-
                         // calculate the position of the event
                         $h = date('H', $vv['startTime']);
                         $m = date('i', $vv['startTime']);
 
-                        if (isset($arrListTimes) && \is_array($arrListTimes[$h]) && isset($cellhight)) {
+                        if (isset($arrListTimes) && \is_array($arrListTimes[$h]) && isset($cellheight)) {
                             // calculate the top of the event
-                            $top = $arrListTimes[$h]['top'] + $m * $cellhight / 60;
+                            $top = $arrListTimes[$h]['top'] + $m * $cellheight / 60;
 
                             // calculate the height of the event.
                             $d1 = date_create(date('H:i', $vv['startTime']));
                             $d2 = date_create(date('H:i', $vv['endTime']));
                             $d0 = date_diff($d1, $d2);
-                            $height = ((int) $d0->format('%h') * $cellhight) + (int) $d0->format('%i') * $cellhight / 60;
+                            $height = ((int) $d0->format('%h') * $cellheight) + (int) $d0->format('%i') * $cellheight / 60;
 
-                            $vv['style'] .= 'position:absolute;top:'.$top.'px;height:'.$height.'px;';
+                            Utils::appendToArrayKey($vv, 'style', 'position:absolute;top:'.$top.'px;height:'.$height.'px;');
                         }
 
                         $arrEvents[] = $vv;
@@ -463,5 +395,47 @@ class ModuleTimeTable extends EventsExt
         }
 
         return [$arrDays, $arrListTimes ?? []];
+    }
+
+    private function setWeekStartAndEnd(int $intYear, int $intWeek): void
+    {
+        $dt = new \DateTime();
+
+        // Set date to the first day of the given week
+        $dt->setISODate($intYear, $intWeek);
+        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
+        $newYear = (int) date('Y', $newDate->tstamp);
+        $newMonth = (int) date('m', $newDate->tstamp);
+        $newDay = (int) date('d', $newDate->tstamp);
+        $this->weekBegin = mktime(0, 0, 0, $newMonth, $newDay, $newYear);
+
+        // Set date to the last day of the given week
+        $dt->setISODate($intYear, $intWeek, 7);
+        $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
+        $newYear = (int) date('Y', $newDate->tstamp);
+        $newMonth = (int) date('m', $newDate->tstamp);
+        $newDay = (int) date('d', $newDate->tstamp);
+        $this->weekEnd = mktime(23, 59, 59, $newMonth, $newDay, $newYear);
+
+        unset($dt);
+    }
+
+    /**
+     * @return array<Date>
+     */
+    private function getWeekBeginAndEnd(string $week): array
+    {
+        $selYear = (int) substr($week, 0, 4);
+        $selWeek = (int) substr($week, -2);
+        $selDay = 1 === $selWeek ? 4 : 1;
+        $dt = new \DateTime();
+
+        $dt->setISODate($selYear, $selWeek, $selDay);
+        $weekBegin = new Date((int) $dt->format('Ymd'), 'Ymd');
+
+        $dt->setISODate($selYear, $selWeek, 7);
+        $weekEnd = new Date((int) $dt->format('Ymd'), 'Ymd');
+
+        return [$weekBegin, $weekEnd];
     }
 }
