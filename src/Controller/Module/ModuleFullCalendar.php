@@ -29,9 +29,9 @@ use Contao\StringUtil;
 use Contao\System;
 
 /**
- * Front end module "calendar".
+ * Front end module "FullCalendar".
  */
-class ModuleFullcalendar extends Events
+class ModuleFullCalendar extends Events
 {
     /**
      * Current date object.
