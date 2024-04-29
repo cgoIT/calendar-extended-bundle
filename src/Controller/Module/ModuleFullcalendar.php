@@ -155,8 +155,8 @@ class ModuleFullcalendar extends Events
                 $this->cal_fcFormat = 'cal_fc_month';
                 $this->headline .= ' '.Date::parse('F Y', $this->Date->tstamp);
             } elseif ($blnDynamicFormat && $week) {
-                $selYear = (int) substr($week, 0, 4);
-                $selWeek = (int) substr($week, -2);
+                $selYear = (int) substr((string) $week, 0, 4);
+                $selWeek = (int) substr((string) $week, -2);
                 $selDay = 1 === $selWeek ? 4 : 1;
                 $dt = new \DateTime();
                 $dt->setISODate($selYear, $selWeek, $selDay);
@@ -233,19 +233,12 @@ class ModuleFullcalendar extends Events
             $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
             $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
 
-            switch ($this->cal_fcFormat) {
-                case 'cal_fc_month':
-                    $objTemplate->defaultView = 'month';
-                    break;
-                case 'cal_fc_day':
-                    $objTemplate->defaultView = 'agendaDay';
-                    break;
-                case 'cal_fc_list':
-                    $objTemplate->defaultView = 'listDay';
-                    break;
-                default:
-                    $objTemplate->defaultView = 'agendaWeek';
-            }
+            $objTemplate->defaultView = match ($this->cal_fcFormat) {
+                'cal_fc_month' => 'month',
+                'cal_fc_day' => 'agendaDay',
+                'cal_fc_list' => 'listDay',
+                default => 'agendaWeek',
+            };
 
             // Set the formular $objTemplate->event_formular = \Form::getForm(1);
             // Render the template

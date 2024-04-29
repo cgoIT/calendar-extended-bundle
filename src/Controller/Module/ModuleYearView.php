@@ -222,7 +222,7 @@ class ModuleYearView extends Events
     {
         $arrMonths = [];
 
-        for ($m = 0; $m < 12; $m++) {
+        for ($m = 0; $m < 12; ++$m) {
             $arrMonths[$m + 1]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m];
             $arrMonths[$m + 1]['class'] = 'head';
         }
@@ -265,25 +265,29 @@ class ModuleYearView extends Events
                     }
 
                     if ($this->use_horizontal) {
-                        // in horizontal presentation we have 12 days (e.g. always the first day of the month) in each row.
+                        // in horizontal presentation we have 12 days (e.g. always the first day of the
+                        // month) in each row.
                         $key1 = $d;
                         $key2 = $m;
                     } else {
-                        // in vertical presentation we have up to 31 days (all the days for a month) in each row.
+                        // in vertical presentation we have up to 31 days (all the days for a month) in
+                        // each row.
                         $key1 = $m;
                         $key2 = $d;
                     }
-                    $arrDays[$key1][$key2]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)) . ' ' . $d;
-                    $arrDays[$key1][$key2]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
+                    $arrDays[$key1][$key2]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
+                    $arrDays[$key1][$key2]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                     $arrDays[$key1][$key2]['day'] = $d;
                     $arrDays[$key1][$key2]['class'] = $class;
                 } else {
                     if ($this->use_horizontal) {
-                        // in horizontal presentation we have 12 days (e.g. always the first day of the month) in each row.
+                        // in horizontal presentation we have 12 days (e.g. always the first day of the
+                        // month) in each row.
                         $key1 = $d;
                         $key2 = $m;
                     } else {
-                        // in vertical presentation we have up to 31 days (all the days for a month) in each row.
+                        // in vertical presentation we have up to 31 days (all the days for a month) in
+                        // each row.
                         $key1 = $m;
                         $key2 = $d;
                     }
@@ -326,6 +330,7 @@ class ModuleYearView extends Events
     /**
      * @param array<mixed> $months
      * @param array<mixed> $yeardays
+     *
      * @return array<mixed>
      */
     private function compileData(array $months, array $yeardays): array
@@ -343,6 +348,7 @@ class ModuleYearView extends Events
 
             foreach (range(1, 31) as $day) {
                 $row = [];
+
                 foreach (range(1, 12) as $month) {
                     $m = $yeardays[$day][$month];
                     $m['attr'] = 'style="vertical-align: top; text-wrap: nowrap;"';
@@ -356,6 +362,7 @@ class ModuleYearView extends Events
         } else {
             // days in columns, months in rows
             $header[] = ['label' => '', 'class' => 'head', 'attr' => ''];
+
             foreach (range(1, 31) as $day) {
                 $header[] = ['label' => $day, 'class' => 'head', 'attr' => ''];
             }
@@ -375,6 +382,7 @@ class ModuleYearView extends Events
                 $body[] = $row;
 
                 $row = [];
+
                 foreach (range(1, 31) as $day) {
                     $row[] = $yeardays[$month][$day]['events'];
                 }

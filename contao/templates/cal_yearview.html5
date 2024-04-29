@@ -38,7 +38,7 @@
                             <td <?= !empty($col['attr']) ? $col['attr'] : '' ?> class="<?= $col['class']; ?>">
                                 <?= $col['label']; ?>
                             </td>
-                            <?php elseif (is_array($col) && !empty($col)): ?>
+                            <?php elseif (!empty($col) && is_array($col)): ?>
                                 <td>
                                 <?php foreach ($col as $event): ?>
                                     <div class="event cal_<?= $event['pid']; ?><?php if ($event['class']): echo $event['class']; endif; ?>" style="<?= $event['bgstyle']; ?>" title="<?= $event['title']; ?>">
