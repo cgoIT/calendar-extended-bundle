@@ -122,54 +122,59 @@ class ModuleFullcalendar extends Events
 
         $blnClearInput = false;
 
-        $intYear = (int) Input::get('year');
-        $intMonth = (int) Input::get('month');
-        $intDay = (int) Input::get('day');
+        $month = Input::get('month');
+        $week = Input::get('week');
+        $day = Input::get('day');
 
         // Jump to the current period
-        if (!isset($_GET['year']) && !isset($_GET['month']) && !isset($_GET['day'])) {
-            switch ($this->cal_format) {
-                case 'cal_year':
-                    $intYear = date('Y');
+        if (!isset($_GET['month']) && !isset($_GET['week']) && !isset($_GET['day'])) {
+            switch ($this->cal_fcFormat) {
+                case 'cal_fc_month':
+                    $month = date('Ym');
                     break;
 
-                case 'cal_month':
-                    $intMonth = date('Ym');
+                case 'cal_fc_week':
+                    $week = date('YW');
                     break;
 
-                case 'cal_day':
-                    $intDay = date('Ymd');
+                case 'cal_fc_day':
+                case 'cal_fc_list':
+                    $day = date('Ymd');
                     break;
             }
 
             $blnClearInput = true;
         }
 
-        $blnDynamicFormat = (!$this->cal_ignoreDynamic && \in_array($this->cal_format, ['cal_day', 'cal_month', 'cal_year'], true));
+        $blnDynamicFormat = (!$this->cal_ignoreDynamic && \in_array($this->cal_fcFormat, ['cal_fc_list', 'cal_fc_day', 'cal_fc_week', 'cal_fc_month'], true));
 
         // Create the date object
         try {
-            if ($blnDynamicFormat && $intYear) {
-                $this->Date = new Date($intYear, 'Y');
-                $this->cal_format = 'cal_year';
-                $this->headline .= ' '.date('Y', $this->Date->tstamp);
-            } elseif ($blnDynamicFormat && $intMonth) {
-                $this->Date = new Date($intMonth, 'Ym');
-                $this->cal_format = 'cal_month';
+            if ($blnDynamicFormat && $month) {
+                $this->Date = new Date($month, 'Ym');
+                $this->cal_fcFormat = 'cal_fc_month';
                 $this->headline .= ' '.Date::parse('F Y', $this->Date->tstamp);
-            } elseif ($blnDynamicFormat && $intDay) {
-                $this->Date = new Date($intDay, 'Ymd');
-                $this->cal_format = 'cal_day';
+            } elseif ($blnDynamicFormat && $week) {
+                $selYear = (int) substr($week, 0, 4);
+                $selWeek = (int) substr($week, -2);
+                $selDay = 1 === $selWeek ? 4 : 1;
+                $dt = new \DateTime();
+                $dt->setISODate($selYear, $selWeek, $selDay);
+                $this->Date = new Date((int) $dt->format('Ymd'), 'Ymd');
+                $this->cal_fcFormat = 'cal_fc_week';
+                $this->headline .= ' '.Date::parse('W/Y', $this->Date->tstamp);
+            } elseif ($blnDynamicFormat && $day) {
+                $this->Date = new Date($day, 'Ymd');
                 $this->headline .= ' '.Date::parse($objPage->dateFormat, $this->Date->tstamp);
+                if (empty($this->cal_fcFormat)) {
+                    $this->cal_fcFormat = 'cal_fc_day';
+                }
             } else {
                 $this->Date = new Date();
             }
         } catch (\OutOfBoundsException) {
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
-
-        //        list($intStart, $intEnd, $strEmpty) =
-        // $this->getDatesFromFormat($this->Date, $this->cal_format);
 
         if (isset($_POST['type'])) {
             /**
@@ -228,6 +233,20 @@ class ModuleFullcalendar extends Events
             $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
             $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
 
+            switch ($this->cal_fcFormat) {
+                case 'cal_fc_month':
+                    $objTemplate->defaultView = 'month';
+                    break;
+                case 'cal_fc_day':
+                    $objTemplate->defaultView = 'agendaDay';
+                    break;
+                case 'cal_fc_list':
+                    $objTemplate->defaultView = 'listDay';
+                    break;
+                default:
+                    $objTemplate->defaultView = 'agendaWeek';
+            }
+
             // Set the formular $objTemplate->event_formular = \Form::getForm(1);
             // Render the template
             $this->Template->fullcalendar = $objTemplate->parse();
@@ -235,8 +254,8 @@ class ModuleFullcalendar extends Events
 
         // Clear the $_GET array (see #2445)
         if ($blnClearInput) {
-            Input::setGet('year', null);
             Input::setGet('month', null);
+            Input::setGet('week', null);
             Input::setGet('day', null);
         }
     }
@@ -277,42 +296,18 @@ class ModuleFullcalendar extends Events
             foreach ($days as $events) {
                 foreach ($events as $event) {
                     // Use repeatEnd if > 0 (see #8447)
-                    if (($event['repeatEnd'] ?: $event['endTime']) < $intStart || $event['startTime'] > $intEnd) {
+                    if (($event['repeatEnd'] ?: $event['end']) < $intStart || $event['begin'] > $intEnd) {
                         continue;
                     }
 
-                    // Remove events outside time scope
-                    if ($this->pubTimeRecurrences && ($event['begin'] && $event['end'])) {
-                        // Step 2: get show from/until times
-                        $startTimeShow = strtotime(date('dmY').' '.date('Hi', $event['begin']));
-                        $endTimeShow = strtotime(date('dmY').' '.date('Hi', $event['end']));
-
-                        // Compare the times...
-                        if ($currTime < $startTimeShow || $currTime > $endTimeShow) {
-                            continue;
-                        }
-                    }
-
-                    // We take the "show from" time or the "event start" time to check the display
-                    // duration limit
-                    $displayStart = $event['start'] ?: $event['startTime'];
-
-                    if ('' !== $this->displayDuration) {
-                        $displayStop = strtotime((string) $this->displayDuration, $displayStart);
-
-                        if (false !== $displayStop && $displayStop < $currTime) {
-                            continue;
-                        }
-                    }
-
                     // Hide Events that are already started
-                    if ($this->hide_started && $event['startTime'] < $currTime) {
+                    if ($this->hide_started && $event['begin'] < $currTime) {
                         continue;
                     }
 
                     // Set start and end of each event to the right format for the fullcalendar
-                    $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['startTime']);
-                    $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['endTime']);
+                    $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
+                    $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
                     $allDay = $event['addTime'] ? false : true;
 
                     // Set title
@@ -332,9 +327,9 @@ class ModuleFullcalendar extends Events
                         $editable = false;
                         $recurring = true;
                     }
-                    $row = StringUtil::deserialize($event['repeatFixedDates'], true);
 
-                    if (!empty($row) && $row[0]['new_repeat'] > 0) {
+                    $row = StringUtil::deserialize($event['repeatFixedDates']);
+                    if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
                         $editable = false;
                         $recurring = true;
                     }
@@ -344,7 +339,6 @@ class ModuleFullcalendar extends Events
                         // Multi day event?
                         if (Date::parse('dmY', $event['startTime']) !== Date::parse('dmY', $event['endTime'])) {
                             $multiday = true;
-                            $recurring = false;
                         }
                     }
 
@@ -474,9 +468,10 @@ class ModuleFullcalendar extends Events
         if ($update_event->recurring || $update_event->recurringExt || $update_event->useExceptions) {
             return false;
         }
+
         $row = StringUtil::deserialize($update_event->repeatFixedDates);
 
-        if ($row[0]['new_repeat'] > 0) {
+        if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
             return false;
         }
 

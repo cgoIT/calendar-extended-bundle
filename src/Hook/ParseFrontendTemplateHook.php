@@ -65,6 +65,11 @@ class ParseFrontendTemplateHook
 
                 if (!empty($objEvent->recurringExt)) {
                     $arrRange = StringUtil::deserialize($objEvent->repeatEachExt, true);
+
+                    if (empty($arrRange) || empty($arrRange['value']) || empty($arrRange['unit'])) {
+                        return $buffer;
+                    }
+
                     $arg = $arrRange['value'];
                     $unit = $arrRange['unit'];
 
@@ -83,15 +88,16 @@ class ParseFrontendTemplateHook
                 } elseif (!empty($objEvent->repeatFixedDates)) {
                     $isFixedDate = true;
 
-                    $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates, true);
+                    $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
+                    if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
+                        foreach ($arrFixedDates as $fixedDate) {
+                            if (($template->cal_hideRunning ? $intStartTime : $intEndTime) < time() && $intEndTime < $objEvent->repeatEnd) {
+                                break;
+                            }
 
-                    foreach ($arrFixedDates as $fixedDate) {
-                        if (($template->cal_hideRunning ? $intStartTime : $intEndTime) < time() && $intEndTime < $objEvent->repeatEnd) {
-                            break;
+                            $intStartTime = (int) $fixedDate['new_repeat'];
+                            $intEndTime = $intStartTime + $objEvent->startTime - $objEvent->endTime;
                         }
-
-                        $intStartTime = $fixedDate['new_repeat'];
-                        $intEndTime = $intStartTime + $objEvent->startTime - $objEvent->endTime;
                     }
                 }
 

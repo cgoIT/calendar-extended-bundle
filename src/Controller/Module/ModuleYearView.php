@@ -207,6 +207,7 @@ class ModuleYearView extends Events
 
         $objTemplate->months = $this->compileMonths();
         $objTemplate->yeardays = $this->compileDays($intYear);
+        $objTemplate->data = $this->compileData($objTemplate->months, $objTemplate->yeardays);
         $objTemplate->substr = $GLOBALS['TL_LANG']['MSC']['dayShortLength'];
 
         $this->Template->calendar = $objTemplate->parse();
@@ -219,14 +220,14 @@ class ModuleYearView extends Events
      */
     protected function compileMonths()
     {
-        $arrDays = [];
+        $arrMonths = [];
 
-        for ($m = 0; $m < 12; ++$m) {
-            $arrDays[$m]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m];
-            $arrDays[$m]['class'] = 'head';
+        for ($m = 0; $m < 12; $m++) {
+            $arrMonths[$m + 1]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m];
+            $arrMonths[$m + 1]['class'] = 'head';
         }
 
-        return $arrDays;
+        return $arrMonths;
     }
 
     /**
@@ -252,7 +253,6 @@ class ModuleYearView extends Events
                     $day = mktime(12, 00, 00, $m, $d, $currYear);
 
                     $intCurrentDay = (int) date('w', $day);
-                    // $intCurrentWeek = (int) date('W', $day);
 
                     $intKey = date('Ymd', strtotime(date('Y-m-d', $day)));
                     $currDay = Date::parse($objPage->dateFormat, strtotime(date('Y-m-d', $day)));
@@ -265,24 +265,32 @@ class ModuleYearView extends Events
                     }
 
                     if ($this->use_horizontal) {
-                        $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
-                        $arrDays[$m][0]['class'] = 'head';
+                        // in horizontal presentation we have 12 days (e.g. always the first day of the month) in each row.
+                        $key1 = $d;
+                        $key2 = $m;
+                    } else {
+                        // in vertical presentation we have up to 31 days (all the days for a month) in each row.
+                        $key1 = $m;
+                        $key2 = $d;
                     }
-
-                    $arrDays[$d][$m]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
-                    $arrDays[$d][$m]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
-                    $arrDays[$d][$m]['day'] = $d;
-                    $arrDays[$d][$m]['class'] = $class;
+                    $arrDays[$key1][$key2]['label'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)) . ' ' . $d;
+                    $arrDays[$key1][$key2]['weekday'] = strtoupper(substr($GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
+                    $arrDays[$key1][$key2]['day'] = $d;
+                    $arrDays[$key1][$key2]['class'] = $class;
                 } else {
                     if ($this->use_horizontal) {
-                        $arrDays[$m][0]['label'] = $GLOBALS['TL_LANG']['MONTHS'][$m - 1];
-                        $arrDays[$m][0]['class'] = 'head';
+                        // in horizontal presentation we have 12 days (e.g. always the first day of the month) in each row.
+                        $key1 = $d;
+                        $key2 = $m;
+                    } else {
+                        // in vertical presentation we have up to 31 days (all the days for a month) in each row.
+                        $key1 = $m;
+                        $key2 = $d;
                     }
-
-                    $arrDays[$d][$m]['label'] = '';
-                    $arrDays[$d][$m]['weekday'] = '';
-                    $arrDays[$d][$m]['day'] = '';
-                    $arrDays[$d][$m]['class'] = 'empty';
+                    $arrDays[$key1][$key2]['label'] = '';
+                    $arrDays[$key1][$key2]['weekday'] = '';
+                    $arrDays[$key1][$key2]['day'] = '';
+                    $arrDays[$key1][$key2]['class'] = 'empty';
 
                     $intKey = 'empty';
                 }
@@ -293,19 +301,90 @@ class ModuleYearView extends Events
                 if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
                     foreach ($arrAllEvents[$intKey] as $v) {
                         if (!empty($v) && \is_array($v)) {
+                            foreach ($v as &$vv) {
+                                // set class recurring
+                                if ($vv['recurring'] || $vv['recurringExt']) {
+                                    $vv['class'] .= ' recurring';
+                                }
+                            }
                             $arrEvents = $v;
                         }
                     }
                 }
 
                 if ($this->use_horizontal) {
-                    $arrDays[$m][$d]['events'] = $arrEvents;
-                } else {
                     $arrDays[$d][$m]['events'] = $arrEvents;
+                } else {
+                    $arrDays[$m][$d]['events'] = $arrEvents;
                 }
             }
         }
 
         return $arrDays;
+    }
+
+    /**
+     * @param array<mixed> $months
+     * @param array<mixed> $yeardays
+     * @return array<mixed>
+     */
+    private function compileData(array $months, array $yeardays): array
+    {
+        $data = [];
+        $header = [];
+        $body = [];
+
+        if (!empty($this->use_horizontal)) {
+            // months in columns, days in rows
+            foreach ($months as $month) {
+                $month['attr'] = 'colspan="2"';
+                $header[] = $month;
+            }
+
+            foreach (range(1, 31) as $day) {
+                $row = [];
+                foreach (range(1, 12) as $month) {
+                    $m = $yeardays[$day][$month];
+                    $m['attr'] = 'style="vertical-align: top; text-wrap: nowrap;"';
+                    unset($m['events']);
+                    $row[] = $m;
+
+                    $row[] = $yeardays[$day][$month]['events'];
+                }
+                $body[] = $row;
+            }
+        } else {
+            // days in columns, months in rows
+            $header[] = ['label' => '', 'class' => 'head', 'attr' => ''];
+            foreach (range(1, 31) as $day) {
+                $header[] = ['label' => $day, 'class' => 'head', 'attr' => ''];
+            }
+
+            foreach (range(1, 12) as $month) {
+                $row = [];
+
+                $m = $months[$month];
+                $m['attr'] = 'rowspan="2"';
+                $row[] = $m;
+
+                foreach (range(1, 31) as $day) {
+                    $col = $yeardays[$month][$day];
+                    $col['attr'] = 'style="text-wrap: nowrap;"';
+                    $row[] = $col;
+                }
+                $body[] = $row;
+
+                $row = [];
+                foreach (range(1, 31) as $day) {
+                    $row[] = $yeardays[$month][$day]['events'];
+                }
+                $body[] = $row;
+            }
+        }
+
+        $data['header'] = $header;
+        $data['body'] = $body;
+
+        return $data;
     }
 }

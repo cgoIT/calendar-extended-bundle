@@ -296,7 +296,7 @@ class CalendarEventsCallbacks extends Backend
     {
         $arrFixedDates = StringUtil::deserialize($activeRecord->repeatFixedDates) ?: null;
 
-        if (!empty($arrFixedDates)) {
+        if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
             $arrFixedDates = $this->sanitizeFixedDates($arrFixedDates);
             usort(
                 $arrFixedDates,
@@ -349,6 +349,10 @@ class CalendarEventsCallbacks extends Backend
     {
         if (!empty($activeRecord->recurring)) {
             $arrRange = StringUtil::deserialize($activeRecord->repeatEach, true);
+
+            if (empty($arrRange) || empty($arrRange['value']) || empty($arrRange['unit'])) {
+                return [$arrSet, $arrAllRecurrences, $maxRepeatEnd];
+            }
 
             $arg = $arrRange['value'] * $activeRecord->recurrences;
             $unit = $arrRange['unit'];
@@ -425,7 +429,7 @@ class CalendarEventsCallbacks extends Backend
         if (!empty($activeRecord->recurringExt)) {
             $arrRange = StringUtil::deserialize($activeRecord->repeatEachExt, true);
 
-            if (!empty($arrRange)) {
+            if (!empty($arrRange) && !empty($arrRange['value']) && !empty($arrRange['unit'])) {
                 $arg = $arrRange['value'];
                 $unit = $arrRange['unit'];
 

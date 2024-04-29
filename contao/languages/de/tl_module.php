@@ -61,8 +61,16 @@ $GLOBALS['TL_LANG']['tl_module']['time_range_from'] = ['Zeit von', 'Startzeit f�
 $GLOBALS['TL_LANG']['tl_module']['time_range_to'] = ['Zeit bis', 'Endzeit für den Stundenplan.'];
 
 $GLOBALS['TL_LANG']['tl_module']['cellheight'] = ['Zellenhöhe eines Events', 'Höhe der Zelle eines Events in px pro Stunde. Standard ist 1px pro Minute und damit 60px bei einem Interval von 1 Stunde.'];
-// $GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'] = ['URL Parameter nicht anhängen', 'Es werden keine Paramter (date, week, month, ...) an die Event URL gehängt.'];
+// $GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'] = ['URL Parameter
+// nicht anhängen', 'Es werden keine Paramter (date, week, month, ...) an die
+// Event URL gehängt.'];
 
 $GLOBALS['TL_LANG']['tl_module']['filter_fields'] = ['Event Filterung', 'Felder auswählen, auf die im Frontend Template gefiltert werden kann.'];
 
 $GLOBALS['TL_LANG']['tl_module']['filter_legend'] = 'Filter';
+
+$GLOBALS['TL_LANG']['tl_module']['cal_fcFormat'] = ['Initiale Ansicht', 'Wählen Sie die initiale Ansicht für Ihren Kalender.'];
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_month'] = 'Monatsübersicht';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_week'] = 'Wochenübersicht';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_day'] = 'Tagesübersicht';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_list'] = 'Listenansicht';

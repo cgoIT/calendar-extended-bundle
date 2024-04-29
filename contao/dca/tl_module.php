@@ -54,7 +54,7 @@ PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', Pale
     ->applyToPalette('eventlist', 'tl_module')
 ;
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar,cal_fcFormat,cal_ignoreDynamic;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hide_holiday'] = [
     'default' => 0,
@@ -175,6 +175,15 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbersWithinDays'] = [
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
     'sql' => "char(1) NOT NULL default ''",
+];
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['cal_fcFormat'] = [
+    'exclude' => true,
+    'inputType' => 'select',
+    'options' => ['cal_fc_month', 'cal_fc_week', 'cal_fc_day', 'cal_fc_list'],
+    'reference' => &$GLOBALS['TL_LANG']['tl_module'],
+    'eval' => ['tl_class' => 'clr w50'],
+    'sql' => "varchar(32) COLLATE ascii_bin NOT NULL default 'cal_fc_week'",
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [

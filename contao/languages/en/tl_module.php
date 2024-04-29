@@ -59,8 +59,14 @@ $GLOBALS['TL_LANG']['tl_module']['time_range_from'] = ['Time from', 'Starttime f
 $GLOBALS['TL_LANG']['tl_module']['time_range_to'] = ['Time to', 'Endtime for timetable.'];
 
 $GLOBALS['TL_LANG']['tl_module']['cellheight'] = ['Row height of events', 'Height of the cell of an event in px per hour. Standard is 1px per minute and thus 60px at an interval of 1 hour.'];
-// $GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'] = ['ignore url parameter', 'No parameter (date, week, month, ...) will be added to the URL.'];
+// $GLOBALS['TL_LANG']['tl_module']['ignore_urlparameter'] = ['ignore url parameter',
+// 'No parameter (date, week, month, ...) will be added to the URL.'];
 
 $GLOBALS['TL_LANG']['tl_module']['filter_fields'] = ['Filtering events', 'Select fields that can be filtered in the frontend template.'];
-
 $GLOBALS['TL_LANG']['tl_module']['filter_legend'] = 'Filter';
+
+$GLOBALS['TL_LANG']['tl_module']['cal_fcFormat'] = ['Initial view', 'Select the initial view for your calendar.'];
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_month'] = 'Monthly overview';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_week'] = 'Weekly overview';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_day'] = 'Daily overview';
+$GLOBALS['TL_LANG']['tl_module']['cal_fc_list'] = 'List view';

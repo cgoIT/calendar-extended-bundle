@@ -176,37 +176,39 @@ class GetAllEventsHook
         );
         if (!empty($arrEventsWithFixedRepeats)) {
             foreach ($arrEventsWithFixedRepeats as $objEvent) {
-                $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates, true);
+                $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
-                foreach ($arrFixedDates as $date) {
-                    $intStart = $date['new_repeat'];
-                    if (!empty($date['new_start']) && $objEvent->addTime) {
-                        $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_start']);
-                    }
-                    if (!empty($date['new_end']) && $objEvent->addTime) {
-                        $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_end']);
-                    }
-                    $intEnd = $intStart;
+                if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
+                    foreach ($arrFixedDates as $date) {
+                        $intStart = $date['new_repeat'];
+                        if (!empty($date['new_start']) && $objEvent->addTime) {
+                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_start']);
+                        }
+                        if (!empty($date['new_end']) && $objEvent->addTime) {
+                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_end']);
+                        }
+                        $intEnd = $intStart;
 
-                    if ($intStart >= $timeStart && $intStart <= $timeEnd) {
-                        $key = Date::parse('Ymd', $intStart);
-                        if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
-                            $alreadyInArray = false;
+                        if ($intStart >= $timeStart && $intStart <= $timeEnd) {
+                            $key = Date::parse('Ymd', $intStart);
+                            if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
+                                $alreadyInArray = false;
 
-                            foreach ($arrEvents[$key][$intStart] as $event) {
-                                if ($event['id'] === $objEvent->id) {
-                                    $alreadyInArray = true;
-                                    break;
+                                foreach ($arrEvents[$key][$intStart] as $event) {
+                                    if ($event['id'] === $objEvent->id) {
+                                        $alreadyInArray = true;
+                                        break;
+                                    }
+                                }
+
+                                if ($alreadyInArray) {
+                                    continue;
                                 }
                             }
 
-                            if ($alreadyInArray) {
-                                continue;
-                            }
+                            $eventsToAdd = array_merge($eventsToAdd,
+                                $this->createEvents($objEvent, $objModule, $intStart, $intEnd, true));
                         }
-
-                        $eventsToAdd = array_merge($eventsToAdd,
-                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, true));
                     }
                 }
             }
@@ -470,10 +472,10 @@ class GetAllEventsHook
 
         $arrEvent = $objEvent->row();
 
-        $arrEvent['startDate'] = $intStart;
-        $arrEvent['startTime'] = $intStart;
-        $arrEvent['endDate'] = $intEnd;
-        $arrEvent['endTime'] = $intEnd;
+        $arrEvent['startDate'] = $objEvent->startDate;
+        $arrEvent['startTime'] = $objEvent->startTime;
+        $arrEvent['endDate'] = $objEvent->endDate;
+        $arrEvent['endTime'] = $objEvent->endTime;
         $arrEvent['date'] = $strDate;
         $arrEvent['time'] = $strTime;
         $arrEvent['datetime'] = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $intStart) : date('Y-m-d', $intStart);

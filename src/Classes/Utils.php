@@ -73,37 +73,39 @@ class Utils
         $recurring = '';
 
         if ($isFixedDate) {
-            $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates, true);
+            $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
-            if (\count($arrFixedDates) > 0) {
+            if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
                 $until = ' '.sprintf($GLOBALS['TL_LANG']['MSC']['cal_until'], Date::parse($objPage->dateFormat, $objEvent->repeatEnd));
+
+                $arrFixedDates = array_map(static fn ($val) => Date::parse($objPage->dateFormat, $val), array_column($arrFixedDates, 'new_repeat'));
+
+                if (\count($arrFixedDates) > 4) {
+                    $arrFixedDates = array_merge(\array_slice($arrFixedDates, 0, 4), ['...']);
+                }
+
+                $strDates = implode(', ', $arrFixedDates);
+                $recurring = sprintf($GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'], $strDates, date('Y-m-d\TH:i:sP', $intStartTime), $strDate.($strTime ? ' '.$strTime : ''));
             }
-
-            $arrFixedDates = array_map(static fn ($val) => Date::parse($objPage->dateFormat, $val), array_column($arrFixedDates, 'new_repeat'));
-
-            if (\count($arrFixedDates) > 4) {
-                $arrFixedDates = array_merge(\array_slice($arrFixedDates, 0, 4), ['...']);
-            }
-
-            $strDates = implode(', ', $arrFixedDates);
-            $recurring = sprintf($GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'], $strDates, date('Y-m-d\TH:i:sP', $intStartTime), $strDate.($strTime ? ' '.$strTime : ''));
         } else {
             $arrRange = StringUtil::deserialize($objEvent->repeatEachExt, true);
-            $arg = $arrRange['value'];
-            $unit = $arrRange['unit'];
+            if (!empty($arrRange) && !empty($arrRange['value']) && !empty($arrRange['unit'])) {
+                $arg = $arrRange['value'];
+                $unit = $arrRange['unit'];
 
-            $repeat = $GLOBALS['TL_LANG']['tl_calendar_events'][$arg].' '.$GLOBALS['TL_LANG']['tl_calendar_events'][$unit];
+                $repeat = $GLOBALS['TL_LANG']['tl_calendar_events'][$arg].' '.$GLOBALS['TL_LANG']['tl_calendar_events'][$unit];
 
-            if ($objEvent->recurrences > 0) {
-                $until = ' '.sprintf($GLOBALS['TL_LANG']['MSC']['cal_until'], Date::parse($objPage->dateFormat, $objEvent->repeatEnd));
-            }
+                if ($objEvent->recurrences > 0) {
+                    $until = ' '.sprintf($GLOBALS['TL_LANG']['MSC']['cal_until'], Date::parse($objPage->dateFormat, $objEvent->repeatEnd));
+                }
 
-            if ($objEvent->recurrences > 0 && $objEvent->repeatEnd < time()) {
-                $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat_ended'], $repeat, $until);
-            } elseif ($objEvent->addTime) {
-                $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat'], $repeat, $until, date('Y-m-d\TH:i:sP', $intStartTime), $strDate.($strTime ? ' '.$strTime : ''));
-            } else {
-                $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat'], $repeat, $until, date('Y-m-d', $intStartTime), $strDate);
+                if ($objEvent->recurrences > 0 && $objEvent->repeatEnd < time()) {
+                    $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat_ended'], $repeat, $until);
+                } elseif ($objEvent->addTime) {
+                    $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat'], $repeat, $until, date('Y-m-d\TH:i:sP', $intStartTime), $strDate.($strTime ? ' '.$strTime : ''));
+                } else {
+                    $recurring = sprintf($GLOBALS['TL_LANG']['MSC']['cal_repeat'], $repeat, $until, date('Y-m-d', $intStartTime), $strDate);
+                }
             }
         }
 

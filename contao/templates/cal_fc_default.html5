@@ -1,5 +1,3 @@
-<h1>Contao Calendar</h1>
-
 <div id="calendar" style="margin:auto 25px;"></div>
 
 <script type="application/javascript">
@@ -13,14 +11,14 @@
      * @param event
      */
     function updateEventTimes(event) {
-        var xEvent = {};
+        const xEvent = {};
 
         xEvent['id'] = event.id;
         xEvent['startTime'] = event.start.unix();
         xEvent['allDay'] = event.allDay;
 
         if (!event.allDay && !event.end) {
-            var defaultDuration = moment.duration($('#calendar').fullCalendar('option', 'defaultTimedEventDuration'));
+            const defaultDuration = moment.duration($('#calendar').fullCalendar('option', 'defaultTimedEventDuration'));
             event.end = event.start.clone().add(defaultDuration);
         }
 
@@ -61,7 +59,7 @@
                 right: 'month,agendaWeek,agendaDay,listDay'
             },
             height: 800,
-            defaultView: 'agendaWeek',
+            defaultView: '<?= $this->defaultView; ?>',
             weekNumbers: '<?= $this->weekNumbers; ?>',
             weekNumbersWithinDays: '<?= $this->weekNumbersWithinDays; ?>',
             weekNumberCalculation: 'ISO',

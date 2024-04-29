@@ -1,5 +1,3 @@
-<h1>Google Calendar</h1>
-
 <div id="calendar" style="margin:auto 25px;"></div>
 
 <script>
