@@ -177,8 +177,8 @@ class ModuleFullCalendar extends Events
         }
 
         if (isset($_POST['type'])) {
-            /**
-             * if $_POST['type']) is set then we have to handle ajax calls from fullcalendar.
+            /*
+             * if $_POST['type'] is set then we have to handle ajax calls from fullcalendar.
              *
              * We check if the given $type is an existing method
              * - if yes then call the function
@@ -254,11 +254,69 @@ class ModuleFullCalendar extends Events
     }
 
     /**
+     * Update the event.
+     *
+     * @param array<mixed> $event
+     */
+    protected function updateEvent(array $event): bool
+    {
+        // Get the id of the event
+        $id = $event['id'];
+        unset($event['id']);
+
+        // Get allDay value
+        $allDay = 'true' === $event['allDay'] ? true : false;
+        unset($event['allDay']);
+
+        // Check if it is allowed to edit this event
+        $update_event = CalendarEventsModelExt::findById($id);
+
+        if ($update_event->recurring || $update_event->recurringExt || $update_event->useExceptions) {
+            return false;
+        }
+
+        $row = StringUtil::deserialize($update_event->repeatFixedDates);
+
+        if (!empty($row) && \is_array($row) && !empty($row[0]['new_repeat'])) {
+            return false;
+        }
+
+        // Set all relevant date and time values
+        $event['startDate'] = $event['startDate'] ?: strtotime(date('d.m.Y', $event['startTime']));
+        $event['repeatEnd'] = $event['startDate'];
+
+        if ($event['endTime']) {
+            $event['repeatEnd'] = $event['endTime'];
+            // Set endDate only if it was set before...
+            if (\strlen((string) $update_event->endDate)) {
+                $event['endDate'] = $event['endDate'] ?: strtotime(date('d.m.Y', $event['endTime']));
+            }
+        }
+
+        // Check the allDay value
+        if ($allDay) {
+            $event['addTime'] = '';
+            $event['startTime'] = '';
+            $event['endTime'] = '';
+        } else {
+            $event['addTime'] = 1;
+        }
+
+        // Update the event
+        Database::getInstance()
+            ->prepare('update tl_calendar_events %s where id=?')
+            ->set($event)->execute($id)
+        ;
+
+        return true;
+    }
+
+    /**
      * Fetch all events for the given time range.
      *
      * $_POST['start'] and $_POST['end'] are set by fullcalendar
      */
-    protected function fetchEvents(): void
+    private function fetchEvents(): void
     {
         $security = System::getContainer()->get('security.helper');
 
@@ -376,7 +434,7 @@ class ModuleFullCalendar extends Events
     /**
      * Get the formular and the event data.
      */
-    protected function getEvent(): void
+    private function getEvent(): void
     {
         // Get all edit_* fields from tl_form_field
         $ff = [];
@@ -409,7 +467,7 @@ class ModuleFullCalendar extends Events
     /**
      * Update date and/or time of the event.
      */
-    protected function updateEventTimes(): bool
+    private function updateEventTimes(): bool
     {
         if ($event = Input::post('event')) {
             return $this->updateEvent($event);
@@ -421,7 +479,7 @@ class ModuleFullCalendar extends Events
     /**
      * Update event from form data.
      */
-    protected function updateEventData(): bool
+    private function updateEventData(): bool
     {
         if ($event = Input::post('event')) {
             foreach ($event as $k => $v) {
@@ -438,63 +496,5 @@ class ModuleFullCalendar extends Events
         }
 
         return false;
-    }
-
-    /**
-     * Update the event.
-     *
-     * @param array<mixed> $event
-     */
-    protected function updateEvent($event): bool
-    {
-        // Get the id of the event
-        $id = $event['id'];
-        unset($event['id']);
-
-        // Get allDay value
-        $allDay = 'true' === $event['allDay'] ? true : false;
-        unset($event['allDay']);
-
-        // Check if it is allowed to edit this event
-        $update_event = CalendarEventsModelExt::findById($id);
-
-        if ($update_event->recurring || $update_event->recurringExt || $update_event->useExceptions) {
-            return false;
-        }
-
-        $row = StringUtil::deserialize($update_event->repeatFixedDates);
-
-        if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
-            return false;
-        }
-
-        // Set all relevant date and time values
-        $event['startDate'] = $event['startDate'] ?: strtotime(date('d.m.Y', $event['startTime']));
-        $event['repeatEnd'] = $event['startDate'];
-
-        if ($event['endTime']) {
-            $event['repeatEnd'] = $event['endTime'];
-            // Set endDate only if it was set before...
-            if (\strlen((string) $update_event->endDate)) {
-                $event['endDate'] = $event['endDate'] ?: strtotime(date('d.m.Y', $event['endTime']));
-            }
-        }
-
-        // Check the allDay value
-        if ($allDay) {
-            $event['addTime'] = '';
-            $event['startTime'] = '';
-            $event['endTime'] = '';
-        } else {
-            $event['addTime'] = 1;
-        }
-
-        // Update the event
-        Database::getInstance()
-            ->prepare('update tl_calendar_events %s where id=?')
-            ->set($event)->execute($id)
-        ;
-
-        return true;
     }
 }
