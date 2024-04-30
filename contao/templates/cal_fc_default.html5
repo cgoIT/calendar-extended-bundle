@@ -28,7 +28,7 @@
                 method: 'POST',
                 extraParams: function () {
                     return {
-                        REQUEST_TOKEN: "<?= REQUEST_TOKEN; ?>",
+                        REQUEST_TOKEN: "<?= $this->requestToken; ?>",
                     }
                 },
                 failure: function () {

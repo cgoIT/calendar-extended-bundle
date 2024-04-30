@@ -226,6 +226,8 @@ class ModuleFullCalendar extends Events
             default => 'timeGridWeek',
         };
 
+        $objTemplate->requestToken = System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
+
         // Render the template
         $this->Template->fullcalendar = $objTemplate->parse();
 

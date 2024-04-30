@@ -165,7 +165,7 @@ class ParseFrontendTemplateHook
         if (!empty($objEvent->repeatFixedDates)) {
             $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
-            return !empty($arrFixedDates) && !empty(array_filter($arrFixedDates, static fn ($date) => !empty($date['new_repeat'])));
+            return !empty($arrFixedDates) && \is_array($arrFixedDates) && !empty(array_filter($arrFixedDates, static fn ($date) => !empty($date['new_repeat'])));
         }
 
         return false;

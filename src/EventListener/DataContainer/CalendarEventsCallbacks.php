@@ -61,12 +61,11 @@ class CalendarEventsCallbacks extends Backend
     public function checkOverlapping(DataContainer $dc): bool
     {
         // Return if there is no active record (override all)
-        if (!$dc->activeRecord) {
+        if (!$dc->id) {
             return false;
         }
 
-        /** @var FilesModel|Model $activeRecord */
-        $activeRecord = $dc->activeRecord;
+        $activeRecord = CalendarEventsModel::findById($dc->id);
 
         // Return if the event is recurring
         if ($activeRecord->recurring || $activeRecord->recurringExt) {
@@ -137,14 +136,18 @@ class CalendarEventsCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit', priority: -100)]
     public function handleExtendedRecurrencesAndExceptions(DataContainer $dc): void
     {
-        // Return if there is no active record (override all) or no start date has been
-        // set yet
-        if (!$dc->activeRecord || !$dc->activeRecord->startDate) {
+        // Return if there is no active record (override all)
+        if (!$dc->id) {
             return;
         }
 
-        /** @var FilesModel|Model|Result $activeRecord */
-        $activeRecord = $dc->activeRecord;
+        $activeRecord = CalendarEventsModel::findById($dc->id);
+
+        // Return if there is no active record (override all) or no start date has been
+        // set yet
+        if (!$activeRecord->startDate) {
+            return;
+        }
 
         $arrSet['weekday'] = (int) date('w', $activeRecord->startDate);
         $arrSet['startTime'] = (int) $activeRecord->startDate;
@@ -292,7 +295,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function getFixedDates(FilesModel|Model|Result $activeRecord, int|false $startTime, int|false $endTime, array $arrAllRecurrences, array $maxRepeatEnd): array
+    private function getFixedDates(CalendarEventsModel $activeRecord, int|false $startTime, int|false $endTime, array $arrAllRecurrences, array $maxRepeatEnd): array
     {
         $arrFixedDates = StringUtil::deserialize($activeRecord->repeatFixedDates) ?: null;
 
@@ -345,7 +348,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function processDefaultRecurring(FilesModel|Model|Result $activeRecord, array $arrSet, array $arrAllRecurrences, array $maxRepeatEnd): array
+    private function processDefaultRecurring(CalendarEventsModel $activeRecord, array $arrSet, array $arrAllRecurrences, array $maxRepeatEnd): array
     {
         if (!empty($activeRecord->recurring)) {
             $arrRange = StringUtil::deserialize($activeRecord->repeatEach, true);
@@ -424,7 +427,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function processExtendedRecurring(FilesModel|Model|Result $activeRecord, array $arrSet, array $arrAllRecurrences, array $maxRepeatEnd): array
+    private function processExtendedRecurring(CalendarEventsModel $activeRecord, array $arrSet, array $arrAllRecurrences, array $maxRepeatEnd): array
     {
         if (!empty($activeRecord->recurringExt)) {
             $arrRange = StringUtil::deserialize($activeRecord->repeatEachExt, true);
@@ -520,7 +523,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function processExceptions(FilesModel|Model|Result $activeRecord, int $intStart, int $currentEndDate, array $maxRepeatEnd): array
+    private function processExceptions(CalendarEventsModel $activeRecord, int $intStart, int $currentEndDate, array $maxRepeatEnd): array
     {
         $exceptions = null;
         if ($activeRecord->useExceptions) {
@@ -550,7 +553,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function checkExceptionsByInterval(FilesModel|Model|Result $activeRecord, array $exceptionRows, int $intStart, int $intRepeatEnd): array
+    private function checkExceptionsByInterval(CalendarEventsModel $activeRecord, array $exceptionRows, int $intStart, int $intRepeatEnd): array
     {
         if ($activeRecord->repeatExceptionsInt) {
             // weekday
@@ -621,7 +624,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function checkExceptionsByTimeRange(FilesModel|Model|Result $activeRecord, array $exceptionRows): array
+    private function checkExceptionsByTimeRange(CalendarEventsModel $activeRecord, array $exceptionRows): array
     {
         if (!empty($activeRecord->repeatExceptionsPer)) {
             // exception rules
@@ -671,7 +674,7 @@ class CalendarEventsCallbacks extends Backend
      *
      * @return array<mixed>
      */
-    private function checkExceptionsByDate(FilesModel|Model|Result $activeRecord, int $currentEndDate, array $exceptionRows, array $maxRepeatEnd): array
+    private function checkExceptionsByDate(CalendarEventsModel $activeRecord, int $currentEndDate, array $exceptionRows, array $maxRepeatEnd): array
     {
         if (!empty($activeRecord->repeatExceptions)) {
             $rows = StringUtil::deserialize($activeRecord->repeatExceptions, true);
