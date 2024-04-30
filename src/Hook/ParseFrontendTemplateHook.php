@@ -54,7 +54,7 @@ class ParseFrontendTemplateHook
 
             System::loadLanguageFile('tl_calendar_events');
 
-            if (!empty($objEvent->recurringExt) || !empty($objEvent->repeatFixedDates)) {
+            if (!empty($objEvent->recurringExt) || $this->isRepeatOnFixedDates($objEvent)) {
                 $intStartTime = $objEvent->startTime;
                 $intEndTime = $objEvent->endTime;
                 $month = (int) date('n', $intStartTime);
@@ -85,7 +85,7 @@ class ParseFrontendTemplateHook
                         $intStartTime = strtotime($timetoadd, $intStartTime);
                         $intEndTime = $intStartTime + $objEvent->endTime - $objEvent->startTime;
                     }
-                } elseif (!empty($objEvent->repeatFixedDates)) {
+                } elseif ($this->isRepeatOnFixedDates($objEvent)) {
                     $isFixedDate = true;
 
                     $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
@@ -158,5 +158,16 @@ class ParseFrontendTemplateHook
         }
 
         return [$strDate, $strTime];
+    }
+
+    private function isRepeatOnFixedDates(CalendarEventsModel $objEvent): bool
+    {
+        if (!empty($objEvent->repeatFixedDates)) {
+            $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
+
+            return !empty($arrFixedDates) && !empty(array_filter($arrFixedDates, static fn ($date) => !empty($date['new_repeat'])));
+        }
+
+        return false;
     }
 }
