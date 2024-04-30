@@ -33,6 +33,10 @@
     "contao/calendar-bundle": "^4.13",
     "symfony/routing": "^5.4 || ^6.4",
     "symfony/http-foundation": "^5.4 || ^6.4",
+    "symfony/config": "^5.4 || ^6.4",
+    "symfony/dependency-injection": "^5.4 || ^6.4",
+    "symfony/http-kernel": "^5.4 || ^6.4",
+    "doctrine/dbal": "^3.3",
     "menatwork/contao-multicolumnwizard-bundle": "^3.6"
   },
   "require-dev": {
