@@ -54,7 +54,9 @@ PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', Pale
     ->applyToPalette('eventlist', 'tl_module')
 ;
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar,cal_fcFormat,cal_ignoreDynamic;{template_legend:hide},cal_ctemplate,cal_startDay,fc_editable,businessHours,weekNumbers,weekNumbersWithinDays;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['fullcalendar'] = '{title_legend},name,headline,type;{config_legend},cal_calendar,cal_fcFormat,cal_ignoreDynamic;{template_legend:hide},cal_ctemplate,cal_startDay,weekNumbers,businessHours;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][] = 'businessHours';
+$GLOBALS['TL_DCA']['tl_module']['subpalettes']['businessHours'] = 'businessDays,businessDayStart,businessDayEnd';
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hide_holiday'] = [
     'default' => 0,
@@ -142,38 +144,24 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cellheight'] = [
 /*
  * Fullcalendar
  */
-$GLOBALS['TL_DCA']['tl_module']['fields']['eventLimit'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'clr w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_module']['fields']['fc_editable'] = [
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'clr w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessHours'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
+    'eval' => ['tl_class' => 'clr m12 w50', 'submitOnChange' => true],
     'sql' => "char(1) NOT NULL default ''",
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbers'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
+    'eval' => ['tl_class' => 'm12 w50'],
     'sql' => "char(1) NOT NULL default ''",
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbersWithinDays'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50'],
+    'eval' => ['tl_class' => 'm12 w50'],
     'sql' => "char(1) NOT NULL default ''",
 ];
 
@@ -191,4 +179,26 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'long', 'multiple' => true],
     'sql' => 'text NULL',
+];
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['businessDays'] = [
+    'inputType' => 'checkbox',
+    'options' => [1, 2, 3, 4, 5, 6, 0],
+    'reference' => &$GLOBALS['TL_LANG']['DAYS'],
+    'eval' => ['multiple' => true, 'tl_class' => 'clr w50'],
+    'sql' => "varchar(128) NOT NULL default ''",
+];
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['businessDayStart'] =
+[
+    'inputType' => 'text',
+    'eval' => ['rgxp' => 'time', 'mandatory' => true, 'datepicker' => true, 'tl_class' => 'clr w50 wizard'],
+    'sql' => 'bigint(20) NULL',
+];
+
+$GLOBALS['TL_DCA']['tl_module']['fields']['businessDayEnd'] =
+[
+    'inputType' => 'text',
+    'eval' => ['rgxp' => 'time', 'mandatory' => true, 'datepicker' => true, 'tl_class' => 'w50 wizard'],
+    'sql' => 'bigint(20) NULL',
 ];

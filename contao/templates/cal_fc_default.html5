@@ -1,121 +1,63 @@
 <div id="calendar" style="margin:auto 25px;"></div>
 
 <script type="application/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
 
-    /**
-     * updateEventTimes()
-     *
-     * This function updates the date and/or time of the selected event.
-     * updateEventTimes() is called by eventDrop-event and eventResize-event
-     *
-     * @param event
-     */
-    function updateEventTimes(event) {
-        const xEvent = {};
-
-        xEvent['id'] = event.id;
-        xEvent['startTime'] = event.start.unix();
-        xEvent['allDay'] = event.allDay;
-
-        if (!event.allDay && !event.end) {
-            const defaultDuration = moment.duration($('#calendar').fullCalendar('option', 'defaultTimedEventDuration'));
-            event.end = event.start.clone().add(defaultDuration);
-        }
-
-        if (event.end) {
-            xEvent['endTime'] = event.end.unix();
-        }
-
-        $.ajax({
-            url: '<?= $this->url; ?>',
-            type: 'POST',
-            data: {
-                type: 'updateEventTimes',
-                event: xEvent
-            },
-            datatype: 'json',
-            async: false,
-            error: function () {
-                alert('error while updating event!');
-                revertFunc();
-            }
-        });
-    }
-
-    $(document).ready(function () {
-
-        /**
-         * Init the fullcalendar
-         */
-        $('#calendar').fullCalendar({
-            // Fullcalendar options set by the contao module (can be overwritten)
+        const calendar = new FullCalendar.Calendar(calendarEl, {
             locale: '<?= $this->locale; ?>',
-            defaultDate: '<?= $this->defaultDate; ?>',
-
-            // Other fullcalendar options (see fullcalendar doc)
-            header: {
+            initialDate: '<?= $this->initialDate; ?>',
+            headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'month,agendaWeek,agendaDay,listDay'
+                right: 'dayGridMonth,timeGridWeek,dayGridDay,listDay'
             },
-            height: 800,
-            defaultView: '<?= $this->defaultView; ?>',
+            navLinks: true,
+            editable: false,
+            dayMaxEvents: true,
+            timeZone: 'local',
+            initialView: '<?= $this->initialView; ?>',
             weekNumbers: '<?= $this->weekNumbers; ?>',
-            weekNumbersWithinDays: '<?= $this->weekNumbersWithinDays; ?>',
             weekNumberCalculation: 'ISO',
             firstDay: '<?= $this->firstDay; ?>',
-            businessHours: '<?= $this->businessHours; ?>',
-            editable: '<?= $this->editable; ?>',
-            eventLimit: '<?= $this->eventLimit; ?>',
-            timezone: "local",
-
-            // Fullcalendar events
+            <?php if (!empty($this->businessHours)): ?>
+            businessHours: <?= $this->businessHours; ?>,
+            <?php endif; ?>
             eventSources: [{
                 url: '<?= $this->url; ?>',
-                type: 'POST',
-                data: {
-                    type: 'fetchEvents',
-                    REQUEST_TOKEN: "<?= REQUEST_TOKEN; ?>",
+                method: 'POST',
+                extraParams: function () {
+                    return {
+                        type: 'fetchEvents',
+                        REQUEST_TOKEN: "<?= REQUEST_TOKEN; ?>",
+                    }
                 },
-                error: function () {
+                failure: function () {
                     alert('<?= $this->fetch_error; ?>');
                 }
             }],
 
-            // adjust contao end time
-            eventDataTransform: function(event) {
-                if (event.allDay) {
-                    event.end = moment(event.end).add(1, 'days')
-                }
-                return event;
-            },
-
             // Render the font-awesome icon if exists
-            eventRender: function (event, element, view) {
-                if (event.editable) {
-                    element.find(".fc-time").prepend('<i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right:5px;"></i>');
+            eventDidMount: function (info) {
+                const timeElement = info.el.querySelector('.fc-event-time');
+                if (info.event.extendedProps.editable && timeElement) {
+                    const icon = document.createElement('i');
+                    icon.classList.add('fa');
+                    icon.classList.add('fa-pencil-square-o');
+                    icon.style.paddingRight = '5px';
+                    timeElement.insertBefore(icon, timeElement.firstChild);
                 }
-                if (event.icon) {
-                    element.find(".fc-time").prepend('<i class="fa ' + event.icon + '" aria-hidden="true" style="padding-right:5px;"></i>');
+                if (info.event.extendedProps.icon && timeElement) {
+                    const icon = document.createElement('i');
+                    icon.classList.add('fa');
+                    icon.classList.add(info.event.extendedProps.icon);
+                    icon.style.paddingRight = '5px';
+                    timeElement.insertBefore(icon, timeElement.firstChild);
                 }
             },
-
-            // Called whenever a event is moved
-            eventDrop: function (event, delta, revertFunc) {
-                if (!confirm('<?= $this->confirm_drop; ?>')) {
-                    revertFunc();
-                }
-                updateEventTimes(event);
-            },
-
-            // Called whenever a event is resized
-            eventResize: function (event, delta, revertFunc) {
-                if (!confirm('<?= $this->confirm_resize; ?>')) {
-                    revertFunc();
-                }
-                updateEventTimes(event);
-            }
         });
+
+        calendar.render();
 
     });
 

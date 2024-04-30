@@ -14,10 +14,8 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Module;
 
-use Cgoit\CalendarExtendedBundle\Models\CalendarEventsModelExt;
 use Contao\BackendTemplate;
 use Contao\CoreBundle\Exception\PageNotFoundException;
-use Contao\Database;
 use Contao\Date;
 use Contao\Environment;
 use Contao\Events;
@@ -190,57 +188,49 @@ class ModuleFullCalendar extends Events
                 $this->$type();
             }
         } else {
-            // calendar-extended-bundel assets
+            // calendar-extended-bundle assets
             $assets_path = 'bundles/cgoitcalendarextended';
-            // fullcalendar 3.9.0
-            $assets_fc = '/fullcalendar-3.9.0';
-            // font-awesome 4.7.0
+            $assets_fc = '/fullcalendar-6.1.11';
             $assets_fa = '/font-awesome-4.7.0';
-
-            // Load jQuery if not active
-            if ('1' !== $objPage->hasJQuery) {
-                $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/lib/jquery.min.js|static';
-            }
 
             // CSS files
             $GLOBALS['TL_CSS'][] = $assets_path.$assets_fa.'/css/font-awesome.min.css';
-            $GLOBALS['TL_CSS'][] = $assets_path.$assets_fc.'/fullcalendar.min.css';
-
-            // JS files
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/lib/moment.min.js';
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/fullcalendar.min.js';
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/gcal.min.js';
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/locale-all.js';
+            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/dist/index.global.min.js';
+            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/packages/core/locales-all.global.min.js';
 
             /** @var FrontendTemplate|object $objTemplate */
             $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
             // Set some fullcalendar options
-            $security = System::getContainer()->get('security.helper');
-
             $objTemplate->url = $this->strLink;
             $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
-            $objTemplate->defaultDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
+            $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
             $objTemplate->firstDay = $this->cal_startDay;
-            $objTemplate->editable = $this->fc_editable && $security->getUser() instanceof FrontendUser;
-            $objTemplate->businessHours = $this->businessHours;
+
+            if (!empty($this->businessHours)) {
+                $arrDays = array_map('\intval', StringUtil::deserialize($this->businessDays, true));
+
+                $businessHours = new \stdClass();
+                $businessHours->daysOfWeek = $arrDays;
+                $businessHours->startTime = date('H:i', $this->businessDayStart);
+                $businessHours->endTime = date('H:i', $this->businessDayEnd);
+
+                $objTemplate->businessHours = json_encode($businessHours);
+            }
 
             $objTemplate->weekNumbers = $this->weekNumbers;
-            $objTemplate->weekNumbersWithinDays = $this->weekNumbersWithinDays;
-            $objTemplate->eventLimit = $this->eventLimit;
 
             $objTemplate->confirm_drop = $GLOBALS['TL_LANG']['tl_module']['confirm_drop'];
             $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
             $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
 
-            $objTemplate->defaultView = match ($this->cal_fcFormat) {
-                'cal_fc_month' => 'month',
-                'cal_fc_day' => 'agendaDay',
+            $objTemplate->initialView = match ($this->cal_fcFormat) {
+                'cal_fc_month' => 'dayGridMonth',
+                'cal_fc_day' => 'timeGridDay',
                 'cal_fc_list' => 'listDay',
-                default => 'agendaWeek',
+                default => 'timeGridWeek',
             };
 
-            // Set the formular $objTemplate->event_formular = \Form::getForm(1);
             // Render the template
             $this->Template->fullcalendar = $objTemplate->parse();
         }
@@ -251,64 +241,6 @@ class ModuleFullCalendar extends Events
             Input::setGet('week', null);
             Input::setGet('day', null);
         }
-    }
-
-    /**
-     * Update the event.
-     *
-     * @param array<mixed> $event
-     */
-    protected function updateEvent(array $event): bool
-    {
-        // Get the id of the event
-        $id = $event['id'];
-        unset($event['id']);
-
-        // Get allDay value
-        $allDay = 'true' === $event['allDay'] ? true : false;
-        unset($event['allDay']);
-
-        // Check if it is allowed to edit this event
-        $update_event = CalendarEventsModelExt::findById($id);
-
-        if ($update_event->recurring || $update_event->recurringExt || $update_event->useExceptions) {
-            return false;
-        }
-
-        $row = StringUtil::deserialize($update_event->repeatFixedDates);
-
-        if (!empty($row) && \is_array($row) && !empty($row[0]['new_repeat'])) {
-            return false;
-        }
-
-        // Set all relevant date and time values
-        $event['startDate'] = $event['startDate'] ?: strtotime(date('d.m.Y', $event['startTime']));
-        $event['repeatEnd'] = $event['startDate'];
-
-        if ($event['endTime']) {
-            $event['repeatEnd'] = $event['endTime'];
-            // Set endDate only if it was set before...
-            if (\strlen((string) $update_event->endDate)) {
-                $event['endDate'] = $event['endDate'] ?: strtotime(date('d.m.Y', $event['endTime']));
-            }
-        }
-
-        // Check the allDay value
-        if ($allDay) {
-            $event['addTime'] = '';
-            $event['startTime'] = '';
-            $event['endTime'] = '';
-        } else {
-            $event['addTime'] = 1;
-        }
-
-        // Update the event
-        Database::getInstance()
-            ->prepare('update tl_calendar_events %s where id=?')
-            ->set($event)->execute($id)
-        ;
-
-        return true;
     }
 
     /**
@@ -423,6 +355,8 @@ class ModuleFullCalendar extends Events
             }
         }
 
+        $json_events = $this->makeUnique($json_events);
+
         // Free resources
         unset($event, $events, $arrAllEvents, $multiday_event);
 
@@ -432,69 +366,26 @@ class ModuleFullCalendar extends Events
     }
 
     /**
-     * Get the formular and the event data.
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
      */
-    private function getEvent(): void
+    private function makeUnique(array $arrEvents): array
     {
-        // Get all edit_* fields from tl_form_field
-        $ff = [];
-        $fields = Database::getInstance()
-            ->prepare('select name, type from tl_form_field where pid = ? and name like ?')
-            ->execute(1, 'edit_%')
-        ;
+        $uniqueEvents = [];
 
-        if ($fields->numRows > 0) {
-            while ($fields->next()) {
-                $ff[$fields->name] = substr((string) $fields->name, 5);
-                $ff['t_'.$fields->name] = $fields->type;
+        foreach ($arrEvents as $event) {
+            $included = array_filter(
+                $uniqueEvents,
+                static fn ($e) => $event['id'] === $e['id']
+                    && $event['start'] === $e['start']
+                    && $event['end'] === $e['end'],
+            );
+            if (empty($included)) {
+                $uniqueEvents[] = $event;
             }
         }
 
-        // Get the event
-        $id = Input::post('event');
-        $event = CalendarEventsModelExt::findById($id);
-
-        // Replace the edit_* value with the db value
-        foreach ($ff as $k => $v) {
-            $ff[$k] = strip_tags((string) $event->$v);
-        }
-
-        // Return the form fields
-        echo json_encode($ff);
-        exit;
-    }
-
-    /**
-     * Update date and/or time of the event.
-     */
-    private function updateEventTimes(): bool
-    {
-        if ($event = Input::post('event')) {
-            return $this->updateEvent($event);
-        }
-
-        return false;
-    }
-
-    /**
-     * Update event from form data.
-     */
-    private function updateEventData(): bool
-    {
-        if ($event = Input::post('event')) {
-            foreach ($event as $k => $v) {
-                if (!str_contains((string) $k, 'edit_')) {
-                    unset($event[$k]);
-                } else {
-                    $n = substr((string) $k, 5);
-                    $event[$n] = $v;
-                    unset($event[$k]);
-                }
-            }
-
-            return $this->updateEvent($event);
-        }
-
-        return false;
+        return $uniqueEvents;
     }
 }

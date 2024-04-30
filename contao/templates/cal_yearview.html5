@@ -15,10 +15,6 @@
 		</div>
 	<?php endif; ?>
 
-    <?php $this->dumpTemplateVars(); ?>
-
-    <h1>Horizontal: <?= $this->use_horizontal; ?></h1>
-
     <table style="border-spacing: 0; border-collapse: collapse; border-width: 1px" class="yearview_body full">
         <?php if (!empty($this->data['header'])): ?>
             <thead>
