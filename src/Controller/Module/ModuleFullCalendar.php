@@ -158,7 +158,7 @@ class ModuleFullCalendar extends Events
         // Create the date object
         try {
             if ($blnDynamicFormat && $month) {
-                $this->Date = new Date($month, 'Ym');
+                $this->Date = new Date((int) $month, 'Ym');
                 $this->cal_fcFormat = 'cal_fc_month';
                 $this->headline .= ' '.Date::parse('F Y', $this->Date->tstamp);
             } elseif ($blnDynamicFormat && $week) {
@@ -171,7 +171,7 @@ class ModuleFullCalendar extends Events
                 $this->cal_fcFormat = 'cal_fc_week';
                 $this->headline .= ' '.Date::parse('W/Y', $this->Date->tstamp);
             } elseif ($blnDynamicFormat && $day) {
-                $this->Date = new Date($day, 'Ymd');
+                $this->Date = new Date((int) $day, 'Ymd');
                 $this->headline .= ' '.Date::parse($objPage->dateFormat, $this->Date->tstamp);
                 if (empty($this->cal_fcFormat)) {
                     $this->cal_fcFormat = 'cal_fc_day';

@@ -144,11 +144,13 @@ class ModuleYearView extends Events
             }
         }
 
-        $firstYear = date('Y', min($dateFrom, $time));
-        $lastYear = date('Y', max($dateTo, $repeatUntil, $time));
+        $firstYear = (int) date('Y', min($dateFrom, $time));
+        $lastYear = (int) date('Y', max($dateTo, $repeatUntil, $time));
+
+        $intYear = $year ? (int) $year : false;
 
         // The given year is out of scope
-        if ($year && ($year < $firstYear || $year > $lastYear)) {
+        if ($intYear && ($intYear < $firstYear || $intYear > $lastYear)) {
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 

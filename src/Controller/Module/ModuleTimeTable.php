@@ -177,7 +177,8 @@ class ModuleTimeTable extends Events
         }
 
         // The given day is out of scope
-        if ($day && ($day < date('Ymd', min($dateFrom, $time)) || $day > date('Ymd', max($dateTo, $repeatUntil, $time)))) {
+        $intDay = $day ? (int) $day : false;
+        if ($intDay && ($intDay < (int) date('Ymd', min($dateFrom, $time)) || $intDay > (int) date('Ymd', max($dateTo, $repeatUntil, $time)))) {
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
