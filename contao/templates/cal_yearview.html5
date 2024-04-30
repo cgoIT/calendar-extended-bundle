@@ -1,0 +1,57 @@
+<div class="yearview full">
+
+	<?php if ($this->use_navigation): ?>
+		<div class="yearview_navi">
+			<?php if ($this->linkCurrent): ?>
+	    		<div class="head current" style="display: flex; justify-content: center;">
+                    <a href="<?= $this->currHref; ?>" title="<?= $this->currTitle; ?>"><?= $this->currLink; ?></a>
+                </div>
+	    	<?php endif; ?>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div class="head previous"><a href="<?= $this->prevHref; ?>" title="<?= $this->prevTitle; ?>"><?= $this->prevLink; ?></a></div>
+                <div class="head current"><?= $this->current; ?></div>
+                <div class="head next"><a href="<?= $this->nextHref; ?>" title="<?= $this->nextTitle; ?>"><?= $this->nextLink; ?></a></div>
+            </div>
+		</div>
+	<?php endif; ?>
+
+    <table style="border-spacing: 0; border-collapse: collapse; border-width: 1px" class="yearview_body full">
+        <?php if (!empty($this->data['header'])): ?>
+            <thead>
+            <tr class="yearview_days">
+                <?php foreach($this->data['header'] as $header): ?>
+                    <th <?= $header['attr']; ?> class="<?= $header['class']; ?>"><?= $header['label']; ?></th>
+                <?php endforeach; ?>
+            </tr>
+            </thead>
+        <?php endif; ?>
+        <?php if (!empty($this->data['body'])): ?>
+            <tbody>
+            <?php foreach ($this->data['body'] as $row): ?>
+                <tr class="yearview_events">
+                    <?php foreach ($row as $col): ?>
+                            <?php if (array_key_exists('label', $col)): ?>
+                            <td <?= !empty($col['attr']) ? $col['attr'] : '' ?> class="<?= $col['class']; ?>">
+                                <?= $col['label']; ?>
+                            </td>
+                            <?php elseif (!empty($col) && is_array($col)): ?>
+                                <td>
+                                <?php foreach ($col as $event): ?>
+                                    <div class="event cal_<?= $event['pid']; ?><?php if ($event['class']): echo $event['class']; endif; ?>" style="<?= $event['bgstyle']; ?>" title="<?= $event['title']; ?>">
+                                        <div class="event_title <?= $event['fgstyle']; ?>" title="<?= $event['time']; ?>">
+                                            <?= $event['title']; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                                </td>
+                            <?php else: ?>
+                                <td>&nbsp;</td>
+                            <?php endif; ?>
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        <?php endif; ?>
+    </table>
+</div>
