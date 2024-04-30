@@ -20,7 +20,6 @@ use Contao\Date;
 use Contao\Environment;
 use Contao\Events;
 use Contao\FrontendTemplate;
-use Contao\FrontendUser;
 use Contao\Input;
 use Contao\PageModel;
 use Contao\StringUtil;
@@ -111,6 +110,16 @@ class ModuleFullCalendar extends Events
     }
 
     /**
+     * @param array<mixed> $arrCalendars
+     *
+     * @return array<mixed>
+     */
+    public function loadEvents(array $arrCalendars, int $intStart, int $intEnd): array
+    {
+        return $this->getAllEvents($arrCalendars, $intStart, $intEnd);
+    }
+
+    /**
      * Generate the module.
      */
     protected function compile(): void
@@ -174,66 +183,51 @@ class ModuleFullCalendar extends Events
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
-        if (isset($_POST['type'])) {
-            /*
-             * if $_POST['type'] is set then we have to handle ajax calls from fullcalendar.
-             *
-             * We check if the given $type is an existing method
-             * - if yes then call the function
-             * - if no just do nothing right now (for the moment)
-             */
-            $type = $_POST['type'];
+        // calendar-extended-bundle assets
+        $assets_path = 'bundles/cgoitcalendarextended';
+        $assets_fc = '/fullcalendar-6.1.11';
+        $assets_fa = '/font-awesome-4.7.0';
 
-            if (method_exists($this, $type)) {
-                $this->$type();
-            }
-        } else {
-            // calendar-extended-bundle assets
-            $assets_path = 'bundles/cgoitcalendarextended';
-            $assets_fc = '/fullcalendar-6.1.11';
-            $assets_fa = '/font-awesome-4.7.0';
+        // CSS files
+        $GLOBALS['TL_CSS'][] = $assets_path.$assets_fa.'/css/font-awesome.min.css';
+        $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/dist/index.global.min.js';
+        $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/packages/core/locales-all.global.min.js';
 
-            // CSS files
-            $GLOBALS['TL_CSS'][] = $assets_path.$assets_fa.'/css/font-awesome.min.css';
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/dist/index.global.min.js';
-            $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/packages/core/locales-all.global.min.js';
+        /** @var FrontendTemplate|object $objTemplate */
+        $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
-            /** @var FrontendTemplate|object $objTemplate */
-            $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
+        // Set some fullcalendar options
+        $objTemplate->url = '/fullcalendar/fetchEvents/'.$this->id;
+        $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
+        $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
+        $objTemplate->firstDay = $this->cal_startDay;
 
-            // Set some fullcalendar options
-            $objTemplate->url = $this->strLink;
-            $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
-            $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
-            $objTemplate->firstDay = $this->cal_startDay;
+        if (!empty($this->businessHours)) {
+            $arrDays = array_map('\intval', StringUtil::deserialize($this->businessDays, true));
 
-            if (!empty($this->businessHours)) {
-                $arrDays = array_map('\intval', StringUtil::deserialize($this->businessDays, true));
+            $businessHours = new \stdClass();
+            $businessHours->daysOfWeek = $arrDays;
+            $businessHours->startTime = date('H:i', $this->businessDayStart);
+            $businessHours->endTime = date('H:i', $this->businessDayEnd);
 
-                $businessHours = new \stdClass();
-                $businessHours->daysOfWeek = $arrDays;
-                $businessHours->startTime = date('H:i', $this->businessDayStart);
-                $businessHours->endTime = date('H:i', $this->businessDayEnd);
-
-                $objTemplate->businessHours = json_encode($businessHours);
-            }
-
-            $objTemplate->weekNumbers = $this->weekNumbers;
-
-            $objTemplate->confirm_drop = $GLOBALS['TL_LANG']['tl_module']['confirm_drop'];
-            $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
-            $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
-
-            $objTemplate->initialView = match ($this->cal_fcFormat) {
-                'cal_fc_month' => 'dayGridMonth',
-                'cal_fc_day' => 'timeGridDay',
-                'cal_fc_list' => 'listDay',
-                default => 'timeGridWeek',
-            };
-
-            // Render the template
-            $this->Template->fullcalendar = $objTemplate->parse();
+            $objTemplate->businessHours = json_encode($businessHours);
         }
+
+        $objTemplate->weekNumbers = $this->weekNumbers;
+
+        $objTemplate->confirm_drop = $GLOBALS['TL_LANG']['tl_module']['confirm_drop'];
+        $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
+        $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
+
+        $objTemplate->initialView = match ($this->cal_fcFormat) {
+            'cal_fc_month' => 'dayGridMonth',
+            'cal_fc_day' => 'timeGridDay',
+            'cal_fc_list' => 'listDay',
+            default => 'timeGridWeek',
+        };
+
+        // Render the template
+        $this->Template->fullcalendar = $objTemplate->parse();
 
         // Clear the $_GET array (see #2445)
         if ($blnClearInput) {
@@ -241,151 +235,5 @@ class ModuleFullCalendar extends Events
             Input::setGet('week', null);
             Input::setGet('day', null);
         }
-    }
-
-    /**
-     * Fetch all events for the given time range.
-     *
-     * $_POST['start'] and $_POST['end'] are set by fullcalendar
-     */
-    private function fetchEvents(): void
-    {
-        $security = System::getContainer()->get('security.helper');
-
-        $intStart = Input::post('start') ? strtotime((string) Input::post('start')) : $this->intStart;
-        $intEnd = Input::post('end') ? strtotime((string) Input::post('end')) : $this->intEnd;
-
-        // Get all events
-        $arrAllEvents = $this->getAllEvents($this->cal_calendar, $intStart, $intEnd);
-
-        // Sort the days
-        $sort = 'descending' === $this->cal_order ? 'krsort' : 'ksort';
-        $sort($arrAllEvents);
-
-        // Sort the events
-        foreach (array_keys($arrAllEvents) as $key) {
-            $sort($arrAllEvents[$key]);
-        }
-
-        // Step 1: get the current time
-        $currTime = Date::floorToMinute();
-
-        // Array of events for JSON output
-        $json_events = [];
-        $multiday_event = [];
-
-        // Create the JSON of all events
-        foreach ($arrAllEvents as $days) {
-            foreach ($days as $events) {
-                foreach ($events as $event) {
-                    // Use repeatEnd if > 0 (see #8447)
-                    if (($event['repeatEnd'] ?: $event['end']) < $intStart || $event['begin'] > $intEnd) {
-                        continue;
-                    }
-
-                    // Hide Events that are already started
-                    if ($this->hide_started && $event['begin'] < $currTime) {
-                        continue;
-                    }
-
-                    // Set start and end of each event to the right format for the fullcalendar
-                    $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
-                    $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
-                    $allDay = $event['addTime'] ? false : true;
-
-                    // Set title
-                    $title = StringUtil::specialchars((string) $event['title']);
-
-                    // Some options
-                    $editable = $this->fc_editable && $security->getUser() instanceof FrontendUser;
-                    $multiday = false;
-                    $recurring = false;
-
-                    /*
-                     * Editing is allowd if we have a single or multi day event. Any kind of recurring event
-                     * is not allowed right now.
-                     */
-                    // Disable editing if event is recurring...
-                    if ($event['recurring'] || $event['recurringExt'] || $event['useExceptions']) {
-                        $editable = false;
-                        $recurring = true;
-                    }
-
-                    $row = StringUtil::deserialize($event['repeatFixedDates']);
-                    if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
-                        $editable = false;
-                        $recurring = true;
-                    }
-
-                    // If event is not recurring
-                    if (!$recurring) {
-                        // Multi day event?
-                        if (Date::parse('dmY', $event['startTime']) !== Date::parse('dmY', $event['endTime'])) {
-                            $multiday = true;
-                        }
-                    }
-
-                    // Set the icon
-                    $icon = $recurring ? 'fa-repeat' : 'fa-calendar-o';
-
-                    // Ignore if this is not the first multi day entry
-                    if (false === array_search($event['id'], $multiday_event, true)) {
-                        // Add the event to array of events
-                        $json_events[] = [
-                            'id' => $event['id'],
-                            'title' => $title,
-                            'start' => $event['datetime_start'],
-                            'end' => $event['datetime_end'],
-                            'description' => $event['teaser'],
-                            'allDay' => $allDay,
-                            'overlap' => false,
-                            'url' => $event['href'],
-                            'editable' => $editable,
-                            'icon' => $icon,
-                            'backgroundColor' => $event['bgstyle'] ?? '',
-                            'textColor' => $event['fgstyle'] ?? '',
-                        ];
-                    }
-
-                    // Remember if multi day event
-                    if ($multiday && false === array_search($event['id'], $multiday_event, true)) {
-                        $multiday_event[] = $event['id'];
-                    }
-                }
-            }
-        }
-
-        $json_events = $this->makeUnique($json_events);
-
-        // Free resources
-        unset($event, $events, $arrAllEvents, $multiday_event);
-
-        // Return array of events as json
-        echo json_encode($json_events);
-        exit;
-    }
-
-    /**
-     * @param array<mixed> $arrEvents
-     *
-     * @return array<mixed>
-     */
-    private function makeUnique(array $arrEvents): array
-    {
-        $uniqueEvents = [];
-
-        foreach ($arrEvents as $event) {
-            $included = array_filter(
-                $uniqueEvents,
-                static fn ($e) => $event['id'] === $e['id']
-                    && $event['start'] === $e['start']
-                    && $event['end'] === $e['end'],
-            );
-            if (empty($included)) {
-                $uniqueEvents[] = $event;
-            }
-        }
-
-        return $uniqueEvents;
     }
 }

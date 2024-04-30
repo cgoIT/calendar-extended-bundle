@@ -28,7 +28,6 @@
                 method: 'POST',
                 extraParams: function () {
                     return {
-                        type: 'fetchEvents',
                         REQUEST_TOKEN: "<?= REQUEST_TOKEN; ?>",
                     }
                 },
