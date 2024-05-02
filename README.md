@@ -44,7 +44,9 @@ Contao 5 support
 
 Starting with version 2 of this bundle Contao 5 is supported. Many things have been refactored in this version, many classes have been split or moved and the complete approach of handling things has changed. Therefore, the chance that something does not yet work 100% is quite high. I therefore recommend that all Contao 4 users check very carefully whether version 2 works the way they want it to. Alternatively, version 1 can continue to be used for Contao 4.
 
-#### Configuration
+
+Configuration
+-------------
 
 As usual you can configure some stuff via config.yml. The default configuration is as follows:
 
