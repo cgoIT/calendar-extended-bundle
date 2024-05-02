@@ -27,7 +27,6 @@ $GLOBALS['TL_LANG']['tl_module']['businessHours'] = ['Arbeitszeiten', 'Arbeitsze
 $GLOBALS['TL_LANG']['tl_module']['businessDays'] = ['Arbeitstage', 'Tage, an denen die Geschäftszeiten gelten.'];
 $GLOBALS['TL_LANG']['tl_module']['businessDayStart'] = ['Arbeitszeit von', 'Beginn der Arbeitszeiten.'];
 $GLOBALS['TL_LANG']['tl_module']['businessDayEnd'] = ['Arbeitszeit bis', 'Ende der Arbeitszeiten.'];
-$GLOBALS['TL_LANG']['tl_module']['eventLimit'] = ['Events limitieren', 'Limitiert die Anzahl der Events eines Tages.'];
 $GLOBALS['TL_LANG']['tl_module']['weekNumbers'] = ['Kalenderwochen', 'Kaldenderwochen werden im Kalendaer angezeigt.'];
 
 $GLOBALS['TL_LANG']['tl_module']['cal_times_range'] = ['Zeitfenster für den Stundenplan.', 'Zeigt die Zeiten links als Label im Stundeninterval an.'];
@@ -45,5 +44,3 @@ $GLOBALS['TL_LANG']['tl_module']['cal_fc_month'] = 'Monatsübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_week'] = 'Wochenübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_day'] = 'Tagesübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_list'] = 'Listenansicht';
-
-$GLOBALS['TL_LANG']['tl_module']['includeJQuery'] = 'Sie müssen JQuery dem Layout hinzufügen um den FullCalendar nutzen zu können.';

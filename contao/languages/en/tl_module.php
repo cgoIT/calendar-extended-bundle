@@ -27,7 +27,6 @@ $GLOBALS['TL_LANG']['tl_module']['businessHours'] = ['Business hours', 'Show bus
 $GLOBALS['TL_LANG']['tl_module']['businessDays'] = ['Business days', 'Days on which business hours apply.'];
 $GLOBALS['TL_LANG']['tl_module']['businessDayStart'] = ['Business hours from', 'Start of working hours.'];
 $GLOBALS['TL_LANG']['tl_module']['businessDayEnd'] = ['Business hours to', 'End of working hours.'];
-$GLOBALS['TL_LANG']['tl_module']['eventLimit'] = ['Event limit', 'Limits the number of events displayed on a day.'];
 $GLOBALS['TL_LANG']['tl_module']['weekNumbers'] = ['Week numbers', 'Determines if week numbers should be displayed on the calendar.'];
 
 $GLOBALS['TL_LANG']['tl_module']['cal_times_range'] = ['Timeframe of timetable.', 'Displays the time al label on the left side.'];
@@ -44,5 +43,3 @@ $GLOBALS['TL_LANG']['tl_module']['cal_fc_month'] = 'Monthly overview';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_week'] = 'Weekly overview';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_day'] = 'Daily overview';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_list'] = 'List view';
-
-$GLOBALS['TL_LANG']['tl_module']['includeJQuery'] = 'You must add JQuery to the layout to be able to use the FullCalendar.';

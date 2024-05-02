@@ -21,6 +21,24 @@ Run the following command in your project directory:
 composer require cgoit/calendar-extended-bundle
 ```
 
+
+IMPORTANT NOTICE
+----------------
+
+Starting with version 2 of this bundle some features are not supported any more.
+
+| Feature                          | Description                                                                                                                                            |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Event Registration               | This bundle does *NOT* support event registrations any more. You can use other bundles like `inspiredminds/contao-event-registration` for this purpose |
+| Frontend editing in FullCalendar | This feature is *NOT* supported any more                                                                                                               |
+| FullCalendar Upgrade             | FullCalendar was upgraded to version 6.1. So no more dependency to JQuery exists.                                                                      |
+
+
+Upgrade from version 1.x
+------------------------
+
+If you want to upgrade from version 1 run the `contao:migrate` script. In the first step do all the database updates *without* any deletes. This ensures that all migrations can run after the first round of migration. If you are really sure that version 2 is working for you, you can run all the deletes via the `contao:migrate` script.
+
 Contao 5 support
 ----------------
 
