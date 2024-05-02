@@ -605,8 +605,10 @@ class GetAllEventsHook
         $arrHolidayCalendars = [];
         $objHolidayCalendars = CalendarModel::findBy(['isHolidayCal=?'], ['1']);
 
-        foreach ($objHolidayCalendars as $objHolidayCalendar) {
-            $arrHolidayCalendars[] = (int) $objHolidayCalendar->id;
+        if (!empty($objHolidayCalendars)) {
+            foreach ($objHolidayCalendars as $objHolidayCalendar) {
+                $arrHolidayCalendars[] = (int) $objHolidayCalendar->id;
+            }
         }
 
         return $arrHolidayCalendars;
