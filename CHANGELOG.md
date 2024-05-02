@@ -1,0 +1,46 @@
+# Changelog
+
+## [2.0.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v1.1.3...v2.0.0) (2024-05-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* change namespace
+
+### Features
+
+* fix all phpstan errors ([6715e54](https://github.com/cgoIT/calendar-extended-bundle/commit/6715e54c0bb956a43e462c7955e08e78ea637526))
+* implement custom route for full calendar fetchEvents ([5ffeba8](https://github.com/cgoIT/calendar-extended-bundle/commit/5ffeba804530322ddc35b1e8f1ab208413531cb6))
+* minor adjustments for contao 5 ([af00001](https://github.com/cgoIT/calendar-extended-bundle/commit/af000013426cb908534e687f8be0228ffbed6464))
+* remove dependency to notification_center and leads ([861c451](https://github.com/cgoIT/calendar-extended-bundle/commit/861c451e381d401a305e0be3959183f3597317c8))
+
+
+### Bug Fixes
+
+* check correctly for fixed date reoccurences ([dcb0f28](https://github.com/cgoIT/calendar-extended-bundle/commit/dcb0f28f62921a6405ab16c4521f6b3ad1d9c8ef))
+* Encode text in form values ([0caf02a](https://github.com/cgoIT/calendar-extended-bundle/commit/0caf02aebdbfd1f381328c9e0922a0b62e57a641))
+* fix ecs findings ([71c370f](https://github.com/cgoIT/calendar-extended-bundle/commit/71c370fab2e175ae8ac70ba83d34eb287f20e47f))
+* fix qs findings ([60759d9](https://github.com/cgoIT/calendar-extended-bundle/commit/60759d941d0d44867e20583b85075cbf29fb1884))
+* fix some issues, refactor year view, add missing files ([997cbaa](https://github.com/cgoIT/calendar-extended-bundle/commit/997cbaade2811af67e6f8a9000c27b62307118fd))
+* fix typo in german translation ([22a05e6](https://github.com/cgoIT/calendar-extended-bundle/commit/22a05e6eeea9bd75de97943e82dff42a00ec6f9c))
+* suppress display of dates on recurring events in frontend ([b39fba4](https://github.com/cgoIT/calendar-extended-bundle/commit/b39fba49dc68e286d38455caef45c9f27af79b9a))
+
+
+### Miscellaneous Chores
+
+* add ecs and phpstan and fix issues ([ea038fb](https://github.com/cgoIT/calendar-extended-bundle/commit/ea038fb39dca4da98286e097325703bb34452584))
+* add github actions ([bd3156b](https://github.com/cgoIT/calendar-extended-bundle/commit/bd3156b8aa6f6cb413f12a5540e0ad89d05ca759))
+* add shadow dependencies ([aef2c7e](https://github.com/cgoIT/calendar-extended-bundle/commit/aef2c7e60b1435dc480bac235d08d19976bd1ae0))
+* clear changelog ([bb7770c](https://github.com/cgoIT/calendar-extended-bundle/commit/bb7770cb4f4bcb74cb15fe6fe86e4eb2c9962db3))
+* fix github actions stuff ([80a2301](https://github.com/cgoIT/calendar-extended-bundle/commit/80a2301546c347e0006722621c468f68e3c6fcd8))
+* fix inline doc ([f273ee0](https://github.com/cgoIT/calendar-extended-bundle/commit/f273ee02d68ccdb84cd8aec7064c520a7b762827))
+* fix phpstan errors ([d96b138](https://github.com/cgoIT/calendar-extended-bundle/commit/d96b13828aa5cf9dfb6d576b408044163d5c62b1))
+* fix rector errors ([fbba769](https://github.com/cgoIT/calendar-extended-bundle/commit/fbba769ed49bd3e83e1e66fe1da2227563e819ab))
+* make modules work again ([9d0834d](https://github.com/cgoIT/calendar-extended-bundle/commit/9d0834db742d80ebf870532d01b0ba3ce33cae1f))
+* remove commented code ([8f9df1b](https://github.com/cgoIT/calendar-extended-bundle/commit/8f9df1be98ce1ba21e6b90198b85dfc1349dacf6))
+* update dependencies ([5dc2744](https://github.com/cgoIT/calendar-extended-bundle/commit/5dc2744a1955ba7172b2902a24936a501032337a))
+
+
+### Documentation
+
+* fix README.md ([0ccb2fa](https://github.com/cgoIT/calendar-extended-bundle/commit/0ccb2fa625e53e82de38c7b661d564d2d9990702))
