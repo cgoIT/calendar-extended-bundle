@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.0...v2.0.1) (2024-05-02)
+
+
+### Bug Fixes
+
+* fix warning foreach() argument must be of type array|object, null given ([db5bc69](https://github.com/cgoIT/calendar-extended-bundle/commit/db5bc69d0373c3d2fb519123aca8d7720a9eb107))
+
 ## [2.0.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v1.1.3...v2.0.0) (2024-05-02)
 
 
