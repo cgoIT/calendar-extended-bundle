@@ -53,10 +53,11 @@ class CalendarEventsMCWCallbacks extends Backend
         if (Input::get('id')) {
             // Probably an AJAX request where activeRecord is not available
             if (null === $activeRecord) {
+                $t = $mcw->dataContainer->table;
                 $activeRecord = $this->db
-                    ->prepare("SELECT * FROM {$mcw->dataContainer->table} WHERE id=?")
-                    ->executeQuery(Input::get('id'))
+                    ->executeQuery("SELECT $t.* FROM $t WHERE id=?", [Input::get('id')])
                 ;
+                $activeRecord = (object) $activeRecord->fetchAssociative();
             }
 
             if (!empty($activeRecord->allRecurrences)) {
