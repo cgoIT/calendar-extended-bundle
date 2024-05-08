@@ -102,8 +102,6 @@ class GetAllEventsHook
      */
     private function handleExtendedRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
-        $eventsToAdd = [];
-
         $t = 'tl_calendar_events';
         $time = time();
         $arrRecurringEvents = CalendarEventsModel::findBy(
@@ -136,16 +134,10 @@ class GetAllEventsHook
                             }
                         }
 
-                        $eventsToAdd = array_merge($eventsToAdd,
-                            $this->createEvents($objEvent, $objModule,
-                                $recurrence['int_start'], $recurrence['int_end'], false));
+                        $this->createEvents($objEvent, $objModule, $recurrence['int_start'], $recurrence['int_end'], $arrEvents, false);
                     }
                 }
             }
-        }
-
-        foreach ($eventsToAdd as $event) {
-            $this->addEvent($arrEvents, $event);
         }
 
         return $arrEvents;
@@ -160,8 +152,6 @@ class GetAllEventsHook
     {
         /** @var PageModel */
         global $objPage;
-
-        $eventsToAdd = [];
 
         $t = 'tl_calendar_events';
         $time = time();
@@ -206,16 +196,11 @@ class GetAllEventsHook
                                 }
                             }
 
-                            $eventsToAdd = array_merge($eventsToAdd,
-                                $this->createEvents($objEvent, $objModule, $intStart, $intEnd, true));
+                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, $arrEvents, true);
                         }
                     }
                 }
             }
-        }
-
-        foreach ($eventsToAdd as $event) {
-            $this->addEvent($arrEvents, $event);
         }
 
         return $arrEvents;
@@ -432,18 +417,16 @@ class GetAllEventsHook
     }
 
     /**
-     * @return array<mixed>
+     * @param array<mixed> $arrEvents
      *
      * @throws \Exception
      */
-    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, bool $isFixedDate): array
+    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate): void
     {
         /** @var PageModel */
         global $objPage;
 
         System::loadLanguageFile('tl_calendar_events');
-
-        $eventsToAdd = [];
 
         $intDate = $intStart;
         $strDate = Date::parse($objPage->dateFormat, $intStart);
@@ -559,7 +542,7 @@ class GetAllEventsHook
             $arrEvent['class'] .= ' featured';
         }
 
-        $eventsToAdd[] = $arrEvent;
+        $this->addEvent($arrEvents, $arrEvent, $intDate);
 
         // Multi-day event
         if (!$objModule->cal_noSpan) {
@@ -570,31 +553,29 @@ class GetAllEventsHook
                     break;
                 }
 
-                $eventsToAdd[] = $arrEvent;
+                $this->addEvent($arrEvents, $arrEvent, $intDate);
             }
         }
-
-        return $eventsToAdd;
     }
 
     /**
      * @param array<mixed> $arrEvents
      * @param array<mixed> $event
      */
-    private function addEvent(array &$arrEvents, array $event): void
+    private function addEvent(array &$arrEvents, array $event, int $startTime = null): void
     {
-        $startTime = $event['startTime'];
-        $day = Date::parse('Ymd', $startTime);
+        $time = $startTime ?? $event['startTime'];
+        $day = Date::parse('Ymd', $time);
 
         if (!\array_key_exists($day, $arrEvents)) {
             $arrEvents[$day] = [];
         }
 
-        if (!\array_key_exists($startTime, $arrEvents[$day])) {
-            $arrEvents[$day][$startTime] = [];
+        if (!\array_key_exists($time, $arrEvents[$day])) {
+            $arrEvents[$day][$time] = [];
         }
 
-        $arrEvents[$day][$startTime][] = $event;
+        $arrEvents[$day][$time][] = $event;
     }
 
     /**
