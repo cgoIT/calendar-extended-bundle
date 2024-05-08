@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.2...v2.0.3) (2024-05-08)
+
+
+### Bug Fixes
+
+* add recurring events at the correct indices in the $arrEvents array ([fba1d2f](https://github.com/cgoIT/calendar-extended-bundle/commit/fba1d2f99a3c732f176e887182652f58aed77463))
+* fix ecs findings ([d584a73](https://github.com/cgoIT/calendar-extended-bundle/commit/d584a73be17ad65a8a2f6451befe88c067a3eb40))
+
 ## [2.0.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.1...v2.0.2) (2024-05-05)
 
 
