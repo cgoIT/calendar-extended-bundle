@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.1...v2.0.2) (2024-05-05)
+
+
+### Bug Fixes
+
+* fix error adding new entries to exceptions via multi column wizard ([3c9a57c](https://github.com/cgoIT/calendar-extended-bundle/commit/3c9a57ca10ecfaa6cd931197ebc9600731ba88a4))
+
 ## [2.0.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.0...v2.0.1) (2024-05-02)
 
 
