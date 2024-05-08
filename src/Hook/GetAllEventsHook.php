@@ -562,7 +562,7 @@ class GetAllEventsHook
      * @param array<mixed> $arrEvents
      * @param array<mixed> $event
      */
-    private function addEvent(array &$arrEvents, array $event, int $startTime = null): void
+    private function addEvent(array &$arrEvents, array $event, int|null $startTime = null): void
     {
         $time = $startTime ?? $event['startTime'];
         $day = Date::parse('Ymd', $time);
