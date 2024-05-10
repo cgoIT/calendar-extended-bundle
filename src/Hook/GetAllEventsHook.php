@@ -61,6 +61,8 @@ class GetAllEventsHook
 
         $arrEvents = $this->handleShowOnlyNext($arrEvents, $objModule);
 
+        $arrEvents = $this->addDayAndTimeUrlParameters($arrEvents, $objModule);
+
         return $this->compactAndSortEvents($arrEvents);
     }
 
@@ -378,6 +380,34 @@ class GetAllEventsHook
                         foreach ($events as $pos => $event) {
                             if (\in_array((int) $event['pid'], $arrHolidayCalendars, true)) {
                                 unset($events[$pos]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function addDayAndTimeUrlParameters(array $arrEvents, Events $objModule): array
+    {
+        if (empty($objModule->cal_ignoreDynamic)) {
+            foreach ($arrEvents as &$eventsOnDay) {
+                foreach ($eventsOnDay as &$events) {
+                    if (!empty($events)) {
+                        foreach ($events as &$event) {
+                            if ($event['startTime'] !== $event['begin']) {
+                                $url = '?day='
+                                    .date('Ymd', $event['begin'])
+                                    .'&amp;times='.$event['begin']
+                                    .','.$event['end'];
+                                $event['href'] .= $url;
                             }
                         }
                     }
