@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Hook;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\ContentModel;
@@ -63,15 +64,6 @@ class ParseFrontendTemplateHook extends Controller
             $template->event = $this->processEventTemplate($objEvent, $objTemplate, $template->event, true);
 
             $buffer = $template->parse();
-        } elseif (
-            str_starts_with($templateName, 'events_')
-            && (empty($template->fromCalendarExtendedHook) || false === $template->fromCalendarExtendedHook)
-        ) {
-            $template->fromCalendarExtendedHook = true;
-
-            $objEvent = CalendarEventsModel::findById($template->id);
-
-            $buffer = $this->processEventTemplate($objEvent, $template, $buffer);
         }
 
         return $buffer;
@@ -103,14 +95,15 @@ class ParseFrontendTemplateHook extends Controller
                 }
 
                 [$strDate, $strTime] = $this->getDateAndTime($objEvent, $objPage, $intStartTime, $intEndTime, $span);
+                [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intStartTime, $strDate, $strTime, $this->isRepeatOnFixedDates($objEvent));
 
                 $template->date = $strDate;
                 $template->time = $strTime;
                 $template->datetime = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $intStartTime) : date('Y-m-d', $intStartTime);
                 $template->begin = $intStartTime;
                 $template->end = $intEndTime;
-                $template->recurring = '';
-                $template->until = '';
+                $template->recurring = $recurring;
+                $template->until = $until;
             }
 
             // Add a function to retrieve upcoming dates (see #175)
