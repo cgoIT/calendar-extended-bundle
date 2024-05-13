@@ -30,6 +30,11 @@ use Contao\System;
 #[AsHook(hook: 'parseFrontendTemplate')]
 class ParseFrontendTemplateHook extends Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function __invoke(string $buffer, string $templateName, FrontendTemplate $template): string
     {
         $isModuleEventReader = 'eventreader' === $template->type;
