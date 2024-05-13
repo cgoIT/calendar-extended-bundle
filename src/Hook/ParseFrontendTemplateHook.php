@@ -14,92 +14,79 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Hook;
 
-use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Contao\Calendar;
 use Contao\CalendarEventsModel;
+use Contao\ContentModel;
+use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Date;
+use Contao\Events;
 use Contao\FrontendTemplate;
+use Contao\Input;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 
 #[AsHook(hook: 'parseFrontendTemplate')]
-class ParseFrontendTemplateHook
+class ParseFrontendTemplateHook extends Controller
 {
-    /**
-     * @var array<mixed>
-     */
-    private readonly array $arrMonths;
-
-    public function __construct()
-    {
-        System::loadLanguageFile('default', 'en', true);
-        $this->arrMonths = $GLOBALS['TL_LANG']['MONTHS'];
-        System::loadLanguageFile('default');
-    }
-
     public function __invoke(string $buffer, string $templateName, FrontendTemplate $template): string
     {
+        $isModuleEventReader = 'eventreader' === $template->type;
+
         if (
-            str_starts_with($templateName, 'event_')
+            $isModuleEventReader
+            && (empty($template->fromCalendarExtendedHook) || false === $template->fromCalendarExtendedHook)
+        ) {
+            $template->fromCalendarExtendedHook = true;
+
+            // Get the current event
+            $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get('events'), $template->cal_calendar);
+
+            $objTemplate = new FrontendTemplate($template->cal_template ?: 'event_full');
+            $objTemplate->setData($objEvent->row());
+            $objTemplate->class = $objEvent->cssClass ? ' '.trim($objEvent->cssClass) : '';
+            $objTemplate->locationLabel = $GLOBALS['TL_LANG']['MSC']['location'];
+            $objTemplate->calendar = $objEvent->getRelated('pid');
+            $objTemplate->count = 0; // see #74
+            $objTemplate->details = '';
+            $objTemplate->hasDetails = false;
+            $objTemplate->hasTeaser = false;
+            $objTemplate->hasReader = true;
+            $objTemplate->fromCalendarExtendedHook = true;
+
+            $template->event = $this->processEventTemplate($objEvent, $objTemplate, $template->event, true);
+
+            $buffer = $template->parse();
+        } elseif (
+            str_starts_with($templateName, 'events_')
             && (empty($template->fromCalendarExtendedHook) || false === $template->fromCalendarExtendedHook)
         ) {
             $template->fromCalendarExtendedHook = true;
 
             $objEvent = CalendarEventsModel::findById($template->id);
 
-            /** @var PageModel */
-            global $objPage;
+            $buffer = $this->processEventTemplate($objEvent, $template, $buffer);
+        }
 
-            System::loadLanguageFile('tl_calendar_events');
+        return $buffer;
+    }
 
-            if (!empty($objEvent->recurringExt) || $this->isRepeatOnFixedDates($objEvent)) {
-                $intStartTime = $objEvent->startTime;
-                $intEndTime = $objEvent->endTime;
-                $month = (int) date('n', $intStartTime);
-                $year = (int) date('Y', $intStartTime);
-                $span = Calendar::calculateSpan($intStartTime, $intEndTime);
+    private function processEventTemplate(CalendarEventsModel $objEvent, FrontendTemplate $template, string $buffer, bool $blnIsEventReader = false): string
+    {
+        /** @var PageModel */
+        global $objPage;
 
-                $isFixedDate = false;
+        System::loadLanguageFile('tl_calendar_events');
 
-                if (!empty($objEvent->recurringExt)) {
-                    $arrRange = StringUtil::deserialize($objEvent->repeatEachExt, true);
+        if (($blnIsEventReader && !empty($objEvent->recurring)) || !empty($objEvent->recurringExt) || $this->isRepeatOnFixedDates($objEvent)) {
+            $intStartTime = $objEvent->startTime;
+            $intEndTime = $objEvent->endTime;
+            $span = Calendar::calculateSpan($intStartTime, $intEndTime);
 
-                    if (empty($arrRange) || empty($arrRange['value']) || empty($arrRange['unit'])) {
-                        return $buffer;
-                    }
-
-                    $arg = $arrRange['value'];
-                    $unit = $arrRange['unit'];
-
-                    while (($template->cal_hideRunning ? $intStartTime : $intEndTime) < time() && $intEndTime < $objEvent->repeatEnd) {
-                        ++$month;
-
-                        if (0 === $month % 13) {
-                            $month = 1;
-                            ++$year;
-                        }
-                        $timetoadd = $arg.' '.$unit.' of '.$this->arrMonths[$month - 1].' '.$year;
-
-                        $intStartTime = strtotime($timetoadd, $intStartTime);
-                        $intEndTime = $intStartTime + $objEvent->endTime - $objEvent->startTime;
-                    }
-                } elseif ($this->isRepeatOnFixedDates($objEvent)) {
-                    $isFixedDate = true;
-
-                    $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
-                    if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
-                        foreach ($arrFixedDates as $fixedDate) {
-                            if (($template->cal_hideRunning ? $intStartTime : $intEndTime) < time() && $intEndTime < $objEvent->repeatEnd) {
-                                break;
-                            }
-
-                            $intStartTime = (int) $fixedDate['new_repeat'];
-                            $intEndTime = $intStartTime + $objEvent->startTime - $objEvent->endTime;
-                        }
-                    }
-                }
+            // Replace the date an time with the correct ones from the recurring event
+            if ($blnIsEventReader && Input::get('times')) {
+                [$intStartTime, $intEndTime] = array_map('\intval', explode(',', Input::get('times')));
 
                 // Mark past and upcoming events (see #187)
                 if ($intEndTime < strtotime('00:00:00')) {
@@ -111,18 +98,151 @@ class ParseFrontendTemplateHook
                 }
 
                 [$strDate, $strTime] = $this->getDateAndTime($objEvent, $objPage, $intStartTime, $intEndTime, $span);
-                [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intStartTime, $strDate, $strTime, $isFixedDate);
 
                 $template->date = $strDate;
                 $template->time = $strTime;
                 $template->datetime = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $intStartTime) : date('Y-m-d', $intStartTime);
                 $template->begin = $intStartTime;
                 $template->end = $intEndTime;
-                $template->recurring = $recurring;
-                $template->until = $until;
-
-                $buffer = $template->parse();
+                $template->recurring = '';
+                $template->until = '';
             }
+
+            // Add a function to retrieve upcoming dates (see #175)
+            $template->getUpcomingDates = function ($recurrences) use ($objEvent, $objPage, $intStartTime, $span) {
+                if (empty($objEvent->allRecurrences)) {
+                    return [];
+                }
+                $arrAllRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
+                $upcomingRecurrences = array_filter($arrAllRecurrences, static fn ($entry) => $entry['int_start'] > $intStartTime);
+
+                $dates = [];
+                $i = 0;
+
+                foreach ($upcomingRecurrences as $recurrence) {
+                    if (++$i > $recurrences) {
+                        break;
+                    }
+
+                    [$strDate, $strTime] = $this->getDateAndTime($objEvent, $objPage, $recurrence['int_start'], $recurrence['int_end'], $span);
+                    $dates[] =
+                        [
+                            'date' => $strDate,
+                            'time' => $strTime,
+                            'datetime' => $objEvent->addTime ? date('Y-m-d\TH:i:sP', $recurrence['int_start']) : date('Y-m-d', $recurrence['int_end']),
+                            'begin' => $recurrence['int_start'],
+                            'end' => $recurrence['int_end'],
+                        ];
+                }
+
+                return $dates;
+            };
+
+            // Add a function to retrieve past dates (see #175)
+            $template->getPastDates = function ($recurrences) use ($objEvent, $objPage, $intStartTime, $span) {
+                if (empty($objEvent->allRecurrences)) {
+                    return [];
+                }
+                $arrAllRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
+                $upcomingRecurrences = array_filter($arrAllRecurrences, static fn ($entry) => $entry['int_end'] < $intStartTime);
+
+                $dates = [];
+                $i = 0;
+
+                foreach ($upcomingRecurrences as $recurrence) {
+                    if (++$i > $recurrences) {
+                        break;
+                    }
+
+                    [$strDate, $strTime] = $this->getDateAndTime($objEvent, $objPage, $recurrence['int_start'], $recurrence['int_end'], $span);
+                    $dates[] =
+                        [
+                            'date' => $strDate,
+                            'time' => $strTime,
+                            'datetime' => $objEvent->addTime ? date('Y-m-d\TH:i:sP', $recurrence['int_start']) : date('Y-m-d', $recurrence['int_end']),
+                            'begin' => $recurrence['int_start'],
+                            'end' => $recurrence['int_end'],
+                        ];
+                }
+
+                return $dates;
+            };
+
+            if ($blnIsEventReader) {
+                // Clean the RTE output
+                if ($objEvent->teaser) {
+                    $template->hasTeaser = true;
+                    $template->teaser = StringUtil::encodeEmail($objEvent->teaser);
+                }
+
+                // Display the "read more" button for external/article links
+                if ('default' !== $objEvent->source) {
+                    $template->hasDetails = true;
+                    $template->hasReader = false;
+                }
+
+                // Compile the event text
+                else {
+                    $id = $objEvent->id;
+
+                    $template->details = function () use ($id) {
+                        $strDetails = '';
+                        $objElement = ContentModel::findPublishedByPidAndTable($id, 'tl_calendar_events');
+
+                        if (null !== $objElement) {
+                            while ($objElement->next()) {
+                                $strDetails .= $this->getContentElement($objElement->current());
+                            }
+                        }
+
+                        return $strDetails;
+                    };
+
+                    $template->hasDetails = static fn () => ContentModel::countPublishedByPidAndTable($id, 'tl_calendar_events') > 0;
+                }
+
+                $template->addImage = false;
+                $template->addBefore = false;
+
+                // Add an image
+                if ($objEvent->addImage) {
+                    $imgSize = $objEvent->size ?: null;
+
+                    $figure = System::getContainer()
+                        ->get('contao.image.studio')
+                        ->createFigureBuilder()
+                        ->from($objEvent->singleSRC)
+                        ->setSize($imgSize)
+                        ->setOverwriteMetadata($objEvent->getOverwriteMetadata())
+                        ->enableLightbox((bool) $objEvent->fullsize)
+                        ->buildIfResourceExists()
+                    ;
+
+                    if (null !== $figure) {
+                        $figure->applyLegacyTemplateData($template, $objEvent->imagemargin, $objEvent->floating);
+                    }
+                }
+
+                $template->enclosure = [];
+
+                // Add enclosures
+                if ($objEvent->addEnclosure) {
+                    $this->addEnclosuresToTemplate($template, $objEvent->row());
+                }
+
+                // schema.org information
+                $template->getSchemaOrgData = static function () use ($template, $objEvent): array {
+                    $jsonLd = Events::getSchemaOrgData($objEvent);
+
+                    if ($template->addImage && $template->figure) {
+                        $jsonLd['image'] = $template->figure->getSchemaOrgData();
+                    }
+
+                    return $jsonLd;
+                };
+            }
+
+            return $template->parse();
         }
 
         return $buffer;
