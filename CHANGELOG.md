@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.3...v2.1.0) (2024-05-15)
+
+
+### Features
+
+* reimplement logic for day and times url parameter and display of event times in mod_eventreader ([a192b4a](https://github.com/cgoIT/calendar-extended-bundle/commit/a192b4a017a102adb9f471a1628e09141b507a37))
+
+
+### Bug Fixes
+
+* add day and times url parameters for repeated events ([53f3f70](https://github.com/cgoIT/calendar-extended-bundle/commit/53f3f7045c38e674e1c0fbb549d185c67e442be6))
+* add until and recurring to event template in ModuleEventReader ([fe46742](https://github.com/cgoIT/calendar-extended-bundle/commit/fe4674202256df436ae0d6d93500e9db6c72f7a4))
+* always show correct next date if no url parameters (day, times) are given ([7e26906](https://github.com/cgoIT/calendar-extended-bundle/commit/7e269060ca34804ca412df64cc91df64f1c84f40))
+* call parent constructor in ParseFrontendTemplateHook ([9b156e6](https://github.com/cgoIT/calendar-extended-bundle/commit/9b156e69bd6acd69d0faca35390bcbacbb2fb06b))
+
 ## [2.0.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.2...v2.0.3) (2024-05-08)
 
 
