@@ -79,12 +79,8 @@ class Utils
                 $until = ' '.sprintf($GLOBALS['TL_LANG']['MSC']['cal_until'], Date::parse($objPage->dateFormat, $objEvent->repeatEnd));
 
                 $arrFixedDates = array_map(static fn ($val) => Date::parse($objPage->dateFormat, $val), array_column($arrFixedDates, 'new_repeat'));
+                $strDates = self::implodeFixedDates($arrFixedDates);
 
-                if (\count($arrFixedDates) > 4) {
-                    $arrFixedDates = array_merge(\array_slice($arrFixedDates, 0, 4), ['...']);
-                }
-
-                $strDates = implode(', ', $arrFixedDates);
                 $recurring = sprintf($GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'], $strDates, date('Y-m-d\TH:i:sP', $intStartTime), $strDate.($strTime ? ' '.$strTime : ''));
             }
         } elseif (!empty($objEvent->recurringExt)) {
@@ -136,8 +132,6 @@ class Utils
 
     /**
      * @param array<mixed> $arr the array the value should be appended to a key/the key should be added
-     * @param mixed        $key the key to look for
-     * @param mixed        $val the value which should be append/set for the given key
      */
     public static function appendToArrayKey(&$arr, mixed $key, mixed $val): void
     {
@@ -146,5 +140,34 @@ class Utils
         } else {
             $arr[$key] = $val;
         }
+    }
+
+    /**
+     * Implodes an array of fixed dates into a string.
+     *
+     * If the input array has more than 4 dates, it will only include the first 4 dates and append the count of other dates.
+     * Otherwise, it will implode all the dates with a comma separator and append the last date with an "and" label.
+     *
+     * @param array|null $arrFixedDates Array of fixed dates
+     *
+     * @return string The imploded string of fixed dates
+     */
+    private static function implodeFixedDates(array|null $arrFixedDates): string
+    {
+        if (null === $arrFixedDates) {
+            return '';
+        }
+
+        if (\count($arrFixedDates) > 4) {
+            $cntOtherDates = \count($arrFixedDates) - 4;
+            $arrFixedDates = \array_slice($arrFixedDates, 0, 4);
+
+            return implode(', ', $arrFixedDates).' '.
+                sprintf($cntOtherDates > 1 ? $GLOBALS['TL_LANG']['MSC']['count_other_dates_plural'] : $GLOBALS['TL_LANG']['MSC']['count_other_dates_singular'], $cntOtherDates);
+        }
+
+        $last = array_pop($arrFixedDates);
+
+        return implode(', ', $arrFixedDates).' '.$GLOBALS['TL_LANG']['MSC']['and_label'].' '.$last;
     }
 }

@@ -160,8 +160,7 @@ class CalendarLeadsModel extends Model
     }
 
     /**
-     * @param int   $pid   pid
-     * @param mixed $value value
+     * @param int $pid pid
      *
      * @return bool
      */

@@ -19,7 +19,7 @@ PaletteManipulator::create()->addField('hide_holiday', 'config_legend', PaletteM
     ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('calendar', 'tl_module')
 ;
-PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
+PaletteManipulator::create()->addLegend('filter_legend', 'template_legend')
     ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('calendar', 'tl_module')
 ;

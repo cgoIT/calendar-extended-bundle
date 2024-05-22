@@ -26,21 +26,6 @@ $GLOBALS['TL_LANG']['MSC']['cal_third'] = 'Dieser Termin wiederholt sich jeden d
 $GLOBALS['TL_LANG']['MSC']['cal_fourth'] = 'Dieser Termin wiederholt sich jeden vierten %s im Monat';
 $GLOBALS['TL_LANG']['MSC']['cal_last'] = 'Dieser Termin wiederholt sich jeden letzten %s im Monat';
 
-$GLOBALS['TL_LANG']['tl_module']['confirm_drop'] = 'Möchten Sie das Event wirklich verschieben?';
-$GLOBALS['TL_LANG']['tl_module']['confirm_resize'] = 'Möchten Sie das Event wirklich ändern?';
-$GLOBALS['TL_LANG']['tl_module']['fetch_error'] = 'Beim Laden der Daten ist ein Fehler aufgetreten!';
-
-$GLOBALS['TL_LANG']['tl_module']['fc_config_legend'] = 'Einstellungen Fullcalendar';
-$GLOBALS['TL_LANG']['tl_module']['fc_google_legend'] = 'Einstellungen Google Kalender';
-
-$GLOBALS['TL_LANG']['tl_module']['fc_defaultView'] = ['Standard-Ansicht', 'Wähle die Standard-Ansicht für den Fullcalendar'];
-
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['month'] = 'Monat';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['basicWeek'] = 'Woche';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['basicDay'] = 'Tag';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['agendaWeek'] = 'Agenda Woche';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['agendaDay'] = 'Agenda Tag';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['listYear'] = 'Liste Jahr';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['listMonth'] = 'Liste Monat';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['listWeek'] = 'Liste Woche';
-$GLOBALS['TL_LANG']['tl_module']['fc_views']['listDay'] = 'Liste Tag';
+$GLOBALS['TL_LANG']['MSC']['and_label'] = 'und';
+$GLOBALS['TL_LANG']['MSC']['count_other_dates_singular'] = 'und %s weiteren Termin';
+$GLOBALS['TL_LANG']['MSC']['count_other_dates_plural'] = 'und %s weiteren Terminen';

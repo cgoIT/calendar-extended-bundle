@@ -26,6 +26,6 @@ $GLOBALS['TL_LANG']['MSC']['cal_third'] = 'This event is repeated every third %s
 $GLOBALS['TL_LANG']['MSC']['cal_fourth'] = 'This event is repeated every fourth %s of the month';
 $GLOBALS['TL_LANG']['MSC']['cal_last'] = 'This event is repeated every last %s of the month';
 
-$GLOBALS['TL_LANG']['tl_module']['confirm_drop'] = 'Are you sure you want to move the event?';
-$GLOBALS['TL_LANG']['tl_module']['confirm_resize'] = 'Are you sure you want to change the event?';
-$GLOBALS['TL_LANG']['tl_module']['fetch_error'] = 'Error while loading events!';
+$GLOBALS['TL_LANG']['MSC']['and_label'] = 'and';
+$GLOBALS['TL_LANG']['MSC']['count_other_dates_singular'] = 'and %s other date';
+$GLOBALS['TL_LANG']['MSC']['count_other_dates_plural'] = 'and %s other dates';

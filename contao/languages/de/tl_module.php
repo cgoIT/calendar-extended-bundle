@@ -44,3 +44,7 @@ $GLOBALS['TL_LANG']['tl_module']['cal_fc_month'] = 'Monatsübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_week'] = 'Wochenübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_day'] = 'Tagesübersicht';
 $GLOBALS['TL_LANG']['tl_module']['cal_fc_list'] = 'Listenansicht';
+
+$GLOBALS['TL_LANG']['tl_module']['confirm_drop'] = 'Möchten Sie das Event wirklich verschieben?';
+$GLOBALS['TL_LANG']['tl_module']['confirm_resize'] = 'Möchten Sie das Event wirklich ändern?';
+$GLOBALS['TL_LANG']['tl_module']['fetch_error'] = 'Beim Laden der Daten ist ein Fehler aufgetreten!';

@@ -30,3 +30,7 @@ services:
     Cgoit\CalendarExtendedBundle\Migration\CopyHolidayCalendarsMigration:
         tags:
             - { name: contao.migration }
+
+    Cgoit\CalendarExtendedBundle\Migration\FixRepeatFixedDatesMigration:
+        tags:
+            - { name: contao.migration }

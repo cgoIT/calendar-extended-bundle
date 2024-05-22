@@ -301,9 +301,13 @@ class CalendarEventsCallbacks extends Backend
 
                 $new_fix_date = $fixedDate['new_repeat'];
 
-                // Check if we have a new start time new_fix_start_time =
-                $new_fix_start_time = !empty($fixedDate['new_start']) ? date('H:i', $fixedDate['new_start']) : date('H:i', $activeRecord->addTime ? $activeRecord->startTime : '00:00');
-                $new_fix_end_time = !empty($fixedDate['new_end']) ? date('H:i', $fixedDate['new_end']) : date('H:i', $activeRecord->addTime ? $activeRecord->endTime : '23:59');
+                // Check if we have a new start time
+                $new_fix_start_time = !empty($fixedDate['new_start']) ?
+                    date('H:i', $fixedDate['new_start']) :
+                    ($activeRecord->addTime ? date('H:i', $activeRecord->startTime) : '00:00');
+                $new_fix_end_time = !empty($fixedDate['new_end']) ?
+                    date('H:i', $fixedDate['new_end']) :
+                    ($activeRecord->addTime ? date('H:i', $activeRecord->endTime) : '23:59');
 
                 $new_fix_start_date = strtotime(date('d.m.Y', $new_fix_date).' '.date('H:i', strtotime($new_fix_start_time)));
                 $new_fix_end_date = strtotime(date('d.m.Y', $new_fix_date).' '.date('H:i', strtotime($new_fix_end_time)));

@@ -186,8 +186,9 @@ class GetAllEventsHook
                             if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
                                 $alreadyInArray = false;
 
-                                foreach ($arrEvents[$key][$intStart] as $event) {
+                                foreach ($arrEvents[$key][$intStart] as &$event) {
                                     if ($event['id'] === $objEvent->id) {
+                                        $event['recurrences'] = \count($arrFixedDates);
                                         $alreadyInArray = true;
                                         break;
                                     }
@@ -198,7 +199,7 @@ class GetAllEventsHook
                                 }
                             }
 
-                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, $arrEvents, true);
+                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, $arrEvents, true, \count($arrFixedDates));
                         }
                     }
                 }
@@ -451,7 +452,7 @@ class GetAllEventsHook
      *
      * @throws \Exception
      */
-    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate): void
+    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate, int|null $intRecurrences = null): void
     {
         /** @var PageModel */
         global $objPage;
@@ -508,6 +509,10 @@ class GetAllEventsHook
         $arrEvent['effectiveEndTime'] = $arrEvent['endTime'];
         $arrEvent['details'] = '';
         $arrEvent['hasTeaser'] = false;
+
+        if (null !== $intRecurrences) {
+            $arrEvent['recurrences'] = $intRecurrences;
+        }
 
         // Set open-end events to 23:59:59, so they run until the end of the day (see #4476)
         if ($intStart === $intEnd && $objEvent->addTime) {
