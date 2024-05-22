@@ -31,6 +31,6 @@ services:
         tags:
             - { name: contao.migration }
 
-    Cgoit\CalendarExtendedBundle\Migration\FixRepeatFixedDatesMigration:
+    Cgoit\CalendarExtendedBundle\Migration\FixBrokenMCWDataMigration:
         tags:
             - { name: contao.migration }

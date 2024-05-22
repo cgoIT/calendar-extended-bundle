@@ -165,6 +165,9 @@ class Utils
             return implode(', ', $arrFixedDates).' '.
                 sprintf($cntOtherDates > 1 ? $GLOBALS['TL_LANG']['MSC']['count_other_dates_plural'] : $GLOBALS['TL_LANG']['MSC']['count_other_dates_singular'], $cntOtherDates);
         }
+        if (1 === \count($arrFixedDates)) {
+            return $arrFixedDates[0];
+        }
 
         $last = array_pop($arrFixedDates);
 

@@ -19,6 +19,7 @@ use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\ContentModel;
 use Contao\Controller;
+use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Date;
 use Contao\Events;
@@ -47,7 +48,9 @@ class ParseFrontendTemplateHook extends Controller
             $template->fromCalendarExtendedHook = true;
 
             // Get the current event
-            $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get('events'), $template->cal_calendar);
+            $version = (method_exists(ContaoCoreBundle::class, 'getVersion') ? ContaoCoreBundle::getVersion() : VERSION); // @phpstan-ignore-line
+            $getParameter = version_compare($version, '5.0', '<') ? 'events' : 'auto_item';
+            $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get($getParameter), $template->cal_calendar);
 
             $objTemplate = new FrontendTemplate($template->cal_template ?: 'event_full');
             $objTemplate->setData($objEvent->row());
