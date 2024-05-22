@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.1.0...v2.2.0) (2024-05-22)
+
+
+### Features
+
+* change some cols to 'text NULL' to prevent row size too large error ([5679e14](https://github.com/cgoIT/calendar-extended-bundle/commit/5679e144d56454957595f6aea64eddbb0e5f6dc8))
+
+
+### Bug Fixes
+
+* fix loading of event details in ParseFrontendTemplateHook ([c2f7f23](https://github.com/cgoIT/calendar-extended-bundle/commit/c2f7f23ccb4f9d04cb60eec79eba24977949e90b))
+* fix processing of fixed dates repeats ([416563e](https://github.com/cgoIT/calendar-extended-bundle/commit/416563ef3316a60d41a1e31985a86b138e555ca5))
+
 ## [2.1.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.0.3...v2.1.0) (2024-05-15)
 
 
