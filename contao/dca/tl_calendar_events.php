@@ -161,7 +161,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_name'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
@@ -169,7 +169,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_plz'] = [
@@ -185,7 +185,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_ort'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
@@ -193,7 +193,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['rgxp' => 'url', 'maxlength' => 255, 'tl_class' => 'long'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
@@ -201,7 +201,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
@@ -209,7 +209,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['rgxp' => 'email', 'maxlength' => 255, 'decodeEntities' => true, 'tl_class' => 'w50'],
-    'sql' => "varchar(255) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 // new repeat options for events

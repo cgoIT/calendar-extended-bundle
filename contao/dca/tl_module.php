@@ -186,7 +186,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['businessDays'] = [
     'options' => [1, 2, 3, 4, 5, 6, 0],
     'reference' => &$GLOBALS['TL_LANG']['DAYS'],
     'eval' => ['multiple' => true, 'tl_class' => 'clr w50'],
-    'sql' => "varchar(128) NOT NULL default ''",
+    'sql' => 'text NULL',
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessDayStart'] =
