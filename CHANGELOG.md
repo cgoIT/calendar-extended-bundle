@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.2.0...v2.2.1) (2024-06-07)
+
+
+### Bug Fixes
+
+* update calendar event model and remove dependency ([0b532e1](https://github.com/cgoIT/calendar-extended-bundle/commit/0b532e1cda70b10b717d7d025f5e8ff0c09adc47))
+
 ## [2.2.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.1.0...v2.2.0) (2024-05-22)
 
 
