@@ -63,7 +63,7 @@ class CalendarEventsCallbacks extends Backend
             return false;
         }
 
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord; // @phpstan-ignore-line
+        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
 
         // Return if the event is recurring
         if ($activeRecord->recurring || $activeRecord->recurringExt) {
@@ -139,7 +139,7 @@ class CalendarEventsCallbacks extends Backend
             return;
         }
 
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord; // @phpstan-ignore-line
+        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
 
         // Return if there is no active record (override all) or no start date has been
         // set yet
@@ -201,7 +201,8 @@ class CalendarEventsCallbacks extends Backend
     public function checkRecurring(mixed $value, DataContainer $dc): mixed
     {
         if (!empty($value)) {
-            if (!empty($dc->activeRecord->recurring) && !empty($dc->activeRecord->recurringExt)) {
+            $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+            if (!empty($activeRecord->recurring) && !empty($activeRecord->recurringExt)) {
                 throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
             }
         }
@@ -218,7 +219,8 @@ class CalendarEventsCallbacks extends Backend
     public function checkExceptions(mixed $value, DataContainer $dc): mixed
     {
         if (!empty($value)) {
-            if (empty($dc->activeRecord->recurring) && empty($dc->activeRecord->recurringExt)) {
+            $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+            if (empty($activeRecord->recurring) && empty($activeRecord->recurringExt)) {
                 throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions']);
             }
         }

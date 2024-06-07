@@ -24,6 +24,44 @@ use Contao\Model\Collection;
 class CalendarEventsModelExt extends CalendarEventsModel
 {
     /**
+     * Find current events by their parent ID.
+     *
+     * @param int          $intPid     The parent ID of the events
+     * @param int          $intStart   The start timestamp
+     * @param int          $intEnd     The end timestamp
+     * @param array<mixed> $arrOptions An optional options array
+     *
+     * @return Collection<CalendarEventsModel>|array<CalendarEventsModel>|CalendarEventsModel|null A collection of models or null if there are no events
+     */
+    public static function findCurrentByPid($intPid, $intStart, $intEnd, array $arrOptions = [])
+    {
+        $t = static::$strTable;
+        $intStart = (int) $intStart;
+        $intEnd = (int) $intEnd;
+
+        $arrColumns = ["$t.pid=? AND (($t.startTime>=$intStart AND $t.startTime<=$intEnd) OR ($t.endTime>=$intStart AND $t.endTime<=$intEnd) OR ($t.startTime<=$intStart AND $t.endTime>=$intEnd) OR (($t.recurringExt=1 OR $t.recurring=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$intStart) AND $t.startTime<=$intEnd))"];
+
+        if (isset($arrOptions['showFeatured'])) {
+            if (true === $arrOptions['showFeatured']) {
+                $arrColumns[] = "$t.featured=1";
+            } elseif (false === $arrOptions['showFeatured']) {
+                $arrColumns[] = "$t.featured=0";
+            }
+        }
+
+        if (!static::isPreviewMode($arrOptions)) {
+            $time = Date::floorToMinute();
+            $arrColumns[] = "$t.published=1 AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)";
+        }
+
+        if (!isset($arrOptions['order'])) {
+            $arrOptions['order'] = "$t.startTime";
+        }
+
+        return static::findBy($arrColumns, [$intPid], $arrOptions);
+    }
+
+    /**
      * Find upcoming events by their parent IDs.
      *
      * @param array<mixed> $arrIds     An array of calendar IDs
@@ -42,7 +80,7 @@ class CalendarEventsModelExt extends CalendarEventsModel
         $time = Date::floorToMinute();
 
         // Get upcoming events using endTime instead of startTime (see #3917)
-        $arrColumns = ["($t.endTime>=$time OR (($t.recurring=1 OR $t.recurringExt=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$time))) AND $t.pid IN(".implode(',', array_map('intval', $arrIds)).") AND ($t.start='' OR $t.start<$time) AND ($t.stop='' OR $t.stop>$time) AND $t.published=1"];
+        $arrColumns = ["$t.pid IN(".implode(',', array_map('\intval', $arrIds)).") AND $t.published=1 AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time) AND ($t.endTime>=$time OR (($t.recurringExt=1 OR $t.recurring=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$time)))"];
 
         if ($intLimit > 0) {
             $arrOptions['limit'] = $intLimit;
