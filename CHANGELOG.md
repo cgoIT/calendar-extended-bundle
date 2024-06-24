@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.2.1...v2.3.0) (2024-06-24)
+
+
+### Features
+
+* add calendar id to event link in fullcalendar ([c2d1af1](https://github.com/cgoIT/calendar-extended-bundle/commit/c2d1af10e871fd5a2a809b51cf172e1519897e55))
+
+
+### Bug Fixes
+
+* ensure that $objPage is never null on ajax requests ([a3d7e9c](https://github.com/cgoIT/calendar-extended-bundle/commit/a3d7e9c180dc0a861c1e343ff4e5f0d2f57dce91))
+
 ## [2.2.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.2.0...v2.2.1) (2024-06-07)
 
 
