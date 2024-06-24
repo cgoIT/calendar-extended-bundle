@@ -38,6 +38,10 @@
 
             // Render the font-awesome icon if exists
             eventDidMount: function (info) {
+                if (info.event.extendedProps.calendarId) {
+                    info.el.classList.add('cal-' + info.event.extendedProps.calendarId);
+                }
+
                 const timeElement = info.el.querySelector('.fc-event-time');
                 if (info.event.extendedProps.editable && timeElement) {
                     const icon = document.createElement('i');

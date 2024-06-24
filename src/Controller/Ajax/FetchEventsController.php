@@ -19,6 +19,7 @@ use Contao\Date;
 use Contao\Input;
 use Contao\ModuleModel;
 use Contao\StringUtil;
+use Contao\System;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +30,8 @@ class FetchEventsController
 {
     public function __invoke(Request $request, int $moduleId): Response
     {
+        System::getContainer()->get('contao.framework')->initialize();
+
         $objModule = ModuleModel::findById($moduleId);
         $moduleFullcalendar = new ModuleFullCalendar($objModule);
         $events = $this->fetchEvents($moduleFullcalendar);
@@ -121,6 +124,7 @@ class FetchEventsController
                         // Add the event to array of events
                         $json_events[] = [
                             'id' => $event['id'],
+                            'calendarId' => $event['pid'],
                             'title' => $title,
                             'start' => $event['datetime_start'],
                             'end' => $event['datetime_end'],
