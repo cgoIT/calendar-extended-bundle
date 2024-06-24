@@ -457,6 +457,15 @@ class GetAllEventsHook
         /** @var PageModel */
         global $objPage;
 
+        if (empty($objPage)) {
+            System::getContainer()->get('request_stack')->getCurrentRequest();
+            $rootPage = PageModel::findPublishedFallbackByHostname(
+                System::getContainer()->get('request_stack')->getCurrentRequest()->getHost(),
+                ['fallbackToEmpty' => true],
+            );
+            $objPage = $rootPage->loadDetails();
+        }
+
         System::loadLanguageFile('tl_calendar_events');
 
         $intDate = $intStart;
