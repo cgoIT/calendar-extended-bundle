@@ -10,7 +10,7 @@
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,dayGridDay,listDay'
+                right: 'dayGridMonth,timeGridWeek,dayGridDay,listMonth'
             },
             navLinks: true,
             editable: false,
