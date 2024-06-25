@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.3.0...v2.4.0) (2024-06-25)
+
+
+### Features
+
+* default time list view in fullcalendar is now "month". ([00e7097](https://github.com/cgoIT/calendar-extended-bundle/commit/00e70971bda6d91bb4a99d60d3b699905b3b9adf))
+
 ## [2.3.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.2.1...v2.3.0) (2024-06-24)
 
 
