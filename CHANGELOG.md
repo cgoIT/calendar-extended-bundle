@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.0...v2.4.1) (2024-07-11)
+
+
+### Bug Fixes
+
+* the start time and end time of the "repeat exceptions" are displayed correctly in the frontend ([99574aa](https://github.com/cgoIT/calendar-extended-bundle/commit/99574aa6b5e616cdbf8f876c5a138ba32a8e9d02)), closes [#15](https://github.com/cgoIT/calendar-extended-bundle/issues/15)
+
 ## [2.4.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.3.0...v2.4.0) (2024-06-25)
 
 
