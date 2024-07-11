@@ -32,10 +32,10 @@ class ModuleCallbacks extends Backend
     }
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     #[AsCallback(table: 'tl_module', target: 'fields.filter_fields.options')]
-    public function getEventField()
+    public function getEventField(): array
     {
         // Load tl_calendar_events data
         $this->loadDataContainer('tl_calendar_events');
@@ -69,9 +69,9 @@ class ModuleCallbacks extends Backend
     }
 
     /**
-     * @return array|null
+     * @return array<mixed>|null
      */
-    public function getTimeRange()
+    public function getTimeRange(): array|null
     {
         return [
             'time_from' => [

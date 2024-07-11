@@ -40,7 +40,12 @@ class GetAllEventsHook
     private int|false $intTodayEnd = false;
 
     /**
+     * @param array<mixed> $arrEvents
+     * @param array<mixed> $arrCalendars
+     *
      * @return array<mixed>
+     *
+     * @throws \Exception
      */
     public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
@@ -146,9 +151,17 @@ class GetAllEventsHook
     }
 
     /**
-     * @param array<mixed> $arrEvents
+     * Handle fixed dates with recurrences.
      *
-     * @return array<mixed>
+     * @param array<mixed> $arrEvents    Array of events
+     * @param array<int>   $arrCalendars Array of calendar IDs
+     * @param int          $timeStart    Start time
+     * @param int          $timeEnd      End time
+     * @param Events       $objModule    Events module object
+     *
+     * @return array<mixed> Array of events with fixed dates recurrences
+     *
+     * @throws \Exception
      */
     private function handleFixedDatesRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
@@ -173,13 +186,16 @@ class GetAllEventsHook
                 if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
                     foreach ($arrFixedDates as $date) {
                         $intStart = $date['new_repeat'];
+                        $intEnd = $intStart;
                         if (!empty($date['new_start']) && $objEvent->addTime) {
-                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_start']);
+                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $date['new_repeat']).' '.date('H:i', $date['new_start']));
+                            $intStart = $objEvent->startTime;
+                            $intEnd = $intStart;
                         }
                         if (!empty($date['new_end']) && $objEvent->addTime) {
-                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $intStart).' '.$date['new_end']);
+                            $objEvent->endTime = strtotime(Date::parse($objPage->dateFormat, $date['new_repeat']).' '.date('H:i', $date['new_end']));
+                            $intEnd = $objEvent->endTime;
                         }
-                        $intEnd = $intStart;
 
                         if ($intStart >= $timeStart && $intStart <= $timeEnd) {
                             $key = Date::parse('Ymd', $intStart);

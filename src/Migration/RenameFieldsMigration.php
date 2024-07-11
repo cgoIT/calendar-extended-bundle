@@ -21,6 +21,9 @@ use Doctrine\DBAL\Exception;
 
 class RenameFieldsMigration extends AbstractMigration
 {
+    /**
+     * @var array<mixed>
+     */
     private static array $arrColumns = [
         'show_holiday' => 'hide_holiday',
         'cellhight' => 'cellheight',

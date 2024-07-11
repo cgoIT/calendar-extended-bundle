@@ -203,7 +203,7 @@ class ModuleFullCalendar extends Events
         $objTemplate->firstDay = $this->cal_startDay;
 
         if (!empty($this->businessHours)) {
-            $arrDays = array_map('\intval', StringUtil::deserialize($this->businessDays, true));
+            $arrDays = array_map(\intval(...), StringUtil::deserialize($this->businessDays, true));
 
             $businessHours = new \stdClass();
             $businessHours->daysOfWeek = $arrDays;

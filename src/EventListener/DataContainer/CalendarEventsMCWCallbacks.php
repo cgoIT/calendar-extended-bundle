@@ -25,6 +25,15 @@ use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
 
 class CalendarEventsMCWCallbacks extends Backend
 {
+    /**
+     * __construct().
+     *
+     * Constructor for the class.
+     *
+     * @param Connection   $db                  The database connection object
+     * @param int          $exceptionsMoveDays  The number of days to move exceptions
+     * @param array<mixed> $exceptionsMoveTimes The array of exception move times
+     */
     public function __construct(
         private readonly Connection $db,
         private readonly int $exceptionsMoveDays,

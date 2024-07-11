@@ -702,6 +702,8 @@ class CalendarEventsCallbacks extends Backend
 
     /**
      * Get the recurrence array.
+     *
+     * @return array<mixed>
      */
     private function getRecurrenceArray(int|false $start, int|false $end, string|null $moveReason = null): array
     {

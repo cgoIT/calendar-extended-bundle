@@ -80,7 +80,7 @@ class CalendarEventsModelExt extends CalendarEventsModel
         $time = Date::floorToMinute();
 
         // Get upcoming events using endTime instead of startTime (see #3917)
-        $arrColumns = ["$t.pid IN(".implode(',', array_map('\intval', $arrIds)).") AND $t.published=1 AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time) AND ($t.endTime>=$time OR (($t.recurringExt=1 OR $t.recurring=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$time)))"];
+        $arrColumns = ["$t.pid IN(".implode(',', array_map(\intval(...), $arrIds)).") AND $t.published=1 AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time) AND ($t.endTime>=$time OR (($t.recurringExt=1 OR $t.recurring=1) AND ($t.recurrences=0 OR $t.repeatEnd>=$time)))"];
 
         if ($intLimit > 0) {
             $arrOptions['limit'] = $intLimit;

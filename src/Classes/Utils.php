@@ -148,7 +148,7 @@ class Utils
      * If the input array has more than 4 dates, it will only include the first 4 dates and append the count of other dates.
      * Otherwise, it will implode all the dates with a comma separator and append the last date with an "and" label.
      *
-     * @param array|null $arrFixedDates Array of fixed dates
+     * @param array<mixed>|null $arrFixedDates Array of fixed dates
      *
      * @return string The imploded string of fixed dates
      */

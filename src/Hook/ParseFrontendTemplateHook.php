@@ -86,7 +86,7 @@ class ParseFrontendTemplateHook extends Controller
 
             // Replace the date an time with the correct ones from the recurring event
             if (Input::get('times')) {
-                [$intStartTime, $intEndTime] = array_map('\intval', explode(',', Input::get('times')));
+                [$intStartTime, $intEndTime] = array_map(\intval(...), explode(',', Input::get('times')));
             } else {
                 // Do not show dates in the past if the event is recurring (see #923)
                 if (!empty($objEvent->allRecurrences)) {
@@ -260,13 +260,15 @@ class ParseFrontendTemplateHook extends Controller
     }
 
     /**
-     * Return the date and time strings.
+     * Get the date and time based on the provided parameters.
      *
-     * @param int $intStartTime
-     * @param int $intEndTime
-     * @param int $span
+     * @param CalendarEventsModel $objEvent     the event model
+     * @param PageModel           $objPage      the page model
+     * @param int                 $intStartTime the start time
+     * @param int                 $intEndTime   the end time
+     * @param int                 $span         the span value
      *
-     * @return array
+     * @return array<mixed> the array containing the date and time
      */
     private function getDateAndTime(CalendarEventsModel $objEvent, PageModel $objPage, $intStartTime, $intEndTime, $span)
     {
