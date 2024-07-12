@@ -123,24 +123,6 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['weekday'] = [
     'sql' => "char(1) NOT NULL default ''",
 ];
 
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurring'] = [
-    'exclude' => true,
-    'filter' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['submitOnChange' => true, 'tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
-];
-
-$GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEach'] = [
-    'default' => 1,
-    'exclude' => true,
-    'inputType' => 'timePeriod',
-    'options' => ['days', 'weeks', 'months', 'years'],
-    'reference' => &$GLOBALS['TL_LANG']['tl_calendar_events'],
-    'eval' => ['mandatory' => true, 'rgxp' => 'natural', 'minval' => 1, 'tl_class' => 'clr w50'],
-    'sql' => "varchar(64) NOT NULL default ''",
-];
-
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
     'exclude' => true,
     'filter' => false,

@@ -187,14 +187,23 @@ class GetAllEventsHook
                     foreach ($arrFixedDates as $date) {
                         $intStart = $date['new_repeat'];
                         $intEnd = $intStart;
-                        if (!empty($date['new_start']) && $objEvent->addTime) {
-                            $objEvent->startTime = strtotime(Date::parse($objPage->dateFormat, $date['new_repeat']).' '.date('H:i', $date['new_start']));
-                            $intStart = $objEvent->startTime;
-                            $intEnd = $intStart;
-                        }
-                        if (!empty($date['new_end']) && $objEvent->addTime) {
-                            $objEvent->endTime = strtotime(Date::parse($objPage->dateFormat, $date['new_repeat']).' '.date('H:i', $date['new_end']));
-                            $intEnd = $objEvent->endTime;
+
+                        if ($objEvent->addTime) {
+                            if (empty($date['new_start'])) {
+                                $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->startTime));
+                            } else {
+                                $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_start']));
+                            }
+
+                            if ($objEvent->ignoreEndTime) {
+                                $intEnd = $intStart;
+                            } else {
+                                if (empty($date['new_end'])) {
+                                    $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->endTime));
+                                } else {
+                                    $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
+                                }
+                            }
                         }
 
                         if ($intStart >= $timeStart && $intStart <= $timeEnd) {

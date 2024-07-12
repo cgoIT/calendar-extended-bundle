@@ -82,24 +82,33 @@ class ParseFrontendTemplateHook extends Controller
 
             $intStartTime = $objEvent->startTime;
             $intEndTime = $objEvent->endTime;
-            $span = Calendar::calculateSpan($intStartTime, $intEndTime);
+            $intNextStartTime = $intStartTime;
+            $intNextEndTime = $intEndTime;
 
             // Replace the date an time with the correct ones from the recurring event
             if (Input::get('times')) {
                 [$intStartTime, $intEndTime] = array_map(\intval(...), explode(',', Input::get('times')));
-            } else {
-                // Do not show dates in the past if the event is recurring (see #923)
-                if (!empty($objEvent->allRecurrences)) {
-                    $arrAllRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
-                    $upcomingRecurrences = array_filter($arrAllRecurrences, static fn ($entry) => $entry['int_start'] > $intStartTime);
-                    ksort($upcomingRecurrences);
+            }
 
-                    if ($nextRecurrence = reset($upcomingRecurrences)) {
-                        $intStartTime = $nextRecurrence['int_start'];
-                        $intEndTime = $nextRecurrence['int_end'];
+            // Do not show dates in the past if the event is recurring (see #923)
+            if (!empty($objEvent->allRecurrences)) {
+                $arrAllRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
+                $currentTime = time();
+                $upcomingRecurrences = array_filter($arrAllRecurrences, static fn ($entry) => $entry['int_start'] >= $currentTime);
+                ksort($upcomingRecurrences);
+
+                if ($nextRecurrence = reset($upcomingRecurrences)) {
+                    $intNextStartTime = $nextRecurrence['int_start'];
+                    $intNextEndTime = $nextRecurrence['int_end'];
+
+                    if (empty(Input::get('times'))) {
+                        $intStartTime = $intNextStartTime;
+                        $intEndTime = $intNextEndTime;
                     }
                 }
             }
+
+            $span = Calendar::calculateSpan($intNextStartTime, $intNextEndTime);
 
             // Mark past and upcoming events (see #187)
             if ($intEndTime < strtotime('00:00:00')) {
@@ -111,7 +120,8 @@ class ParseFrontendTemplateHook extends Controller
             }
 
             [$strDate, $strTime] = $this->getDateAndTime($objEvent, $objPage, $intStartTime, $intEndTime, $span);
-            [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intStartTime, $strDate, $strTime, $this->isRepeatOnFixedDates($objEvent));
+            [$strNextDate, $strNextTime] = $this->getDateAndTime($objEvent, $objPage, $intNextStartTime, $intNextEndTime, $span);
+            [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intNextStartTime, $strNextDate, $strNextTime, $this->isRepeatOnFixedDates($objEvent));
 
             $template->date = $strDate;
             $template->time = $strTime;
