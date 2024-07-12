@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.1...v2.4.2) (2024-07-12)
+
+
+### Bug Fixes
+
+* fix the handling of repeated event regarding begin, recurring and until. Needs a resave for all the events which uses "fixed dates repeats" ([2ab653d](https://github.com/cgoIT/calendar-extended-bundle/commit/2ab653dc0c76d09aca63e9a4782d018e18023fbc)), closes [#17](https://github.com/cgoIT/calendar-extended-bundle/issues/17)
+
 ## [2.4.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.0...v2.4.1) (2024-07-11)
 
 
