@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\Backend;
 use Contao\CalendarEventsModel;
@@ -262,35 +263,6 @@ class CalendarEventsCallbacks extends Backend
     }
 
     /**
-     * @param array<mixed> $arrFixedDates
-     *
-     * @return array<mixed>
-     */
-    private function sanitizeFixedDates(array $arrFixedDates): array
-    {
-        foreach ($arrFixedDates as $pos => &$fixedDate) {
-            foreach (['new_repeat', 'new_start', 'new_end'] as $col) {
-                $val = $fixedDate[$col];
-                if (!empty($val)) {
-                    if (!\is_int($val)) {
-                        $intVal = strtotime((string) $val);
-                        if (false !== $intVal) {
-                            $fixedDate[$col] = $intVal;
-                        }
-                    }
-                } else {
-                    if ('new_repeat' === $col) {
-                        unset($arrFixedDates[$pos]);
-                        continue 2;
-                    }
-                }
-            }
-        }
-
-        return $arrFixedDates;
-    }
-
-    /**
      * @param array<mixed> $arrAllRecurrences
      * @param array<mixed> $maxRepeatEnd
      *
@@ -308,7 +280,7 @@ class CalendarEventsCallbacks extends Backend
             return [null, $arrAllRecurrences, $maxRepeatEnd];
         }
 
-        $arrFixedDates = $this->sanitizeFixedDates($arrFixedDates);
+        $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
         usort(
             $arrFixedDates,
             static function ($a, $b) {

@@ -184,6 +184,8 @@ class GetAllEventsHook
                 $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
                 if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
+                    $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
+
                     foreach ($arrFixedDates as $date) {
                         $intStart = $date['new_repeat'];
                         $intEnd = $intStart;

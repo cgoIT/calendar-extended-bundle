@@ -143,6 +143,37 @@ class Utils
     }
 
     /**
+     * @param array<mixed> $arrFixedDates
+     *
+     * @return array<mixed>
+     */
+    public static function sanitizeFixedDates(array $arrFixedDates): array
+    {
+        foreach ($arrFixedDates as $pos => &$fixedDate) {
+            foreach (['new_repeat', 'new_start', 'new_end'] as $col) {
+                $val = $fixedDate[$col];
+                if (!empty($val)) {
+                    if (!\is_int($val)) {
+                        $intVal = strtotime((string) $val);
+                        if (false !== $intVal) {
+                            $fixedDate[$col] = $intVal;
+                        } else {
+                            $fixedDate[$col] = 0;
+                        }
+                    }
+                } else {
+                    if ('new_repeat' === $col) {
+                        unset($arrFixedDates[$pos]);
+                        continue 2;
+                    }
+                }
+            }
+        }
+
+        return $arrFixedDates;
+    }
+
+    /**
      * Implodes an array of fixed dates into a string.
      *
      * If the input array has more than 4 dates, it will only include the first 4 dates and append the count of other dates.
