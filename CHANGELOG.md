@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.2...v2.4.3) (2024-07-15)
+
+
+### Bug Fixes
+
+* fix error "date(): Argument [#2](https://github.com/cgoIT/calendar-extended-bundle/issues/2) ($timestamp) must be of type ?int, string given" ([4a69df7](https://github.com/cgoIT/calendar-extended-bundle/commit/4a69df7c0340508e28c07303accede9f3320b584)), closes [#19](https://github.com/cgoIT/calendar-extended-bundle/issues/19)
+
 ## [2.4.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.1...v2.4.2) (2024-07-12)
 
 
