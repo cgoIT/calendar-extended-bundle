@@ -49,6 +49,9 @@ class GetAllEventsHook
      */
     public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
+        // Filter events based on weekdays (only valid for standard recurrences)
+        $arrEvents = $this->handleRepeatWeekdaysForStandardRecurrence($arrEvents);
+
         // Add events from recurringExt
         $arrEvents = $this->handleExtendedRecurrences($arrEvents, $arrCalendars, $timeStart, $timeEnd, $objModule);
 
@@ -60,7 +63,6 @@ class GetAllEventsHook
         $arrEvents = $this->applyCalendarConfig($arrEvents);
 
         $arrEvents = $this->handleExceptions($arrEvents);
-
         $arrEvents = $this->hideEventsDuringHolidays($arrEvents);
         $arrEvents = $this->hideHolidayEvents($arrEvents, $objModule);
 
@@ -69,6 +71,32 @@ class GetAllEventsHook
         $arrEvents = $this->addDayAndTimeUrlParameters($arrEvents, $objModule);
 
         return $this->compactAndSortEvents($arrEvents);
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function handleRepeatWeekdaysForStandardRecurrence(array $arrEvents): array
+    {
+        foreach ($arrEvents as &$eventsOnDay) {
+            foreach ($eventsOnDay as $startTime => &$events) {
+                foreach ($events as $pos => &$event) {
+                    if (!empty($event['recurring']) && !empty($event['repeatWeekday'])) {
+                        $weekdays = StringUtil::deserialize($event['repeatWeekday'], true);
+                        $eventWeekday = Date::parse('w', $startTime);
+                        if (!\in_array($eventWeekday, $weekdays, true)) {
+                            unset($events[$pos]);
+                        }
+                    }
+                }
+            }
+        }
+
+        unset($event);
+
+        return $arrEvents;
     }
 
     /**
@@ -332,14 +360,6 @@ class GetAllEventsHook
                                 }
                             }
 
-                            unset($events[$pos]);
-                        }
-                    }
-
-                    if (!empty($event['repeatWeekday'])) {
-                        $weekdays = StringUtil::deserialize($event['repeatWeekday'], true);
-                        $eventWeekday = Date::parse('w', $startTime);
-                        if (!\in_array($eventWeekday, $weekdays, true)) {
                             unset($events[$pos]);
                         }
                     }
