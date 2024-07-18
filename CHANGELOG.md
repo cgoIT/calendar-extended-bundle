@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.4](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.3...v2.4.4) (2024-07-18)
+
+
+### Bug Fixes
+
+* event weekdays for recurrences should only be checked for standard recurrences ([f57ca17](https://github.com/cgoIT/calendar-extended-bundle/commit/f57ca17e5ad707bbdd0b2abef9ea06b291563868)), closes [#15](https://github.com/cgoIT/calendar-extended-bundle/issues/15)
+
 ## [2.4.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.2...v2.4.3) (2024-07-15)
 
 
