@@ -38,6 +38,10 @@
 
             // Render the font-awesome icon if exists
             eventDidMount: function (info) {
+                if (info.event.title) {
+                    info.el.setAttribute('title', info.event.title);
+                }
+
                 if (info.event.extendedProps.calendarId) {
                     info.el.classList.add('cal-' + info.event.extendedProps.calendarId);
                 }
