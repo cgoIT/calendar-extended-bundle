@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.5](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.4...v2.4.5) (2024-07-25)
+
+
+### Bug Fixes
+
+* add event title as title attribute for links in fullcalendar view ([cccf06f](https://github.com/cgoIT/calendar-extended-bundle/commit/cccf06f67a773f35497ad79dbd323f94d6a8bbe2)), closes [#15](https://github.com/cgoIT/calendar-extended-bundle/issues/15)
+
 ## [2.4.4](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.3...v2.4.4) (2024-07-18)
 
 
