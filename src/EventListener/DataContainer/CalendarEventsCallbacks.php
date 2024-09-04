@@ -206,8 +206,6 @@ class CalendarEventsCallbacks extends Backend
             $activeRecord->recurring = false; // @phpstan-ignore-line
 
             $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
-
-            return false;
         }
 
         return $value;
@@ -227,8 +225,6 @@ class CalendarEventsCallbacks extends Backend
             $activeRecord->recurringExt = false; // @phpstan-ignore-line
 
             $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
-
-            return false;
         }
 
         return $value;

@@ -100,7 +100,7 @@ class TimePeriodExt extends Widget
         }
 
         foreach ($this->arrValues as $arrValue) {
-            $arrValues[] = sprintf(
+            $arrValues[] = \sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrValue['value']),
                 $this->isSelectedExt($arrValue, 'value'),
@@ -113,7 +113,7 @@ class TimePeriodExt extends Widget
         }
 
         foreach ($this->arrUnits as $arrUnit) {
-            $arrUnits[] = sprintf(
+            $arrUnits[] = \sprintf(
                 '<option value="%s"%s>%s</option>',
                 StringUtil::specialchars($arrUnit['value']),
                 $this->isSelectedExt($arrUnit, 'unit'),
@@ -125,7 +125,7 @@ class TimePeriodExt extends Widget
             $this->varValue = ['value' => $this->varValue];
         }
 
-        return sprintf(
+        return \sprintf(
             '<select name="%s[value]" class="tl_select_interval" onfocus="Backend.getScrollOffset();"%s>%s</select> <select name="%s[unit]" class="tl_select_interval" onfocus="Backend.getScrollOffset();"%s>%s</select>%s',
             $this->strName,
             $this->getAttribute('disabled'),
