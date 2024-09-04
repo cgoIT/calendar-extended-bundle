@@ -28,6 +28,7 @@ use Contao\Input;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use Symfony\Component\Routing\Exception\ExceptionInterface;
 
 #[AsHook(hook: 'parseFrontendTemplate')]
 class ParseFrontendTemplateHook extends Controller
@@ -253,8 +254,17 @@ class ParseFrontendTemplateHook extends Controller
             }
 
             // schema.org information
-            $template->getSchemaOrgData = static function () use ($template, $objEvent): array {
+            $template->getSchemaOrgData = static function () use ($template, $objEvent, $intStartTime, $intEndTime): array {
                 $jsonLd = Events::getSchemaOrgData($objEvent);
+
+                $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+
+                try {
+                    $jsonLd['url'] = $urlGenerator->generate($objEvent, ['day' => date('Ymd', $intStartTime), 'times' => $intStartTime.','.$intEndTime]);
+                } catch (ExceptionInterface) {
+                    // noop
+                }
+                $jsonLd['startDate'] = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $template->begin) : date('Y-m-d', $template->begin);
 
                 if ($template->addImage && $template->figure) {
                     $jsonLd['image'] = $template->figure->getSchemaOrgData();
