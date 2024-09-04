@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.6](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.5...v2.4.6) (2024-09-04)
+
+
+### Bug Fixes
+
+* set correct start date and url in schema.org data ([1a7b3aa](https://github.com/cgoIT/calendar-extended-bundle/commit/1a7b3aa309f1f3e3ffac96cd35d458c0c20352e3))
+
+
+### Miscellaneous Chores
+
+* fix ecs bugs ([1dddd47](https://github.com/cgoIT/calendar-extended-bundle/commit/1dddd4713d75013ec91d3ed91a827fb358589a2a))
+
 ## [2.4.5](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.4...v2.4.5) (2024-07-25)
 
 
