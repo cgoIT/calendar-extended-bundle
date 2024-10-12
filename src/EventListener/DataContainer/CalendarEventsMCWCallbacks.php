@@ -80,11 +80,11 @@ class CalendarEventsMCWCallbacks extends Backend
                             $arrSource1[$k] = $date;
                         }
                     }
-
-                    // fill array for option action
-                    $arrSource2['move'] = $GLOBALS['TL_LANG']['tl_calendar_events']['move'];
-                    $arrSource2['hide'] = $GLOBALS['TL_LANG']['tl_calendar_events']['hide'];
                 }
+
+                // fill array for option action
+                $arrSource2['move'] = $GLOBALS['TL_LANG']['tl_calendar_events']['move'];
+                $arrSource2['hide'] = $GLOBALS['TL_LANG']['tl_calendar_events']['hide'];
             }
 
             // fill array for option new date

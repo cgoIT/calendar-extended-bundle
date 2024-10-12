@@ -29,6 +29,7 @@ use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
+use function PHPUnit\Framework\isEmpty;
 
 class CalendarEventsCallbacks extends Backend
 {
@@ -543,7 +544,7 @@ class CalendarEventsCallbacks extends Backend
      */
     private function checkExceptionsByInterval(Result|\stdClass $activeRecord, array $exceptionRows, int $intStart, int $intRepeatEnd): array
     {
-        if ($activeRecord->repeatExceptionsInt) {
+        if ($activeRecord->repeatExceptionsInt && $activeRecord->weekday) {
             // weekday
             $unit = $this->arrDays[$activeRecord->weekday];
 
@@ -565,7 +566,10 @@ class CalendarEventsCallbacks extends Backend
                 $year = (int) date('Y', $searchNext);
 
                 while ($searchNext <= $searchEnd) {
+                    System::loadLanguageFile('default', 'en', true);
                     $strDateToFind = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
+                    System::loadLanguageFile('default');
+
                     $strDateToFind = strtotime($strDateToFind);
                     $searchNext = strtotime(date('Y-m-d', $strDateToFind).' '.date('H:i', $intStart));
 
