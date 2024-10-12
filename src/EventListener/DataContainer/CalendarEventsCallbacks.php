@@ -29,7 +29,6 @@ use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
-use function PHPUnit\Framework\isEmpty;
 
 class CalendarEventsCallbacks extends Backend
 {
