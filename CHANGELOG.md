@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.7](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.6...v2.4.7) (2024-10-12)
+
+
+### Bug Fixes
+
+* refactor code for clarity and add condition for weekday ([c0c0527](https://github.com/cgoIT/calendar-extended-bundle/commit/c0c05274b062c179cc38c5fe48df71d06ef1355e))
+
+
+### Miscellaneous Chores
+
+* remove unused import in CalendarEventsCallbacks.php ([3593c5d](https://github.com/cgoIT/calendar-extended-bundle/commit/3593c5d17d0db15fbbed8b173301ba81865dc35a))
+
 ## [2.4.6](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.5...v2.4.6) (2024-09-04)
 
 
