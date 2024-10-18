@@ -257,13 +257,21 @@ class ParseFrontendTemplateHook extends Controller
             $template->getSchemaOrgData = static function () use ($template, $objEvent, $intStartTime, $intEndTime): array {
                 $jsonLd = Events::getSchemaOrgData($objEvent);
 
-                $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+                $version = (method_exists(ContaoCoreBundle::class, 'getVersion') ? ContaoCoreBundle::getVersion() : VERSION); // @phpstan-ignore-line
 
-                try {
-                    $jsonLd['url'] = $urlGenerator->generate($objEvent, ['day' => date('Ymd', $intStartTime), 'times' => $intStartTime.','.$intEndTime]);
-                } catch (ExceptionInterface) {
-                    // noop
+                if (version_compare($version, '5.0', '<')) {
+                    $urlParameter = sprintf("day=%s&times=%s", date('Ymd', $intStartTime), $intStartTime.','.$intEndTime);
+                    $jsonLd['url'] .= (str_contains($jsonLd['url'], '?') ? '&' : '?').$urlParameter;
+                } else {
+                    $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+
+                    try {
+                        $jsonLd['url'] = $urlGenerator->generate($objEvent, ['day' => date('Ymd', $intStartTime), 'times' => $intStartTime.','.$intEndTime]);
+                    } catch (ExceptionInterface) {
+                        // noop
+                    }
                 }
+
                 $jsonLd['startDate'] = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $template->begin) : date('Y-m-d', $template->begin);
 
                 if ($template->addImage && $template->figure) {
