@@ -260,8 +260,8 @@ class ParseFrontendTemplateHook extends Controller
                 $version = (method_exists(ContaoCoreBundle::class, 'getVersion') ? ContaoCoreBundle::getVersion() : VERSION); // @phpstan-ignore-line
 
                 if (version_compare($version, '5.0', '<')) {
-                    $urlParameter = sprintf("day=%s&times=%s", date('Ymd', $intStartTime), $intStartTime.','.$intEndTime);
-                    $jsonLd['url'] .= (str_contains($jsonLd['url'], '?') ? '&' : '?').$urlParameter;
+                    $urlParameter = \sprintf('day=%s&times=%s', date('Ymd', $intStartTime), $intStartTime.','.$intEndTime);
+                    $jsonLd['url'] .= (str_contains((string) $jsonLd['url'], '?') ? '&' : '?').$urlParameter;
                 } else {
                     $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
 
