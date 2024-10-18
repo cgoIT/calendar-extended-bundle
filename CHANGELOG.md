@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.8](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.7...v2.4.8) (2024-10-18)
+
+
+### Bug Fixes
+
+* handle URL generation based on Contao version ([7cc75bb](https://github.com/cgoIT/calendar-extended-bundle/commit/7cc75bb38329021eac9eeb14090307edf85e99b5))
+
+
+### Miscellaneous Chores
+
+* fix ecs errors ([a3155f0](https://github.com/cgoIT/calendar-extended-bundle/commit/a3155f0ec7808ea1ff29015ed32c1b4b0977e92b))
+
 ## [2.4.7](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.6...v2.4.7) (2024-10-12)
 
 
