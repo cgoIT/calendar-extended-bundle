@@ -489,6 +489,8 @@ class GetAllEventsHook
             foreach (array_keys($arrEvents) as $key) {
                 ksort($arrEvents[$key]);
             }
+
+            ksort($arrEvents);
         }
 
         return $arrEvents;
