@@ -472,7 +472,9 @@ class CalendarEventsCallbacks extends Backend
                     $end = $arrSet['repeatEnd'];
 
                     while ($next <= $end) {
+                        System::loadLanguageFile('default', 'en', true);
                         $timetoadd = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
+                        System::loadLanguageFile('default');
                         $strtotime = strtotime($timetoadd, $next);
 
                         if (false === $strtotime) {
