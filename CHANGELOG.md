@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.4.9](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.8...v2.4.9) (2024-11-29)
+
+
+### Bug Fixes
+
+* correctly handle recurrences on extended recurrences ([919fbc1](https://github.com/cgoIT/calendar-extended-bundle/commit/919fbc1b834095b66f0c7ad4cefd1e2b335ce0c6))
+* ksort arrEvents to have all days in ascending order ([6096dd9](https://github.com/cgoIT/calendar-extended-bundle/commit/6096dd961c323b2e54a282e771ebcabaacc7d12f))
+
+
+### Miscellaneous Chores
+
+* add missing dependencies to composer.json ([7682619](https://github.com/cgoIT/calendar-extended-bundle/commit/768261911285abea341bdaa6a3ce018047c5db4c))
+
 ## [2.4.8](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.7...v2.4.8) (2024-10-18)
 
 
