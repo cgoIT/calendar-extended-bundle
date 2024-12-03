@@ -38,14 +38,14 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['bg_color'] = [
     'inputType' => 'text',
     'exclude' => true,
     'eval' => ['maxlength' => 6, 'multiple' => true, 'size' => 2, 'colorpicker' => true, 'isHexColor' => true, 'decodeEntities' => true, 'tl_class' => 'w50 wizard'],
-    'sql' => "varchar(64) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 64, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['fg_color'] = [
     'inputType' => 'text',
     'exclude' => true,
     'eval' => ['maxlength' => 6, 'multiple' => true, 'size' => 2, 'colorpicker' => true, 'isHexColor' => true, 'decodeEntities' => true, 'tl_class' => 'w50 wizard'],
-    'sql' => "varchar(64) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 64, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['isHolidayCal'] = [
@@ -53,7 +53,7 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['isHolidayCal'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['allowEvents'] = [
@@ -61,7 +61,7 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['allowEvents'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['uniqueEvents'] = [
@@ -69,5 +69,5 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['uniqueEvents'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];

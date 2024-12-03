@@ -63,7 +63,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hide_holiday'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showOnlyNext'] = [
@@ -71,7 +71,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showOnlyNext'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['use_horizontal'] = [
@@ -79,7 +79,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['use_horizontal'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['use_navigation'] = [
@@ -87,7 +87,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['use_navigation'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['showDate'] = [
@@ -95,7 +95,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showDate'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['linkCurrent'] = [
@@ -103,7 +103,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['linkCurrent'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['hideEmptyDays'] = [
@@ -111,14 +111,14 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['hideEmptyDays'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 // list of exceptions
@@ -130,7 +130,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_times_range'] = [
         'columnsCallback' => ['calendar_extended.module.callbacks', 'getTimeRange'],
         'buttons' => ['up' => false, 'down' => false, 'copy' => false],
     ],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 1000, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cellheight'] = [
@@ -138,7 +138,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cellheight'] = [
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['tl_class' => 'clr w50'],
-    'sql' => "varchar(10) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 10, 'default' => ''],
 ];
 
 /*
@@ -148,21 +148,21 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['businessHours'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'clr m12 w50', 'submitOnChange' => true],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbers'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'm12 w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['weekNumbersWithinDays'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'm12 w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['cal_fcFormat'] = [
@@ -171,14 +171,14 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['cal_fcFormat'] = [
     'options' => ['cal_fc_month', 'cal_fc_week', 'cal_fc_day', 'cal_fc_list'],
     'reference' => &$GLOBALS['TL_LANG']['tl_module'],
     'eval' => ['tl_class' => 'clr w50'],
-    'sql' => "varchar(32) COLLATE ascii_bin NOT NULL default 'cal_fc_week'",
+    'sql' => ['type' => 'string', 'length' => 32, 'default' => 'cal_fc_week', 'customSchemaOptions' => ['collation' => 'ascii_bin']],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['filter_fields'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'long', 'multiple' => true],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 1000, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessDays'] = [
@@ -186,19 +186,19 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['businessDays'] = [
     'options' => [1, 2, 3, 4, 5, 6, 0],
     'reference' => &$GLOBALS['TL_LANG']['DAYS'],
     'eval' => ['multiple' => true, 'tl_class' => 'clr w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 1000, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessDayStart'] =
 [
     'inputType' => 'text',
     'eval' => ['rgxp' => 'time', 'mandatory' => true, 'datepicker' => true, 'tl_class' => 'clr w50 wizard'],
-    'sql' => 'bigint(20) NULL',
+    'sql' => ['type' => 'bigint', 'length' => 20, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['businessDayEnd'] =
 [
     'inputType' => 'text',
     'eval' => ['rgxp' => 'time', 'mandatory' => true, 'datepicker' => true, 'tl_class' => 'w50 wizard'],
-    'sql' => 'bigint(20) NULL',
+    'sql' => ['type' => 'bigint', 'length' => 20, 'notnull' => false],
 ];

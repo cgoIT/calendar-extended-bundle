@@ -78,7 +78,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatWeekday'] = [
     'options' => [1, 2, 3, 4, 5, 6, 0],
     'reference' => &$GLOBALS['TL_LANG']['DAYS'],
     'eval' => ['multiple' => true, 'tl_class' => 'w50'],
-    'sql' => "varchar(128) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 128, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatFixedDates'] = [
@@ -89,7 +89,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatFixedDates'] = [
         'buttons' => ['up' => false, 'down' => false, 'move' => false],
         'minCount' => 0,
     ],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ignoreEndTime'] = [
@@ -97,21 +97,21 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['ignoreEndTime'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'long clr'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['useExceptions'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'long clr'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['showOnFreeDay'] = [
     'exclude' => true,
     'filter' => false,
     'inputType' => 'checkbox',
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['weekday'] = [
@@ -120,7 +120,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['weekday'] = [
     'inputType' => 'select',
     'options' => [0, 1, 2, 3, 4, 5, 6],
     'reference' => &$GLOBALS['TL_LANG']['DAYS'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
@@ -128,14 +128,14 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['hideOnWeekend'] = [
     'filter' => false,
     'inputType' => 'checkbox',
     'eval' => ['tl_class' => 'w50'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurringExt'] = [
     'exclude' => true,
     'inputType' => 'checkbox',
     'eval' => ['submitOnChange' => true, 'tl_class' => 'long clr'],
-    'sql' => "char(1) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_name'] = [
@@ -143,7 +143,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_name'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
@@ -151,7 +151,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_str'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_plz'] = [
@@ -159,7 +159,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_plz'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['rgxp' => 'digit', 'maxlength' => 10, 'tl_class' => 'w50'],
-    'sql' => "varchar(10) NOT NULL default ''",
+    'sql' => ['type' => 'string', 'length' => 10, 'default' => ''],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_ort'] = [
@@ -167,7 +167,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_ort'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
@@ -175,7 +175,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_link'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['rgxp' => 'url', 'maxlength' => 255, 'tl_class' => 'long'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
@@ -183,7 +183,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_contact'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
@@ -191,7 +191,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['location_mail'] = [
     'search' => true,
     'inputType' => 'text',
     'eval' => ['rgxp' => 'email', 'maxlength' => 255, 'decodeEntities' => true, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 // new repeat options for events
@@ -204,7 +204,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEachExt'] = [
     ],
     'reference' => &$GLOBALS['TL_LANG']['tl_calendar_events'],
     'eval' => ['mandatory' => true, 'tl_class' => 'w50'],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 // added submitOnChange to recurrences
@@ -212,7 +212,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['recurrences'] = [
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['mandatory' => true, 'rgxp' => 'digit', 'submitOnChange' => true, 'tl_class' => 'w50'],
-    'sql' => "smallint(5) unsigned NOT NULL default '0'",
+    'sql' => ['type' => 'smallint', 'length' => 5, 'unsigned' => true, 'default' => 0],
 ];
 
 // list of exceptions
@@ -223,7 +223,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptions'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 // list of exceptions
@@ -234,7 +234,7 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsInt'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 // list of exceptions
@@ -245,15 +245,15 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatExceptionsPer'] = [
         'columnsCallback' => ['calendar_extended.mcw.callbacks', 'listMultiExceptions'],
         'buttons' => ['up' => false, 'down' => false],
     ],
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['allRecurrences'] = [
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['exceptionList'] = [
-    'sql' => 'text NULL',
+    'sql' => ['type' => 'text', 'length' => 65535, 'notnull' => false],
 ];
 
 // display the end of the recurrences (read only)
@@ -261,5 +261,5 @@ $GLOBALS['TL_DCA']['tl_calendar_events']['fields']['repeatEnd'] = [
     'exclude' => true,
     'inputType' => 'text',
     'eval' => ['readonly' => true, 'rgxp' => 'date', 'tl_class' => 'clr'],
-    'sql' => "int(10) unsigned NOT NULL default '0'",
+    'sql' => ['type' => 'integer', 'length' => 10, 'unsigned' => true, 'default' => 0],
 ];
