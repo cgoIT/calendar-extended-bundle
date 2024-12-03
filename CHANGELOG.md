@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.10](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.9...v2.4.10) (2024-12-03)
+
+
+### Bug Fixes
+
+* use Doctrine Schema Representation for db columns ([93b3faa](https://github.com/cgoIT/calendar-extended-bundle/commit/93b3faa3b443f1c7f67a231b3ada6e0999e39522))
+
 ## [2.4.9](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.8...v2.4.9) (2024-11-29)
 
 
