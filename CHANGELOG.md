@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.11](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.10...v2.4.11) (2025-02-11)
+
+
+### Miscellaneous Chores
+
+* fix copyright ([b0e30b6](https://github.com/cgoIT/calendar-extended-bundle/commit/b0e30b64a838f277a7119b45764f39510285f2ae))
+
 ## [2.4.10](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.9...v2.4.10) (2024-12-03)
 
 
