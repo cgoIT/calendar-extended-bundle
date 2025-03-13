@@ -42,10 +42,7 @@ class ParseFrontendTemplateHook extends Controller
     {
         $isModuleEventReader = 'eventreader' === $template->type;
 
-        if (
-            $isModuleEventReader
-            && (empty($template->fromCalendarExtendedHook) || false === $template->fromCalendarExtendedHook)
-        ) {
+        if ($isModuleEventReader && empty($template->fromCalendarExtendedHook)) {
             $template->fromCalendarExtendedHook = true;
 
             // Get the current event

@@ -73,7 +73,7 @@ class ModuleFullCalendar extends Events
         $request = System::getContainer()->get('request_stack')->getCurrentRequest();
 
         if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
-            /** @var BackendTemplate|object $objTemplate */
+            /** @var BackendTemplate $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = '### '.$GLOBALS['TL_LANG']['FMD']['fullcalendar'][0].' ###';
@@ -193,7 +193,7 @@ class ModuleFullCalendar extends Events
         $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/dist/index.global.min.js';
         $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/packages/core/locales-all.global.min.js';
 
-        /** @var FrontendTemplate|object $objTemplate */
+        /** @var FrontendTemplate $objTemplate */
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
         // Set some fullcalendar options

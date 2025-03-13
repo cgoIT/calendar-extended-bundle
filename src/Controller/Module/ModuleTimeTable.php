@@ -182,7 +182,7 @@ class ModuleTimeTable extends Events
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
-        /** @var FrontendTemplate|object $objTemplate */
+        /** @var FrontendTemplate $objTemplate */
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_timetable');
 
         $objTemplate->intYear = $intYear;
@@ -368,6 +368,7 @@ class ModuleTimeTable extends Events
                         $h = date('H', $vv['startTime']);
                         $m = date('i', $vv['startTime']);
 
+                        // @phpstan-ignore-next-line
                         if (isset($arrListTimes) && \is_array($arrListTimes[$h]) && isset($cellheight)) {
                             // calculate the top of the event
                             $top = $arrListTimes[$h]['top'] + $m * $cellheight / 60;

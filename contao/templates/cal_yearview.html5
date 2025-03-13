@@ -19,7 +19,7 @@
         <?php if (!empty($this->data['header'])): ?>
             <thead>
             <tr class="yearview_days">
-                <?php foreach($this->data['header'] as $header): ?>
+                <?php foreach ($this->data['header'] as $header): ?>
                     <th <?= $header['attr']; ?> class="<?= $header['class']; ?>"><?= $header['label']; ?></th>
                 <?php endforeach; ?>
             </tr>
