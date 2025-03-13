@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.12](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.11...v2.4.12) (2025-03-13)
+
+
+### Miscellaneous Chores
+
+* fix build-tools errors ([758dd4f](https://github.com/cgoIT/calendar-extended-bundle/commit/758dd4fded3725aaef551383e3afd492d74da898))
+
 ## [2.4.11](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.10...v2.4.11) (2025-02-11)
 
 
