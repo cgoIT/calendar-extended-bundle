@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.12...v2.5.0) (2025-07-21)
+
+
+### Features
+
+* add icon to series events in calendar events list view in backend ([cf78042](https://github.com/cgoIT/calendar-extended-bundle/commit/cf7804242268beecc7a5f46e0646d65ed61d09b4))
+
 ## [2.4.12](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.11...v2.4.12) (2025-03-13)
 
 
