@@ -17,6 +17,7 @@ namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\Backend;
+use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
 use Contao\Config;
@@ -54,6 +55,32 @@ class CalendarEventsCallbacks extends Backend
         $this->arrMonths = $GLOBALS['TL_LANG']['MONTHS'];
         $this->arrDays = $GLOBALS['TL_LANG']['DAYS'];
         System::loadLanguageFile('default');
+    }
+
+    /**
+     * @param array<mixed> $arrRow
+     */
+    #[AsCallback(table: 'tl_calendar_events', target: 'list.sorting.child_record')]
+    public function listChildRecords(array $arrRow): string
+    {
+        $span = Calendar::calculateSpan($arrRow['startTime'], $arrRow['endTime']);
+
+        if ($span > 0) {
+            $date = Date::parse(Config::get($arrRow['addTime'] ? 'datimFormat' : 'dateFormat'), $arrRow['startTime']).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse(Config::get($arrRow['addTime'] ? 'datimFormat' : 'dateFormat'), $arrRow['endTime']);
+        } elseif ($arrRow['startTime'] === $arrRow['endTime']) {
+            $date = Date::parse(Config::get('dateFormat'), $arrRow['startTime']).($arrRow['addTime'] ? ' '.Date::parse(Config::get('timeFormat'), $arrRow['startTime']) : '');
+        } else {
+            $date = Date::parse(Config::get('dateFormat'), $arrRow['startTime']).($arrRow['addTime'] ? ' '.Date::parse(Config::get('timeFormat'), $arrRow['startTime']).$GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'].Date::parse(Config::get('timeFormat'), $arrRow['endTime']) : '');
+        }
+
+        $recurringIndicator = '';
+        if (!empty($arrRow['recurring']) || !empty($arrRow['recurringExt'])) {
+            $recurringAltText = $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'];
+            $recurringIndicator =
+                '<img src="/bundles/cgoitcalendarextended/recurring.svg" width="16px" height="16px" title="'.$recurringAltText.'" style="margin-left: 5px;">';
+        }
+
+        return '<div class="tl_content_left">'.$arrRow['title'].' <span class="label-info">['.$date.']</span>'.$recurringIndicator.'</div>';
     }
 
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit')]

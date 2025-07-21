@@ -83,3 +83,4 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['new_end'] = 'End time';
 $GLOBALS['TL_LANG']['tl_calendar_events']['reason'] = 'Reason';
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'] = 'This event is repeated at %s. The next event will take place on <time datetime="%s">%s</time>.';
+$GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'] = 'This event is a series event';
