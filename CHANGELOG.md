@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.0...v2.5.1) (2025-08-19)
+
+
+### Miscellaneous Chores
+
+* update version contraints ([6ca8517](https://github.com/cgoIT/calendar-extended-bundle/commit/6ca85171b432fc4f857357efe05035ddf4abab87))
+
 ## [2.5.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.4.12...v2.5.0) (2025-07-21)
 
 
