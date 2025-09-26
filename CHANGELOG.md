@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.1...v2.5.2) (2025-09-26)
+
+
+### Bug Fixes
+
+* fix loading of custom routes ([1ee50d6](https://github.com/cgoIT/calendar-extended-bundle/commit/1ee50d69edf1c2197f1862e89e040379ac6eb190))
+
 ## [2.5.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.0...v2.5.1) (2025-08-19)
 
 
