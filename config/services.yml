@@ -34,3 +34,6 @@ services:
     Cgoit\CalendarExtendedBundle\Migration\FixBrokenMCWDataMigration:
         tags:
             - { name: contao.migration }
+
+    Cgoit\CalendarExtendedBundle\Controller\Route\FetchEventsController:
+        public: true

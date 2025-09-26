@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle\Controller\Ajax;
+namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
 use Contao\Date;

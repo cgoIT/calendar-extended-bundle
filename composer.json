@@ -62,7 +62,8 @@
       "contao-community-alliance/composer-plugin": true,
       "contao/manager-plugin": true,
       "terminal42/contao-build-tools": true
-    }
+    },
+    "sort-packages": true
   },
   "extra": {
     "contao-manager-plugin": "Cgoit\\CalendarExtendedBundle\\ContaoManager\\Plugin"
