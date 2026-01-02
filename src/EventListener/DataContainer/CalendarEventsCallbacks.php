@@ -261,25 +261,6 @@ class CalendarEventsCallbacks extends Backend
         return $value;
     }
 
-    /**
-     * Just check if any kind of recurring is in use.
-     *
-     * @throws CalendarExtendedException
-     */
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.useExceptions.save')]
-    public function checkExceptions(mixed $value, DataContainer $dc): mixed
-    {
-        if (!empty($value)) {
-            // @phpstan-ignore-next-line
-            $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
-            if (empty($activeRecord->recurring) && empty($activeRecord->recurringExt)) {
-                throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions']);
-            }
-        }
-
-        return $value;
-    }
-
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.repeatEachExt.load')]
     public function defaultRepeatEachExt(mixed $value, DataContainer $dc): mixed
     {
@@ -299,6 +280,17 @@ class CalendarEventsCallbacks extends Backend
     private function getFixedDates(Result|\stdClass $activeRecord, array $arrAllRecurrences, array $maxRepeatEnd): array
     {
         $arrFixedDates = StringUtil::deserialize($activeRecord->repeatFixedDates) ?: null;
+
+        if (
+            null !== $arrFixedDates
+            && 1 === \count($arrFixedDates)
+            && '' === $arrFixedDates[0]['new_repeat']
+            && '' === $arrFixedDates[0]['new_start']
+            && '' === $arrFixedDates[0]['new_end']
+        ) {
+            // quick return because MCW needs empty strings for an empty record
+            return [$arrFixedDates, $arrAllRecurrences, $maxRepeatEnd];
+        }
 
         $intStart = strtotime(date('Y-m-d', $activeRecord->startDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->startTime) : '00:00'));
         $intEnd = strtotime(date('Y-m-d', $activeRecord->endDate ?: $activeRecord->startDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->endTime) : '23:59'));
