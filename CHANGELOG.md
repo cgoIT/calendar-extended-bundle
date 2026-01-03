@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.5.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.2...v2.5.3) (2026-01-02)
+
+
+### Bug Fixes
+
+* create empty inputs for fixed dates repeat ([8b26500](https://github.com/cgoIT/calendar-extended-bundle/commit/8b265007d71923dcb95da8858fea45c153a381c4))
+
+
+### Miscellaneous Chores
+
+* remove all script alias ([c450a0a](https://github.com/cgoIT/calendar-extended-bundle/commit/c450a0ac308cea4a36962b22b921c348b6d17a92))
+* run build-tools with php 8.3 ([a3aeb9b](https://github.com/cgoIT/calendar-extended-bundle/commit/a3aeb9b69f859fefdb72638eb48bde9632582d4c))
+* run composer tools ([1cfb94c](https://github.com/cgoIT/calendar-extended-bundle/commit/1cfb94c86d7b628410161cff337f4efadb4d95b6))
+
 ## [2.5.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.1...v2.5.2) (2025-09-26)
 
 
