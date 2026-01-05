@@ -160,6 +160,19 @@ class CalendarEventsCallbacks extends Backend
         return true;
     }
 
+    #[AsCallback(table: 'tl_calendar_events', target: 'fields.repeatFixedDates.load')]
+    public function initializeFixedDatesRepeat(mixed $value, DataContainer $dc): mixed
+    {
+        if (empty($value)) {
+            // An empty value would lead to pre-filled values in the mcw for date and time fields. Therefore
+            // we set empty values for one row to prevent that.
+            $fixedDatesDefault = [['new_repeat' => '', 'new_start' => '', 'new_end' => '', 'reason' => '']];
+            $value = serialize($fixedDatesDefault);
+        }
+
+        return $value;
+    }
+
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit', priority: -100)]
     public function handleRecurrencesAndExceptions(DataContainer $dc): void
     {
