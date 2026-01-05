@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.4](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.3...v2.5.4) (2026-01-05)
+
+
+### Bug Fixes
+
+* do not add wrong date/time in repeatFixedDates on event creation ([c2b4c62](https://github.com/cgoIT/calendar-extended-bundle/commit/c2b4c62aec4471507031120660b449467cab0d67))
+
 ## [2.5.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.2...v2.5.3) (2026-01-02)
 
 
