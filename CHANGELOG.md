@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.5](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.4...v2.5.5) (2026-01-18)
+
+
+### Bug Fixes
+
+* make constructor final public in ParseFrontendTemplateHook.php ([245f2ea](https://github.com/cgoIT/calendar-extended-bundle/commit/245f2ea42fefc9b1214f837d5c019b7568472336))
+
 ## [2.5.4](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.3...v2.5.4) (2026-01-05)
 
 
