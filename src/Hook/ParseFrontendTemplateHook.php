@@ -33,6 +33,11 @@ use Symfony\Component\Routing\Exception\ExceptionInterface;
 #[AsHook(hook: 'parseFrontendTemplate')]
 class ParseFrontendTemplateHook extends Controller
 {
+    final public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function __invoke(string $buffer, string $templateName, FrontendTemplate $template): string
     {
         $isModuleEventReader = 'eventreader' === $template->type;

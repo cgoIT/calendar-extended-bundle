@@ -67,5 +67,13 @@
   },
   "extra": {
     "contao-manager-plugin": "Cgoit\\CalendarExtendedBundle\\ContaoManager\\Plugin"
+  },
+  "scripts": {
+    "all": [
+      "@ecs",
+      "@rector",
+      "@phpstan",
+      "@depcheck"
+    ]
   }
 }
