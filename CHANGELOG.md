@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.6](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.5...v2.5.6) (2026-02-01)
+
+
+### Bug Fixes
+
+* fix small bug in RenameFieldsMigration.php ([ff098c2](https://github.com/cgoIT/calendar-extended-bundle/commit/ff098c289ef09b6b81374c96f9437fc7b916e41b)), closes [#42](https://github.com/cgoIT/calendar-extended-bundle/issues/42)
+
 ## [2.5.5](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.4...v2.5.5) (2026-01-18)
 
 
