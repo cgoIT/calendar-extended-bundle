@@ -37,7 +37,9 @@ class RenameFieldsMigration extends AbstractMigration
 
     public function getName(): string
     {
-        return "Rename fields {${implode(', ', array_keys(self::$arrColumns))}}";
+        $sName = implode(', ', array_keys(self::$arrColumns));
+
+        return 'Rename fields '.$sName;
     }
 
     /**
