@@ -6,7 +6,7 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
  * @copyright  Copyright (c) Kester Mielke
- * @copyright  Copyright (c) 2026, cgoIT
+ * @copyright  Copyright (c) cgoIT
  * @author     Kester Mielke
  * @author     cgoIT <https://cgo-it.de>
  * @license    LGPL-3.0-or-later
@@ -15,7 +15,7 @@ declare(strict_types=1);
 /*
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_calendar']['bg_color'] = ['Hintergrund und Deckkraft', 'Hier können Sie eine hexadezimale Hintergrundfarbe (z.B. ff0000 für rot) sowie optional die Deckkraft in Prozent (z.B. 75) eingeben.'];
+$GLOBALS['TL_LANG']['tl_calendar']['bg_color'] = ['Hintergrunds und Deckkraft', 'Hier können Sie eine hexadezimale Hintergrundfarbe (z.B. ff0000 für rot) sowie optional die Deckkraft in Prozent (z.B. 75) eingeben.'];
 $GLOBALS['TL_LANG']['tl_calendar']['fg_color'] = ['Vordergrund und Deckkraft', 'Hier können Sie eine hexadezimale Vordergrundfarbe (z.B. ff0000 für rot) sowie optional die Deckkraft in Prozent (z.B. 75) eingeben.'];
 $GLOBALS['TL_LANG']['tl_calendar']['isHolidayCal'] = ['Ferienkalender', 'Kalender enthält Feiertage und/oder Ferien. Events werden an diesen Tage nicht angezeigt.'];
 $GLOBALS['TL_LANG']['tl_calendar']['allowEvents'] = ['Events anzeigen', 'Bestimmte Events werden auch an den freien Tagen angezeigt. Dafür muss im Event die Option "Event immer anzeigen" aktiviert sein.'];
