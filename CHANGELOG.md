@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.6.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.6...v2.6.0) (2026-02-09)
+
+
+### Features
+
+* add filter_data to events in frontend template ([b7634e6](https://github.com/cgoIT/calendar-extended-bundle/commit/b7634e63501676437d0539a97ad02e5447620290))
+
+
+### Miscellaneous Chores
+
+* update file header ([3896abb](https://github.com/cgoIT/calendar-extended-bundle/commit/3896abb367991bbae0b44cd888c4bae3810a29ab))
+* update file header ([f6cce7a](https://github.com/cgoIT/calendar-extended-bundle/commit/f6cce7a2b0697e1a818c1f6e8ec60cf5245e0bc7))
+
 ## [2.5.6](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.5...v2.5.6) (2026-02-01)
 
 
