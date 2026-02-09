@@ -68,6 +68,8 @@ class GetAllEventsHook
 
         $arrEvents = $this->handleShowOnlyNext($arrEvents, $objModule);
 
+        $arrEvents = $this->addFilterFields($arrEvents, $objModule);
+
         $arrEvents = $this->addDayAndTimeUrlParameters($arrEvents, $objModule);
 
         return $this->compactAndSortEvents($arrEvents);
@@ -121,6 +123,34 @@ class GetAllEventsHook
                         if (!empty($conf['foreground'])) {
                             $event['fgstyle'] = $conf['foreground'];
                         }
+                    }
+                }
+            }
+        }
+
+        return $arrEvents;
+    }
+
+    /**
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    private function addFilterFields(array $arrEvents, Events $objModule): array
+    {
+        if (!empty($objModule->filter_fields)) {
+            $arrFilterFields = StringUtil::deserialize($objModule->filter_fields, true);
+
+            foreach ($arrEvents as &$timestamp) {
+                foreach ($timestamp as &$events) {
+                    foreach ($events as &$event) {
+                        $filter = [];
+
+                        foreach ($arrFilterFields as $field) {
+                            $filter[$field] = $event[$field];
+                        }
+
+                        $event['filter_data'] = json_encode($filter, JSON_FORCE_OBJECT);
                     }
                 }
             }
