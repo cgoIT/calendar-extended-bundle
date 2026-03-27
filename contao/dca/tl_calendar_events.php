@@ -37,7 +37,8 @@ foreach (['default', 'article', 'internal', 'external'] as $palette) {
     PaletteManipulator::create()->addLegend('location_legend', 'contact_legend', PaletteManipulator::POSITION_BEFORE)
         ->addField('location_name', 'location_legend', PaletteManipulator::POSITION_APPEND)
         ->addField('location_str', 'location_name')
-        ->addField('location_ort', 'location_str')
+        ->addField('location_plz', 'location_str')
+        ->addField('location_ort', 'location_plz')
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
     PaletteManipulator::create()->addLegend('recurring_legend_ext', 'recurring_legend')
