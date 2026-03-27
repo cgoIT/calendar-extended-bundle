@@ -26,6 +26,7 @@ use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[AsHook(hook: 'getAllEvents', priority: -100)]
 class GetAllEventsHook
@@ -247,6 +248,7 @@ class GetAllEventsHook
                     foreach ($arrFixedDates as $date) {
                         $intStart = $date['new_repeat'];
                         $intEnd = $intStart;
+                        $reason = $date['reason'] ?? null;
 
                         if ($objEvent->addTime) {
                             if (empty($date['new_start'])) {
@@ -284,7 +286,7 @@ class GetAllEventsHook
                                 }
                             }
 
-                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, $arrEvents, true, \count($arrFixedDates));
+                            $this->createEvents($objEvent, $objModule, $intStart, $intEnd, $arrEvents, true, \count($arrFixedDates), $reason);
                         }
                     }
                 }
@@ -531,7 +533,7 @@ class GetAllEventsHook
      *
      * @throws \Exception
      */
-    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate, int|null $intRecurrences = null): void
+    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate, int|null $intRecurrences = null, string|null $reason = null): void
     {
         /** @var PageModel */
         global $objPage;
@@ -588,13 +590,17 @@ class GetAllEventsHook
         $arrEvent['link'] = $objEvent->title;
         $arrEvent['target'] = '';
         $arrEvent['title'] = StringUtil::specialchars($objEvent->title, true);
-        $arrEvent['href'] = Events::generateEventUrl($objEvent);
+        $arrEvent['href'] = System::getContainer()
+            ->get('contao.routing.content_url_generator')
+            ->generate($objEvent, [], UrlGeneratorInterface::ABSOLUTE_PATH)
+        ;
         $arrEvent['class'] = $objEvent->cssClass ? ' '.$objEvent->cssClass : '';
         $arrEvent['recurring'] = $recurring;
         $arrEvent['until'] = $until;
         $arrEvent['begin'] = $intStart;
         $arrEvent['end'] = $intEnd;
         $arrEvent['effectiveEndTime'] = $arrEvent['endTime'];
+        $arrEvent['reason'] = $reason;
         $arrEvent['details'] = '';
         $arrEvent['hasTeaser'] = false;
 
