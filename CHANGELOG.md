@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.7.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.6.0...v2.7.0) (2026-03-27)
+
+
+### Features
+
+* add reason for fixed date recurring events ([88c2e1c](https://github.com/cgoIT/calendar-extended-bundle/commit/88c2e1cec72ab13a16a87105ec651d185e580467))
+
+
+### Bug Fixes
+
+* add location_plz to palette again ([c736de8](https://github.com/cgoIT/calendar-extended-bundle/commit/c736de87bd691c6767d8a2ecc21b6ce888fae4d4))
+
 ## [2.6.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.5.6...v2.6.0) (2026-02-09)
 
 
