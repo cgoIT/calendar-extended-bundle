@@ -90,23 +90,4 @@ class ModuleCallbacks extends Backend
             ],
         ];
     }
-
-    //    /**     * Get all calendars and return them as array.     *     * @return
-    // array<mixed>     */    #[AsCallback(table: 'tl_module', target:
-    // 'fields.cal_calendar.options')]    public function getCalendars(): array    {
-    // return $this->doGetCalendars();    }     /**     * Get all holiday calendars
-    // and return them as array.     *     * @return array<mixed>     */
-    // #[AsCallback(table: 'tl_module', target: 'fields.cal_holiday.options')] public
-    // function getHolidayCalendars(): array    {        return
-    // $this->doGetCalendars(true);    }     /**     * @return array<mixed>     */
-    // public function doGetCalendars(bool $holiday = false): array    {        if
-    // (!$this->User->isAdmin && !\is_array($this->User->calendars)) { return []; }
-    // $arrCalendars = [];        $objCalendars =
-    // $this->Database->execute(sprintf('SELECT id, title FROM tl_calendar WHERE
-    // isHolidayCal %s 1 ORDER BY title', $holiday ? '=' : '!='));        $security =
-    // System::getContainer()->get('security.helper');         while
-    // ($objCalendars->next()) {            if
-    // ($security->isGranted(ContaoCalendarPermissions::USER_CAN_EDIT_CALENDAR,
-    // $objCalendars->id)) {                $arrCalendars[$objCalendars->id] =
-    // $objCalendars->title;            }        }         return $arrCalendars;    }
 }
