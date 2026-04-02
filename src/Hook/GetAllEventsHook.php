@@ -266,6 +266,9 @@ class GetAllEventsHook
                                     $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
                                 }
                             }
+                        } else if (empty($objEvent->endDate)) {
+                            // Only start date is set. Event will take place the whole day.
+                            $intEnd = $intStart + $objEvent->endTime - $objEvent->startTime;
                         }
 
                         if ($intStart >= $timeStart && $intStart <= $timeEnd) {
@@ -309,9 +312,9 @@ class GetAllEventsHook
             $arrRunningEvents = [];
 
             foreach ($arrEvents as &$eventsOnDay) {
-                foreach ($eventsOnDay as $startTime => &$events) {
-                    foreach ($events as $pos => &$event) {
-                        $timeToCompare = $objModule->hideRunning ? $startTime + $event['endTime'] - $event['startTime'] : $startTime;
+                foreach ($eventsOnDay as &$events) {
+                    foreach ($events as $eventIdx => &$event) {
+                        $timeToCompare = $objModule->cal_hideRunning ? $event['begin'] : $event['end'] ;
 
                         if ($timeToCompare > $currentTimestamp) {
                             $key = $event['pid'].'_'.$event['id'];
@@ -323,7 +326,7 @@ class GetAllEventsHook
 
                             $arrRunningEvents[$key] = ++$cnt;
                             if ($cnt > 1) {
-                                unset($events[$pos]);
+                                unset($events[$eventIdx]);
                             }
                         }
                     }
@@ -599,7 +602,7 @@ class GetAllEventsHook
         $arrEvent['until'] = $until;
         $arrEvent['begin'] = $intStart;
         $arrEvent['end'] = $intEnd;
-        $arrEvent['effectiveEndTime'] = $arrEvent['endTime'];
+        $arrEvent['effectiveEndTime'] = $arrEvent['end'];
         $arrEvent['reason'] = $reason;
         $arrEvent['details'] = '';
         $arrEvent['hasTeaser'] = false;
