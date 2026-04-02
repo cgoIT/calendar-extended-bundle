@@ -266,7 +266,7 @@ class GetAllEventsHook
                                     $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
                                 }
                             }
-                        } else if (empty($objEvent->endDate)) {
+                        } elseif (empty($objEvent->endDate)) {
                             // Only start date is set. Event will take place the whole day.
                             $intEnd = $intStart + $objEvent->endTime - $objEvent->startTime;
                         }
@@ -314,7 +314,7 @@ class GetAllEventsHook
             foreach ($arrEvents as &$eventsOnDay) {
                 foreach ($eventsOnDay as &$events) {
                     foreach ($events as $eventIdx => &$event) {
-                        $timeToCompare = $objModule->cal_hideRunning ? $event['begin'] : $event['end'] ;
+                        $timeToCompare = $objModule->cal_hideRunning ? $event['begin'] : $event['end'];
 
                         if ($timeToCompare > $currentTimestamp) {
                             $key = $event['pid'].'_'.$event['id'];
