@@ -468,6 +468,7 @@ class CalendarEventsCallbacks extends Backend
                 // search date for the next event
                 $next = strtotime(date('Y-m-d', $activeRecord->startDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->startTime) : '00:00'));
                 $nextEnd = strtotime(date('Y-m-d', $activeRecord->endDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->endTime) : '23:59'));
+                $eventDuration = $nextEnd - $next;
 
                 // last month
                 $count = (int) $activeRecord->recurrences;
@@ -494,8 +495,7 @@ class CalendarEventsCallbacks extends Backend
                         $next = strtotime(date('Y-m-d', $strtotime).' '.date('H:i', $activeRecord->startTime));
 
                         // array of all recurrences
-                        $strtotime = strtotime($timetoadd, $nextEnd);
-                        $nextEnd = strtotime(date('Y-m-d', $strtotime).' '.date('H:i', $activeRecord->endTime));
+                        $nextEnd = $next + $eventDuration;
                         $arrAllRecurrences[$next] = $this->getRecurrenceArray($next, $nextEnd);
 
                         // check if have the configured max value
