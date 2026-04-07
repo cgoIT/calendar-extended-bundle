@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.7.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.7.0...v2.7.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* correct end date/time for recurring events spanning multiple days ([8e9aa75](https://github.com/cgoIT/calendar-extended-bundle/commit/8e9aa75a0468b522f200139d2f7a3ab3dae5b94e))
+* correct handling for `hideRunning` and `showOnlyNextRecurrence` ([374d75c](https://github.com/cgoIT/calendar-extended-bundle/commit/374d75c82cb144851e32c23d25b112341e6b8c13))
+* minimum fix for cal_timetable template ([bc8803a](https://github.com/cgoIT/calendar-extended-bundle/commit/bc8803a8bd7ca0893bf5e625ca911d14d19cac5c))
+
+
+### Miscellaneous Chores
+
+* fix lint errors ([1300c33](https://github.com/cgoIT/calendar-extended-bundle/commit/1300c33b34888fc1b5de8628d3e2d2c0873093c3))
+* integrate twig-cs-fixer ([c9c687c](https://github.com/cgoIT/calendar-extended-bundle/commit/c9c687c85918a3d11fe52c4b4e6de3ffb3d8241c))
+* remove commented code ([e08e9cc](https://github.com/cgoIT/calendar-extended-bundle/commit/e08e9cc0a02e004a8f0d70e33cd7106cd8b67da7))
+
 ## [2.7.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.6.0...v2.7.0) (2026-03-27)
 
 
