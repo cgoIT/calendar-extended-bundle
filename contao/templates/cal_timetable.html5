@@ -43,7 +43,7 @@
                         <div class="events" style="position:relative;">
                         <?php foreach ($day['events'] as $event): ?>
                             <?php if ($event): ?>
-                                <div class="event<?php if ($event['class']): echo $event['class']; endif; ?>" style="overflow:hidden;<?= $event['bgstyle']; ?><?php if ($event['style']): echo $event['style']; endif; ?>" title="<?= $event['title']; ?>">
+                                <div class="event<?php if ($event['class']): echo $event['class']; endif; ?>" style="overflow:hidden;<?= $event['bgstyle']; ?><?php if ($event['style'] ?? false): echo $event['style']; endif; ?>" title="<?= $event['title']; ?>">
                                     <div class="event_title <?= $event['fgstyle']; ?>">
                                         <a style="<?= $event['fgstyle']; ?>" href="<?= $event['href']; ?>" title="<?= $event['title']; ?> (<?php if ($event['day']): echo $event['day']; ?>, <?php endif;
                                 echo $event['date'];
