@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.8.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.7.1...v2.8.0) (2026-04-14)
+
+
+### Features
+
+* use AfterImportItemListener to calculate recurrence array after importing events via contao-calendar-ical-bundle ([980d05f](https://github.com/cgoIT/calendar-extended-bundle/commit/980d05f403f9c7d9c9b63efbe191a4ead8c1bc18))
+
+
+### Bug Fixes
+
+* always load listener.yml as otherwise symfony is complaining ([0362f8d](https://github.com/cgoIT/calendar-extended-bundle/commit/0362f8dcbf34608f9720b3fbbb9028f59abea10c))
+
 ## [2.7.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.7.0...v2.7.1) (2026-04-07)
 
 
