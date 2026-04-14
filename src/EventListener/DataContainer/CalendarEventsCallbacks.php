@@ -59,9 +59,10 @@ class CalendarEventsCallbacks extends Backend
 
     /**
      * @param array<mixed> $arrRow
+     * @param array<mixed> $labels
      */
-    #[AsCallback(table: 'tl_calendar_events', target: 'list.sorting.child_record')]
-    public function listChildRecords(array $arrRow): string
+    #[AsCallback(table: 'tl_calendar_events', target: 'list.label.label')]
+    public function listChildRecords(array $arrRow, string $label, DataContainer $dc, array $labels): string
     {
         $span = Calendar::calculateSpan($arrRow['startTime'], $arrRow['endTime']);
 
@@ -173,6 +174,19 @@ class CalendarEventsCallbacks extends Backend
         return $value;
     }
 
+    #[AsCallback(table: 'tl_calendar_events', target: 'fields.repeatExceptionsPer.load')]
+    public function initializeRepeatExceptionsPer(mixed $value, DataContainer $dc): mixed
+    {
+        if (empty($value)) {
+            // An empty value would lead to pre-filled values in the mcw for date and time fields. Therefore
+            // we set empty values for one row to prevent that.
+            $fixedDatesDefault = [['exception' => '', 'exceptionTo' => '']];
+            $value = serialize($fixedDatesDefault);
+        }
+
+        return $value;
+    }
+
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit', priority: -100)]
     public function handleRecurrencesAndExceptions(DataContainer $dc): void
     {
@@ -204,28 +218,7 @@ class CalendarEventsCallbacks extends Backend
 
         // Array of all recurrences
         $arrAllRecurrences = [];
-
-        // Process fixed dates
-        [$repeatFixedDates, $arrAllRecurrences, $maxRepeatEnd] = $this->getFixedDates($activeRecord, $arrAllRecurrences, $maxRepeatEnd);
-        $arrSet['repeatFixedDates'] = null === $repeatFixedDates ? null : serialize($repeatFixedDates);
-
-        // process the default recurring
-        [$arrSet, $arrAllRecurrences, $maxRepeatEnd] =
-            $this->processDefaultRecurring($activeRecord, $arrSet, $arrAllRecurrences, $maxRepeatEnd);
-
-        // process extended version recurring
-        [$arrSet, $arrAllRecurrences, $maxRepeatEnd] =
-            $this->processExtendedRecurring($activeRecord, $arrSet, $arrAllRecurrences, $maxRepeatEnd);
-
-        // process exceptions
-        $currentEndDate = \count($maxRepeatEnd) > 1 ? max($maxRepeatEnd) : $arrSet['repeatEnd'];
-        [$exceptionList, $maxRepeatEnd] =
-            $this->processExceptions($activeRecord, $currentEndDate, $maxRepeatEnd);
-        $arrSet['exceptionList'] = $exceptionList;
-
-        if (\count($maxRepeatEnd) > 1) {
-            $arrSet['repeatEnd'] = max($maxRepeatEnd);
-        }
+        [$arrAllRecurrences, $arrSet] = $this->processAllRecurrences($activeRecord, $arrAllRecurrences, $maxRepeatEnd, $arrSet);
 
         ksort($arrAllRecurrences);
         $arrSet['allRecurrences'] = serialize($arrAllRecurrences);
@@ -282,6 +275,40 @@ class CalendarEventsCallbacks extends Backend
         }
 
         return $value;
+    }
+
+    /**
+     * @param array<mixed> $arrAllRecurrences
+     * @param array<mixed> $maxRepeatEnd
+     * @param array<mixed> $arrSet
+     *
+     * @return array<mixed>
+     */
+    public function processAllRecurrences(mixed $activeRecord, array $arrAllRecurrences, array $maxRepeatEnd, array $arrSet): array
+    {
+        // Process fixed dates
+        [$repeatFixedDates, $arrAllRecurrences, $maxRepeatEnd] = $this->getFixedDates($activeRecord, $arrAllRecurrences, $maxRepeatEnd);
+        $arrSet['repeatFixedDates'] = null === $repeatFixedDates ? null : serialize($repeatFixedDates);
+
+        // process the default recurring
+        [$arrSet, $arrAllRecurrences, $maxRepeatEnd] =
+            $this->processDefaultRecurring($activeRecord, $arrSet, $arrAllRecurrences, $maxRepeatEnd);
+
+        // process extended version recurring
+        [$arrSet, $arrAllRecurrences, $maxRepeatEnd] =
+            $this->processExtendedRecurring($activeRecord, $arrSet, $arrAllRecurrences, $maxRepeatEnd);
+
+        // process exceptions
+        $currentEndDate = \count($maxRepeatEnd) > 1 ? max($maxRepeatEnd) : $arrSet['repeatEnd'];
+        [$exceptionList, $maxRepeatEnd] =
+            $this->processExceptions($activeRecord, $currentEndDate, $maxRepeatEnd);
+        $arrSet['exceptionList'] = $exceptionList;
+
+        if (\count($maxRepeatEnd) > 1) {
+            $arrSet['repeatEnd'] = max($maxRepeatEnd);
+        }
+
+        return [$arrAllRecurrences, $arrSet];
     }
 
     /**
@@ -715,11 +742,16 @@ class CalendarEventsCallbacks extends Backend
                     continue;
                 }
 
-                $row['new_start'] = $row['new_start'] ?: date('H:i', $activeRecord->startTime); // '00:00';
+                $row['new_start'] = \array_key_exists('new_start', $row)
+                    ? $row['new_start'] ?: date('H:i', $activeRecord->startTime)
+                    : date('H:i', $activeRecord->startTime); // '00:00';
 
                 if (!$activeRecord->ignoreEndTime) {
-                    $row['new_end'] = $row['new_end'] ?: date('H:i', $activeRecord->endTime); // '23:59';
+                    $row['new_end'] = \array_key_exists('new_end', $row)
+                        ? $row['new_end'] ?: date('H:i', $activeRecord->endTime)
+                        : date('H:i', $activeRecord->endTime); // '23:59';
                 }
+
                 $row['exception_date'] = date('d.m.Y H:i', (int) $row['exception']);
 
                 if ($activeRecord->ignoreEndTime) {

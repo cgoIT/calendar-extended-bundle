@@ -73,7 +73,6 @@ class ModuleYearView extends Events
         $request = System::getContainer()->get('request_stack')->getCurrentRequest();
 
         if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
-            /** @var BackendTemplate $objTemplate */
             $objTemplate = new BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = '### '.$GLOBALS['TL_LANG']['FMD']['yearview'][0].' ###';

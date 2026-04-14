@@ -1,0 +1,6 @@
+services:
+    Cgoit\CalendarExtendedBundle\EventListener\AfterImportItemListener:
+        tags:
+            -   name: kernel.event_listener
+                event: Cgoit\ContaoCalendarIcalBundle\Event\AfterImportItemEvent
+                method: calculateAllRecurrences

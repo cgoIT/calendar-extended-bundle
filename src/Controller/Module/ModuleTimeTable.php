@@ -182,7 +182,6 @@ class ModuleTimeTable extends Events
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
-        /** @var FrontendTemplate $objTemplate */
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_timetable');
 
         $objTemplate->intYear = $intYear;

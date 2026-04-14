@@ -24,9 +24,8 @@ class ModuleCallbacks extends Backend
     /**
      * @param array<string> $arrFilterFields
      */
-    public function __construct(
-        private readonly array $arrFilterFields,
-    ) {
+    public function __construct(private readonly array $arrFilterFields)
+    {
         parent::__construct();
         $this->import(BackendUser::class, 'User');
     }

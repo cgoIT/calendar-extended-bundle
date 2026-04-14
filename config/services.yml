@@ -15,6 +15,10 @@ services:
     Cgoit\CalendarExtendedBundle\:
         resource: ../src/*
 
+    calendar_extended.events.callbacks:
+        class: Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallbacks
+        public: true
+
     calendar_extended.mcw.callbacks:
         class: Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsMCWCallbacks
         public: true
