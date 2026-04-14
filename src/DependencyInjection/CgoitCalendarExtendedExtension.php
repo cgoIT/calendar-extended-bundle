@@ -33,9 +33,7 @@ class CgoitCalendarExtendedExtension extends Extension
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yml');
-        if (class_exists('Cgoit\\ContaoCalendarIcalBundle\\Event\\AfterImportItemEvent')) {
-            $loader->load('listener.yml');
-        }
+        $loader->load('listener.yml');
 
         // Configuration
         $container->setParameter('cgoit_calendar_extended.max_repeat_count', (int) $config['max_repeat_count']);
