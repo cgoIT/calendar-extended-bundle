@@ -50,7 +50,8 @@ class FetchEventsController
         $intEnd = strtotime((string) Input::post('end'));
 
         // Get all events
-        $arrAllEvents = $objModule->loadEvents(StringUtil::deserialize($objModule->cal_calendar, true), $intStart, $intEnd);
+        $arrCalendars = array_map(intval(...), StringUtil::deserialize($objModule->cal_calendar, true));
+        $arrAllEvents = $objModule->loadEvents($arrCalendars, $intStart, $intEnd);
 
         // Sort the days
         $sort = 'descending' === $objModule->cal_order ? 'krsort' : 'ksort';
@@ -83,9 +84,19 @@ class FetchEventsController
                     }
 
                     // Set start and end of each event to the right format for the fullcalendar
-                    $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
-                    $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
                     $allDay = $event['addTime'] ? false : true;
+
+                    if ($allDay) {
+                        $event['datetime_start'] = date('Y-m-d', $event['startDate']);
+
+                        if (!empty($event['endDate'])) {
+                            // We have to add one day for fullcalendar to display the event correctly
+                            $event['datetime_end'] = date('Y-m-d', $event['endDate'] + 86400);
+                        }
+                    } else {
+                        $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
+                        $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
+                    }
 
                     // Set title
                     $title = StringUtil::specialchars((string) $event['title']);

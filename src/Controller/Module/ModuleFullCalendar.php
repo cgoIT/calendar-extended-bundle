@@ -95,8 +95,8 @@ class ModuleFullCalendar extends Events
         $this->strLink = $this->strUrl;
 
         if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
-            /** @var PageModel $objTarget */
-            $this->strLink = $objTarget->getFrontendUrl();
+            $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+            $this->strLink = $urlGenerator->generate($objTarget);
         }
 
         // Tag the calendars (see #2137)
@@ -184,7 +184,7 @@ class ModuleFullCalendar extends Events
 
         // calendar-extended-bundle assets
         $assets_path = 'bundles/cgoitcalendarextended';
-        $assets_fc = '/fullcalendar-6.1.11';
+        $assets_fc = '/fullcalendar-6.1.20';
         $assets_fa = '/font-awesome-4.7.0';
 
         // CSS files
