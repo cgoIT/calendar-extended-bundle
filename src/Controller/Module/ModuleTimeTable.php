@@ -100,8 +100,8 @@ class ModuleTimeTable extends Events
         $this->strLink = $this->strUrl;
 
         if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
-            /** @var PageModel $objTarget */
-            $this->strLink = $objTarget->getFrontendUrl();
+            $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+            $this->strLink = $urlGenerator->generate($objTarget);
         }
 
         // Tag the calendars (see #2137)
@@ -305,11 +305,11 @@ class ModuleTimeTable extends Events
             $timerange = StringUtil::deserialize($this->cal_times_range)[0];
 
             if ($timerange['time_from']) {
-                $arrTimes['start'] = substr((string) $timerange['time_from'], 0, 2);
+                $arrTimes['start'] = substr(date('H', $timerange['time_from']), 0, 2);
             }
 
             if ($timerange['time_to']) {
-                $arrTimes['stop'] = substr((string) $timerange['time_to'], 0, 2);
+                $arrTimes['stop'] = substr(date('H', $timerange['time_to']), 0, 2);
             }
 
             $cellheight = $this->cellheight ?: 60;
@@ -322,7 +322,7 @@ class ModuleTimeTable extends Events
                 $strHour = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
                 $arrListTimes[$strHour]['top'] = $top;
                 $arrListTimes[$strHour]['class'] = 0 === $counter % 2 ? 'even' : 'odd';
-                $arrListTimes[$strHour]['label'] = "$i:00"; // top:".$top."px; position:relative;
+                $arrListTimes[$strHour]['label'] = "$strHour:00"; // top:".$top."px; position:relative;
                 $arrListTimes[$strHour]['style'] = 'height:'.$cellheight.'px;top:'.$top.'px;';
                 ++$counter;
             }
