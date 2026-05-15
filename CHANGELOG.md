@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.9.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.8.0...v2.9.0) (2026-05-15)
+
+
+### Features
+
+* upgrade fullcalendar to version 6.1.20 ([ef4270b](https://github.com/cgoIT/calendar-extended-bundle/commit/ef4270b6070cfe046ed4c881ef85e2e2c36584f4))
+
+
+### Bug Fixes
+
+* fix deprecation warnings in year view ([4008e43](https://github.com/cgoIT/calendar-extended-bundle/commit/4008e43cbd499148d105b58f37dc752eddf25535))
+* fix display of events spanning multiple days without time in fullcalendar view ([4c63cae](https://github.com/cgoIT/calendar-extended-bundle/commit/4c63cae48b788d08e9fb94e6829518122ceed041))
+* fix display of hours in time table view ([9bbc933](https://github.com/cgoIT/calendar-extended-bundle/commit/9bbc933cbf54b51537b6eb0a22be50304770d47b))
+
 ## [2.8.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.7.1...v2.8.0) (2026-04-14)
 
 
