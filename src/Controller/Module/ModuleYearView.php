@@ -95,8 +95,8 @@ class ModuleYearView extends Events
         $this->strLink = $this->strUrl;
 
         if (($objTarget = $this->objModel->getRelated('jumpTo')) instanceof PageModel) {
-            /** @var PageModel $objTarget */
-            $this->strLink = $objTarget->getFrontendUrl();
+            $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
+            $this->strLink = $urlGenerator->generate($objTarget);
         }
 
         // Tag the calendars (see #2137)
