@@ -299,7 +299,7 @@ class CalendarEventsCallbacks extends Backend
             $this->processExtendedRecurring($activeRecord, $arrSet, $arrAllRecurrences, $maxRepeatEnd);
 
         // process exceptions
-        $currentEndDate = \count($maxRepeatEnd) > 1 ? max($maxRepeatEnd) : $arrSet['repeatEnd'];
+        $currentEndDate = \count($maxRepeatEnd) > 1 ? (int) max($maxRepeatEnd) : (int) ($arrSet['repeatEnd'] ?? 0);
         [$exceptionList, $maxRepeatEnd] =
             $this->processExceptions($activeRecord, $currentEndDate, $maxRepeatEnd);
         $arrSet['exceptionList'] = $exceptionList;
