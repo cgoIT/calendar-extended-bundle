@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.9.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.9.0...v2.9.1) (2026-05-18)
+
+
+### Bug Fixes
+
+* fix initial list view for fullcalendar ([c3221f4](https://github.com/cgoIT/calendar-extended-bundle/commit/c3221f46b8e872000fdf141be56c67c636d48488))
+* Fix TypeError when processing exceptions with null repeatEnd ([#55](https://github.com/cgoIT/calendar-extended-bundle/issues/55)) ([4760ded](https://github.com/cgoIT/calendar-extended-bundle/commit/4760dedaec87cc6a2a564a7fa4a958ebdef4ca26))
+
 ## [2.9.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.8.0...v2.9.0) (2026-05-15)
 
 
