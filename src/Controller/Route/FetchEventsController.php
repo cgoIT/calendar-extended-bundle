@@ -18,6 +18,7 @@ use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
 use Contao\Date;
 use Contao\Input;
 use Contao\ModuleModel;
+use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,16 +26,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/fullcalendar/fetchEvents/{moduleId}', name: FetchEventsController::class, defaults: ['_scope' => 'frontend', '_token_check' => true], methods: 'POST')]
+#[Route('/fullcalendar/fetchEvents/{pageId}/{moduleId}', name: FetchEventsController::class, defaults: ['_scope' => 'frontend', '_token_check' => true], methods: 'POST')]
 class FetchEventsController
 {
-    public function __invoke(Request $request, int $moduleId): Response
+    public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
         System::getContainer()->get('contao.framework')->initialize();
+
+        $page = PageModel::findById($pageId);
+        $request->attributes->set('pageModel', $page);
 
         $objModule = ModuleModel::findById($moduleId);
         $moduleFullcalendar = new ModuleFullCalendar($objModule);
         $events = $this->fetchEvents($moduleFullcalendar);
+
+        $request->attributes->set('pageModel', null);
 
         return new JsonResponse($events);
     }
@@ -138,7 +144,7 @@ class FetchEventsController
                             'calendarId' => $event['pid'],
                             'title' => $title,
                             'start' => $event['datetime_start'],
-                            'end' => $event['datetime_end'],
+                            'end' => \array_key_exists('datetime_end', $event) ? $event['datetime_end'] : null,
                             'description' => $event['teaser'],
                             'allDay' => $allDay,
                             'overlap' => false,

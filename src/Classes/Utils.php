@@ -29,9 +29,10 @@ class Utils
     public static function getCalendarConfig(Events $objModule): array
     {
         $calConf = [];
+        $arrCalendar = StringUtil::deserialize($objModule->cal_calendar, true);
 
         // Get the background and foreground colors of the calendars
-        foreach ($objModule->cal_calendar as $cal) {
+        foreach ($arrCalendar as $cal) {
             $objCalendar = CalendarModel::findById($cal);
 
             $calConf[$cal]['calendar'] = $objCalendar->title;

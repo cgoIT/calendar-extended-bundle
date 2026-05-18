@@ -195,7 +195,7 @@ class ModuleFullCalendar extends Events
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
         // Set some fullcalendar options
-        $objTemplate->url = '/fullcalendar/fetchEvents/'.$this->id;
+        $objTemplate->url = '/fullcalendar/fetchEvents/'.$objPage->id.'/'.$this->id;
         $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
         $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
         $objTemplate->firstDay = $this->cal_startDay;
@@ -220,9 +220,11 @@ class ModuleFullCalendar extends Events
         $objTemplate->initialView = match ($this->cal_fcFormat) {
             'cal_fc_month' => 'dayGridMonth',
             'cal_fc_day' => 'timeGridDay',
-            'cal_fc_list' => 'listDay',
+            'cal_fc_list' => 'listMonth',
             default => 'timeGridWeek',
         };
+
+        $objTemplate->pageId = $objPage->id;
 
         $objTemplate->requestToken = System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
 
