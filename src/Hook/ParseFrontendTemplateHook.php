@@ -19,7 +19,6 @@ use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\ContentModel;
 use Contao\Controller;
-use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Date;
 use Contao\Events;
@@ -46,9 +45,7 @@ class ParseFrontendTemplateHook extends Controller
             $template->fromCalendarExtendedHook = true;
 
             // Get the current event
-            $version = (method_exists(ContaoCoreBundle::class, 'getVersion') ? ContaoCoreBundle::getVersion() : VERSION); // @phpstan-ignore-line
-            $getParameter = version_compare($version, '5.0', '<') ? 'events' : 'auto_item';
-            $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get($getParameter), $template->cal_calendar);
+            $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get('auto_item'), $template->cal_calendar);
 
             $objTemplate = new FrontendTemplate($template->cal_template ?: 'event_full');
             $objTemplate->setData($objEvent->row());
@@ -254,19 +251,12 @@ class ParseFrontendTemplateHook extends Controller
             $template->getSchemaOrgData = static function () use ($template, $objEvent, $intStartTime, $intEndTime): array {
                 $jsonLd = Events::getSchemaOrgData($objEvent);
 
-                $version = (method_exists(ContaoCoreBundle::class, 'getVersion') ? ContaoCoreBundle::getVersion() : VERSION); // @phpstan-ignore-line
+                $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
 
-                if (version_compare($version, '5.0', '<')) {
-                    $urlParameter = \sprintf('day=%s&times=%s', date('Ymd', $intStartTime), $intStartTime.','.$intEndTime);
-                    $jsonLd['url'] .= (str_contains((string) $jsonLd['url'], '?') ? '&' : '?').$urlParameter;
-                } else {
-                    $urlGenerator = System::getContainer()->get('contao.routing.content_url_generator');
-
-                    try {
-                        $jsonLd['url'] = $urlGenerator->generate($objEvent, ['day' => date('Ymd', $intStartTime), 'times' => $intStartTime.','.$intEndTime]);
-                    } catch (ExceptionInterface) {
-                        // noop
-                    }
+                try {
+                    $jsonLd['url'] = $urlGenerator->generate($objEvent, ['day' => date('Ymd', $intStartTime), 'times' => $intStartTime.','.$intEndTime]);
+                } catch (ExceptionInterface) {
+                    // noop
                 }
 
                 $jsonLd['startDate'] = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $template->begin) : date('Y-m-d', $template->begin);

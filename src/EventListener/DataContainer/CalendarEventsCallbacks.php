@@ -6,7 +6,7 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
  * @copyright  Copyright (c) Kester Mielke
- * @copyright  Copyright (c) 2024, cgoIT
+ * @copyright  Copyright (c) cgoIT
  * @author     Kester Mielke
  * @author     cgoIT <https://cgo-it.de>
  * @license    LGPL-3.0-or-later
@@ -93,7 +93,7 @@ class CalendarEventsCallbacks extends Backend
         }
 
         // @phpstan-ignore-next-line
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+        $activeRecord = (object) $dc->getCurrentRecord();
 
         // Return if the event is recurring
         if ($activeRecord->recurring || $activeRecord->recurringExt) {
@@ -196,7 +196,7 @@ class CalendarEventsCallbacks extends Backend
         }
 
         // @phpstan-ignore-next-line
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+        $activeRecord = (object) $dc->getCurrentRecord();
 
         // Return if there is no active record (override all) or no start date has been
         // set yet
@@ -236,7 +236,7 @@ class CalendarEventsCallbacks extends Backend
     public function checkRecurring(mixed $value, DataContainer $dc): mixed
     {
         // @phpstan-ignore-next-line
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+        $activeRecord = (object) $dc->getCurrentRecord();
         if (!empty($value) && !empty($activeRecord->recurringExt)) {
             Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
             $activeRecord->recurring = false; // @phpstan-ignore-line
@@ -256,7 +256,7 @@ class CalendarEventsCallbacks extends Backend
     public function checkRecurringExt(mixed $value, DataContainer $dc): mixed
     {
         // @phpstan-ignore-next-line
-        $activeRecord = method_exists($dc, 'getCurrentRecord') ? (object) $dc->getCurrentRecord() : $dc->activeRecord;
+        $activeRecord = (object) $dc->getCurrentRecord();
         if (!empty($value) && !empty($activeRecord->recurring)) {
             Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
             $activeRecord->recurringExt = false; // @phpstan-ignore-line

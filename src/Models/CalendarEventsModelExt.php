@@ -6,7 +6,7 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
  * @copyright  Copyright (c) Kester Mielke
- * @copyright  Copyright (c) 2024, cgoIT
+ * @copyright  Copyright (c) cgoIT
  * @author     Kester Mielke
  * @author     cgoIT <https://cgo-it.de>
  * @license    LGPL-3.0-or-later
@@ -54,9 +54,7 @@ class CalendarEventsModelExt extends CalendarEventsModel
             $arrColumns[] = "$t.published=1 AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)";
         }
 
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "$t.startTime";
-        }
+        $arrOptions['order'] ??= "$t.startTime";
 
         return static::findBy($arrColumns, [$intPid], $arrOptions);
     }
@@ -86,9 +84,7 @@ class CalendarEventsModelExt extends CalendarEventsModel
             $arrOptions['limit'] = $intLimit;
         }
 
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "$t.startTime";
-        }
+        $arrOptions['order'] ??= "$t.startTime";
 
         return static::findBy($arrColumns, null, $arrOptions);
     }
@@ -116,9 +112,7 @@ class CalendarEventsModelExt extends CalendarEventsModel
             $arrColumns[] = "($t.start='' OR $t.start<='$time') AND ($t.stop='' OR $t.stop>'".($time + 60)."') AND $t.published='1'";
         }
 
-        if (!isset($arrOptions['order'])) {
-            $arrOptions['order'] = "$t.startTime";
-        }
+        $arrOptions['order'] ??= "$t.startTime";
 
         return static::findBy($arrColumns, $intPid, $arrOptions);
     }

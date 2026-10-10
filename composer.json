@@ -1,7 +1,7 @@
 {
   "name": "cgoit/calendar-extended-bundle",
   "type": "contao-bundle",
-  "description": "Contao 4/5 LTS calendar extension bundle. Better recurring events and exceptions.",
+  "description": "Contao 5 calendar extension bundle. Better recurring events and exceptions.",
   "keywords": [
     "contao",
     "fullcalendar",
@@ -30,14 +30,14 @@
   "require": {
     "php": "^8.2",
     "ext-mbstring": "*",
-    "contao/core-bundle": "^4.13 || ^5.3",
-    "contao/calendar-bundle": "^4.13 || ^5.3",
-    "symfony/routing": "^5.4 || ^6.0 || ^7.3",
-    "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.3",
-    "symfony/http-foundation": "^5.4 || ^6.0 || ^7.3",
-    "symfony/config": "^5.4 || ^6.0 || ^7.3",
-    "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.3",
-    "symfony/http-kernel": "^5.4 || ^6.0 || ^7.3",
+    "contao/core-bundle": "^5.3",
+    "contao/calendar-bundle": "^5.3",
+    "symfony/routing": "^6.4 || ^7.0",
+    "symfony/event-dispatcher": "^6.4 || ^7.0",
+    "symfony/http-foundation": "^6.4 || ^7.0",
+    "symfony/config": "^6.4 || ^7.0",
+    "symfony/dependency-injection": "^6.4 || ^7.0",
+    "symfony/http-kernel": "^6.4 || ^7.0",
     "doctrine/dbal": "^3.3 || ^4.0",
     "menatwork/contao-multicolumnwizard-bundle": "^3.6"
   },
@@ -46,6 +46,7 @@
     "terminal42/contao-build-tools": "dev-main"
   },
   "suggest": {
+    "cgoit/contao-calendar-ical-bundle": "For importing events from iCal sources.",
     "inspiredminds/contao-event-registration": "For registration to events use this bundle."
   },
   "conflict": {
@@ -71,11 +72,7 @@
   },
   "scripts": {
     "all": [
-      "@ecs",
-      "@twig-cs-fixer",
-      "@rector",
-      "@phpstan",
-      "@depcheck"
+      "@fix-tools"
     ]
   }
 }

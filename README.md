@@ -3,7 +3,7 @@
 [![Installations via composer per month](http://img.shields.io/packagist/dm/cgoit/calendar-extended-bundle.svg?style=flat)](https://packagist.org/packages/cgoit/calendar-extended-bundle)
 [![Installations via composer total](http://img.shields.io/packagist/dt/cgoit/calendar-extended-bundle.svg?style=flat)](https://packagist.org/packages/cgoit/calendar-extended-bundle)
 
-Contao 4 & 5 LTS Calendar Extension
+Contao 5 Calendar Extension
 ===============================
 
 This bundle adds more calendar functionality to Contao.
@@ -42,7 +42,7 @@ If you want to upgrade from version 1 run the `contao:migrate` script. In the fi
 Contao 5 support
 ----------------
 
-Starting with version 2 of this bundle Contao 5 is supported. Many things have been refactored in this version, many classes have been split or moved and the complete approach of handling things has changed. Therefore, the chance that something does not yet work 100% is quite high. I therefore recommend that all Contao 4 users check very carefully whether version 2 works the way they want it to. Alternatively, version 1 can continue to be used for Contao 4.
+Starting with version 2 of this bundle only Contao 5.3 and newer is supported. Many things have been refactored in this version, many classes have been split or moved and the complete approach of handling things has changed. Therefore, the chance that something does not yet work 100% is quite high. Contao 4 is no longer supported by version 2; Contao 4 users have to stay on version 1.
 
 
 Configuration

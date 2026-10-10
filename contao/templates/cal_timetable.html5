@@ -4,13 +4,13 @@
 		<div class="timetable_navi">
 			<?php if ($this->linkCurrent): ?>
 	    		<div class="head current" style="display: flex; justify-content: center;">
-                    <a href="<?= $this->currHref; ?>" title="<?= $this->currTitle; ?>"><?= $this->currLink; ?></a>
+                    <a href="<?= $this->currHref ?>" title="<?= $this->currTitle ?>"><?= $this->currLink ?></a>
                 </div>
 	    	<?php endif; ?>
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                <div class="head previous"><a href="<?= $this->prevHref; ?>" title="<?= $this->prevTitle; ?>"><?= $this->prevLink; ?></a></div>
-                <div class="head current"><?= $this->current; ?></div>
-                <div class="head next"><a href="<?= $this->nextHref; ?>" title="<?= $this->nextTitle; ?>"><?= $this->nextLink; ?></a></div>
+                <div class="head previous"><a href="<?= $this->prevHref ?>" title="<?= $this->prevTitle ?>"><?= $this->prevLink ?></a></div>
+                <div class="head current"><?= $this->current ?></div>
+                <div class="head next"><a href="<?= $this->nextHref ?>" title="<?= $this->nextTitle ?>"><?= $this->nextLink ?></a></div>
             </div>
 		</div>
 	<?php endif; ?>
@@ -22,8 +22,8 @@
                     <td class="time" style="vertical-align: bottom">Zeit</td>
                 <?php endif; ?>
                 <?php foreach ($this->weekday as $day): ?>
-                    <td class="<?= $day['class']; ?>">
-                        <div class="head"><?= $day['label']; ?></div>
+                    <td class="<?= $day['class'] ?>">
+                        <div class="head"><?= $day['label'] ?></div>
                     </td>
                 <?php endforeach; ?>
             </tr>
@@ -33,30 +33,30 @@
                     <td>
                         <div class="times" style="position:relative;">
                         <?php foreach ($this->times as $time): ?>
-                        <div class="time <?= $time['class']; ?>" style="<?= $time['style']; ?>"><?= $time['label']; ?></div>
+                        <div class="time <?= $time['class'] ?>" style="<?= $time['style'] ?>"><?= $time['label'] ?></div>
                         <?php endforeach; ?>
                         </div>
                     </td>
                 <?php endif; ?>
                 <?php foreach ($this->weekday as $day): ?>
-                    <td class="<?= $day['class']; ?>">
+                    <td class="<?= $day['class'] ?>">
                         <div class="events" style="position:relative;">
                         <?php foreach ($day['events'] as $event): ?>
                             <?php if ($event): ?>
-                                <div class="event<?php if ($event['class']): echo $event['class']; endif; ?>" style="overflow:hidden;<?= $event['bgstyle']; ?><?php if ($event['style'] ?? false): echo $event['style']; endif; ?>" title="<?= $event['title']; ?>">
-                                    <div class="event_title <?= $event['fgstyle']; ?>">
-                                        <a style="<?= $event['fgstyle']; ?>" href="<?= $event['href']; ?>" title="<?= $event['title']; ?> (<?php if ($event['day']): echo $event['day']; ?>, <?php endif;
+                                <div class="event<?php if ($event['class']): echo $event['class']; endif; ?>" style="overflow:hidden;<?= $event['bgstyle'] ?><?php if ($event['style'] ?? false): echo $event['style']; endif; ?>" title="<?= $event['title'] ?>">
+                                    <div class="event_title <?= $event['fgstyle'] ?>">
+                                        <a style="<?= $event['fgstyle'] ?>" href="<?= $event['href'] ?>" title="<?= $event['title'] ?> (<?php if ($event['day']): echo $event['day']; ?>, <?php endif;
                                 echo $event['date'];
-                                if ($event['time']): ?>, <?php echo $event['time']; endif; ?>)"<?= $event['target']; ?>><?= $event['link']; ?></a>
+                                if ($event['time']): ?>, <?php echo $event['time']; endif; ?>)"<?= $event['target'] ?>><?= $event['link'] ?></a>
                                     </div>
                                     <div class="event_time">
                                         <?php if ($event['time']): ?>
-                                            <?= $event['time']; ?><br/>
+                                            <?= $event['time'] ?><br/>
                                         <?php endif; ?>
                                     </div>
                                     <div class="event_body">
                                         <?php if ($event['teaser']): ?>
-                                            <?= $event['teaser']; ?>
+                                            <?= $event['teaser'] ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>

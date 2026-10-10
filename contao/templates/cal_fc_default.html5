@@ -5,8 +5,8 @@
         const calendarEl = document.getElementById('calendar');
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
-            locale: '<?= $this->locale; ?>',
-            initialDate: '<?= $this->initialDate; ?>',
+            locale: '<?= $this->locale ?>',
+            initialDate: '<?= $this->initialDate ?>',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -16,23 +16,23 @@
             editable: false,
             dayMaxEvents: true,
             timeZone: 'local',
-            initialView: '<?= $this->initialView; ?>',
-            weekNumbers: '<?= $this->weekNumbers; ?>',
+            initialView: '<?= $this->initialView ?>',
+            weekNumbers: '<?= $this->weekNumbers ?>',
             weekNumberCalculation: 'ISO',
-            firstDay: '<?= $this->firstDay; ?>',
+            firstDay: '<?= $this->firstDay ?>',
             <?php if (!empty($this->businessHours)): ?>
-            businessHours: <?= $this->businessHours; ?>,
+            businessHours: <?= $this->businessHours ?>,
             <?php endif; ?>
             eventSources: [{
-                url: '<?= $this->url; ?>',
+                url: '<?= $this->url ?>',
                 method: 'POST',
                 extraParams: function () {
                     return {
-                        REQUEST_TOKEN: "<?= $this->requestToken; ?>",
+                        REQUEST_TOKEN: "<?= $this->requestToken ?>",
                     }
                 },
                 failure: function () {
-                    alert('<?= $this->fetch_error; ?>');
+                    alert('<?= $this->fetch_error ?>');
                 }
             }],
 
