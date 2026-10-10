@@ -17,3 +17,7 @@
 
 # Studio
 /studio.json
+
+# Claude / lokale Notizen
+/CLAUDE.md
+/TODO.md
