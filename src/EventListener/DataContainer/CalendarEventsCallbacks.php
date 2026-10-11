@@ -261,7 +261,11 @@ class CalendarEventsCallbacks extends Backend
     public function defaultRepeatEachExt(mixed $value, DataContainer $dc): mixed
     {
         if (empty($value)) {
-            $value = $this->arrMonths[date('n', time()) - 1];
+            $weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            $startDate = (int) ($dc->getCurrentRecord()['startDate'] ?? 0); // @phpstan-ignore-line
+
+            // Pre-select "first <weekday of the event>"
+            $value = serialize(['value' => 'first', 'unit' => $weekdays[$startDate > 0 ? (int) date('w', $startDate) : 1]]);
         }
 
         return $value;

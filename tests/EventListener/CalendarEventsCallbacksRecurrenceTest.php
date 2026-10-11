@@ -479,6 +479,33 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame(strtotime('2025-03-05 09:00:00'), $update['endTime']);
     }
 
+    public function testDefaultRepeatEachExtPreselectsFirstWeekdayOfEvent(): void
+    {
+        $callbacks = $this->createCallbacks(365, 250);
+
+        // Sunday 2025-03-02
+        $value = $callbacks->defaultRepeatEachExt('', $this->createDataContainer(['startDate' => strtotime('2025-03-02')]));
+
+        $this->assertSame(['value' => 'first', 'unit' => 'sunday'], unserialize($value));
+    }
+
+    public function testDefaultRepeatEachExtFallsBackToMonday(): void
+    {
+        $callbacks = $this->createCallbacks(365, 250);
+
+        $value = $callbacks->defaultRepeatEachExt(null, $this->createDataContainer([]));
+
+        $this->assertSame(['value' => 'first', 'unit' => 'monday'], unserialize($value));
+    }
+
+    public function testDefaultRepeatEachExtKeepsExistingValue(): void
+    {
+        $callbacks = $this->createCallbacks(365, 250);
+        $existing = serialize(['value' => 'last', 'unit' => 'friday']);
+
+        $this->assertSame($existing, $callbacks->defaultRepeatEachExt($existing, $this->createDataContainer([])));
+    }
+
     public function testCheckRecurringThrowsIfExtendedRecurrenceIsSubmitted(): void
     {
         $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurringExt' => '1'], ['recurring' => 0]);
