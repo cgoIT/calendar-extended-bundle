@@ -20,6 +20,30 @@ use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    public function testCalculateMovedTimesKeepsTimeAndDuration(): void
+    {
+        [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 3600, '+1 day');
+
+        $this->assertSame(strtotime('2025-03-04 09:00'), $start);
+        $this->assertSame(strtotime('2025-03-04 10:00'), $end);
+    }
+
+    public function testCalculateMovedTimesWithNewTimes(): void
+    {
+        [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 3600, '-2 days', '14:30', '16:00');
+
+        $this->assertSame(strtotime('2025-03-01 14:30'), $start);
+        $this->assertSame(strtotime('2025-03-01 16:00'), $end);
+    }
+
+    public function testCalculateMovedTimesWithEmptyNewTimes(): void
+    {
+        [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 5400, '+0 days', '', '');
+
+        $this->assertSame(strtotime('2025-03-03 09:00'), $start);
+        $this->assertSame(strtotime('2025-03-03 10:30'), $end);
+    }
+
     public function testAppendMovedClass(): void
     {
         $this->assertSame(' moved', Utils::appendMovedClass(''));

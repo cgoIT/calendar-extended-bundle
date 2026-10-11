@@ -73,6 +73,33 @@ class Utils
     }
 
     /**
+     * Calculates the start and end of a moved occurrence of an event.
+     *
+     * The dates are always handled in the ISO format, so the result does not depend on the date format of the page.
+     *
+     * @param int         $occurrenceStart start of the occurrence that is moved
+     * @param int         $duration        duration of the event in seconds
+     * @param string      $move            relative move, e.g. "+1 day" or "-2 days"
+     * @param string|null $newStart        new start time (H:i) or null to keep the time
+     * @param string|null $newEnd          new end time (H:i) or null to keep the duration
+     *
+     * @return array{int, int} start and end time stamp
+     */
+    public static function calculateMovedTimes(int $occurrenceStart, int $duration, string $move, string|null $newStart = null, string|null $newEnd = null): array
+    {
+        if (null !== $newStart && null !== $newEnd && '' !== $newStart && '' !== $newEnd) {
+            $start = strtotime($move, strtotime(date('Y-m-d', $occurrenceStart).' '.$newStart));
+            $end = strtotime(date('Y-m-d', $start + $duration).' '.$newEnd);
+
+            return [$start, $end];
+        }
+
+        $start = strtotime($move, $occurrenceStart);
+
+        return [$start, $start + $duration];
+    }
+
+    /**
      * Appends the "moved" class and an optional custom class of the exception to the CSS classes of an event.
      *
      * @param string $classes the current classes with a leading space, as used by the event templates

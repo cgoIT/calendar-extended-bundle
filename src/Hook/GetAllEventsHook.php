@@ -375,15 +375,14 @@ class GetAllEventsHook
                                 $event['moveReason'] = $skipInfo['reason'];
 
                                 // only change the start and end time if addTime is set to true for the event
-                                if (!empty($event['addTime']) && !empty($skipInfo['new_start']) && !empty($skipInfo['new_end'])) {
-                                    $newStartTime = strtotime($dateChangeValue,
-                                        strtotime(Date::parse($objPage->dateFormat, $startTime).' '.$skipInfo['new_start']));
-                                    $newEndTime = strtotime(Date::parse($objPage->dateFormat,
-                                        $newStartTime + $event['endTime'] - $event['startTime']).' '.$skipInfo['new_end']);
-                                } else {
-                                    $newStartTime = strtotime($dateChangeValue, $startTime);
-                                    $newEndTime = $newStartTime + $event['endTime'] - $event['startTime'];
-                                }
+                                $useNewTimes = !empty($event['addTime']) && !empty($skipInfo['new_start']) && !empty($skipInfo['new_end']);
+                                [$newStartTime, $newEndTime] = Utils::calculateMovedTimes(
+                                    (int) $startTime,
+                                    (int) $event['endTime'] - (int) $event['startTime'],
+                                    $dateChangeValue,
+                                    $useNewTimes ? (string) $skipInfo['new_start'] : null,
+                                    $useNewTimes ? (string) $skipInfo['new_end'] : null,
+                                );
 
                                 $event['startTime'] = $newStartTime;
                                 $event['endTime'] = $newEndTime;
