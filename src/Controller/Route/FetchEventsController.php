@@ -17,6 +17,7 @@ namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
+use Cgoit\CalendarExtendedBundle\Service\FetchEventsSignature;
 use Contao\Controller;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
@@ -46,11 +47,17 @@ class FetchEventsController
         private readonly ContaoFramework $framework,
         private readonly EventsProvider $eventsProvider,
         private readonly Security $security,
+        private readonly FetchEventsSignature $signature,
     ) {
     }
 
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
+        // The signature binds the module to the page it is shown on, see FetchEventsSignature
+        if (!$this->signature->verify($pageId, $moduleId, $request->query->getString('signature'))) {
+            throw new NotFoundHttpException();
+        }
+
         $this->framework->initialize();
 
         $page = $this->framework->getAdapter(PageModel::class)->findPublishedById($pageId);
