@@ -20,6 +20,39 @@ use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    public function testAppendDayAndTimesToUrl(): void
+    {
+        $begin = strtotime('2025-03-10 09:00');
+        $end = strtotime('2025-03-10 10:00');
+
+        $this->assertSame(
+            \sprintf('/events/concert.html?day=20250310&times=%d,%d', $begin, $end),
+            Utils::appendDayAndTimesToUrl('/events/concert.html', $begin, $end),
+        );
+    }
+
+    public function testAppendDayAndTimesToUrlWithExistingQuery(): void
+    {
+        $begin = strtotime('2025-03-10 09:00');
+        $end = strtotime('2025-03-10 10:00');
+
+        $this->assertSame(
+            \sprintf('/events/concert.html?foo=bar&day=20250310&times=%d,%d', $begin, $end),
+            Utils::appendDayAndTimesToUrl('/events/concert.html?foo=bar', $begin, $end),
+        );
+    }
+
+    public function testAppendDayAndTimesToUrlKeepsFragment(): void
+    {
+        $begin = strtotime('2025-03-10 09:00');
+        $end = strtotime('2025-03-10 10:00');
+
+        $this->assertSame(
+            \sprintf('/events/concert.html?day=20250310&times=%d,%d#details', $begin, $end),
+            Utils::appendDayAndTimesToUrl('/events/concert.html#details', $begin, $end),
+        );
+    }
+
     public function testCalculateMovedTimesKeepsTimeAndDuration(): void
     {
         [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 3600, '+1 day');

@@ -488,12 +488,8 @@ class GetAllEventsHook
                 foreach ($eventsOnDay as &$events) {
                     if (!empty($events)) {
                         foreach ($events as &$event) {
-                            if ($event['startTime'] !== $event['begin']) {
-                                $url = '?day='
-                                    .date('Ymd', $event['begin'])
-                                    .'&amp;times='.$event['begin']
-                                    .','.$event['end'];
-                                $event['href'] .= $url;
+                            if ($event['startTime'] !== $event['begin'] && \is_string($event['href'] ?? null) && '' !== $event['href']) {
+                                $event['href'] = Utils::appendDayAndTimesToUrl($event['href'], (int) $event['begin'], (int) $event['end']);
                             }
                         }
                     }

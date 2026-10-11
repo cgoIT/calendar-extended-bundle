@@ -73,6 +73,25 @@ class Utils
     }
 
     /**
+     * Appends the parameters "day" and "times" (the concrete occurrence of a recurring event) to an event URL.
+     *
+     * The URL may already contain a query string or a fragment. It is a plain URL (parameters separated
+     * with "&"), escaping is up to the output, like it is for the URLs of the core.
+     */
+    public static function appendDayAndTimesToUrl(string $url, int $begin, int $end): string
+    {
+        $fragment = '';
+        $pos = strpos($url, '#');
+
+        if (false !== $pos) {
+            $fragment = substr($url, $pos);
+            $url = substr($url, 0, $pos);
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'day='.date('Ymd', $begin).'&times='.$begin.','.$end.$fragment;
+    }
+
+    /**
      * Calculates the start and end of a moved occurrence of an event.
      *
      * The dates are always handled in the ISO format, so the result does not depend on the date format of the page.
