@@ -495,7 +495,7 @@ class CalendarEventsCallbacks extends Backend
                 $year = (int) date('Y', $activeRecord->startDate);
                 // search date for the next event
                 $next = strtotime(date('Y-m-d', $activeRecord->startDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->startTime) : '00:00'));
-                $nextEnd = strtotime(date('Y-m-d', $activeRecord->endDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->endTime) : '23:59'));
+                $nextEnd = strtotime(date('Y-m-d', $activeRecord->endDate ?: $activeRecord->startDate).' '.($activeRecord->addTime ? date('H:i', $activeRecord->endTime) : '23:59'));
                 $eventDuration = $nextEnd - $next;
 
                 // last month

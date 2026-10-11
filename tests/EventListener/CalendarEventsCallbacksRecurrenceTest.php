@@ -214,6 +214,24 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame(strtotime('2025-05-05 10:00'), $all[strtotime('2025-05-05 09:00')]['int_end']);
     }
 
+    public function testExtendedRecurrenceWithoutEndDateUsesStartDate(): void
+    {
+        $event = $this->event([
+            'endDate' => null,
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+            'recurrences' => 2,
+        ]);
+
+        [$all] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-03', '2025-04-07', '2025-05-05'), array_keys($all));
+
+        foreach ($all as $recurrence) {
+            $this->assertSame(3600, $recurrence['int_end'] - $recurrence['int_start']);
+        }
+    }
+
     public function testExtendedRecurrenceLastFridayWrapsYear(): void
     {
         $event = $this->event([
