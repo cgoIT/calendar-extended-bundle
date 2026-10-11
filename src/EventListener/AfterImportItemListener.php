@@ -37,19 +37,39 @@ final readonly class AfterImportItemListener
         $payload = $this->toStdClass($event);
         $calendarEvent = $payload->calendarEventModel;
 
-        $maxRepeatEnd = [];
-        $maxRepeatEnd[] = $calendarEvent->repeatEnd;
+        $columns = $this->calculateColumns($calendarEvent->row());
 
-        $arrAllRecurrences = [];
+        if (null === $columns) {
+            return;
+        }
 
-        [$arrAllRecurrences] = $this->recurrenceCalculator
-            ->calculate($calendarEvent->row(), $arrAllRecurrences, $maxRepeatEnd, [])
-        ;
-
-        ksort($arrAllRecurrences);
-        $calendarEvent->allRecurrences = serialize($arrAllRecurrences);
+        foreach ($columns as $column => $value) {
+            $calendarEvent->$column = $value;
+        }
 
         $calendarEvent->save();
+    }
+
+    /**
+     * The same pre-calculated values as when saving the event in the back end.
+     *
+     * @param array<string, mixed> $row the row of the imported event
+     *
+     * @return array<string, mixed>|null null if there is no start date or the recurrences cannot be calculated from the data of the event
+     */
+    public function calculateColumns(array $row): array|null
+    {
+        // like in the back end, nothing can be calculated without a start date
+        if (empty($row['startDate'])) {
+            return null;
+        }
+
+        try {
+            return $this->recurrenceCalculator->calculate($row)->toColumns();
+        } catch (\InvalidArgumentException) {
+            // the import keeps the event as it is
+            return null;
+        }
     }
 
     private function toStdClass(object $event): \stdClass
