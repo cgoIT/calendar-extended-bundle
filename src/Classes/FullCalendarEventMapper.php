@@ -60,7 +60,7 @@ class FullCalendarEventMapper
                 'allDay' => $allDay,
                 'overlap' => false,
                 'url' => $event['href'],
-                'icon' => $recurring ? 'fa-repeat' : 'fa-calendar-o',
+                'icon' => $recurring ? 'repeat' : 'calendar',
                 'backgroundColor' => $event['bgcolor'] ?? '',
                 'textColor' => $event['fgcolor'] ?? '',
             ],

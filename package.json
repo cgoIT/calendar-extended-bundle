@@ -1,0 +1,24 @@
+{
+  "name": "@cgoit/calendar-extended-bundle",
+  "description": "Frontend assets for cgoit/calendar-extended-bundle",
+  "author": "cgoIT <https://cgo-it.de>",
+  "license": "LGPL-3.0-or-later",
+  "scripts": {
+    "dev-server": "encore dev-server --https",
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production --progress"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
+    "@fortawesome/free-regular-svg-icons": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "fullcalendar": "7.1.1",
+    "temporal-polyfill": "^1.0.1"
+  },
+  "devDependencies": {
+    "@terminal42/contao-build-tools": "./vendor/terminal42/contao-build-tools/webpack",
+    "eslint-import-resolver-webpack": "^0.13.11"
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+}

@@ -123,8 +123,6 @@ class YearViewController extends AbstractCalendarViewController
         $variables['data'] = $this->compileData($variables['months'], $variables['yeardays'], $horizontal);
         $variables['substr'] = $GLOBALS['TL_LANG']['MSC']['dayShortLength'];
 
-        $GLOBALS['TL_CSS'][] = 'bundles/cgoitcalendarextended/css/yearview.css';
-
         return $this->renderCalendar($template, $model, 'cal_yearview', $variables);
     }
 

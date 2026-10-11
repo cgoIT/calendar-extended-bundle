@@ -1,0 +1,28 @@
+.yearview {
+    .navi-current {
+        display: flex;
+        justify-content: center;
+    }
+
+    .navi-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+table.yearview_body {
+    border-spacing: 0;
+    border-collapse: collapse;
+    border-width: 1px;
+}
+
+.yearview_body td {
+    &.nowrap {
+        text-wrap: nowrap;
+    }
+
+    &.top {
+        vertical-align: top;
+    }
+}

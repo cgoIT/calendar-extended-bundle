@@ -1,9 +1,0 @@
-.timetable .navi-current { display: flex; justify-content: center; }
-.timetable .navi-row { display: flex; flex-direction: row; justify-content: space-between; }
-
-div.timetable_body { position: relative; }
-table.timetable_body { border-spacing: 0; border-collapse: collapse; border-width: 1px; }
-.timetable_days td.time { vertical-align: bottom; }
-.timetable .times,
-.timetable .events { position: relative; }
-.timetable .event { overflow: hidden; }

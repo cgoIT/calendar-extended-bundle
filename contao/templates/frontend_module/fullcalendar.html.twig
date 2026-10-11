@@ -1,5 +1,14 @@
 {% extends '@Contao/frontend_module/_base.html.twig' %}
 
 {% block content %}
+    {% add 'cgoit_calendar_extended_fullcalendar_css' to head %}
+        <link rel="stylesheet" href="{{ asset('fullcalendar-js.css', 'cgoit_calendar_extended') }}">
+    {% endadd %}
+
+    {# FullCalendar reads the CSP nonce of the page from the meta tag when it is loaded, so the script must follow the template #}
+    {% add 'cgoit_calendar_extended_fullcalendar_js' to body %}
+        <script src="{{ asset('fullcalendar-js.js', 'cgoit_calendar_extended') }}"></script>
+    {% endadd %}
+
     {{ include(calendar_template, calendar) }}
 {% endblock %}

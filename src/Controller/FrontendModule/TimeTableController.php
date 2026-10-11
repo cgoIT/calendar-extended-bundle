@@ -154,8 +154,6 @@ class TimeTableController extends AbstractCalendarViewController
 
         [$variables['weekday'], $variables['times']] = $this->compileDays($model, $page, $calendars, $weekBegin, $weekEnd, $startDay);
 
-        $GLOBALS['TL_CSS'][] = 'bundles/cgoitcalendarextended/css/timetable.css';
-
         return $this->renderCalendar($template, $model, 'cal_timetable', $variables);
     }
 

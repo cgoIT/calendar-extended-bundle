@@ -70,7 +70,7 @@ final class FullCalendarEventMapperTest extends TestCase
         $this->assertSame('2025-03-03T10:00:00', $result['event']['start']);
         $this->assertSame('2025-03-03T12:30:00', $result['event']['end']);
         $this->assertFalse($result['multiday']);
-        $this->assertSame('fa-calendar-o', $result['event']['icon']);
+        $this->assertSame('calendar', $result['event']['icon']);
     }
 
     public function testFixedDatesMarkTheEventAsRecurring(): void
@@ -82,7 +82,7 @@ final class FullCalendarEventMapperTest extends TestCase
             'endTime' => strtotime('2025-03-05 10:00'),
         ]));
 
-        $this->assertSame('fa-repeat', $result['event']['icon']);
+        $this->assertSame('repeat', $result['event']['icon']);
         $this->assertFalse($result['multiday']);
     }
 
@@ -90,7 +90,7 @@ final class FullCalendarEventMapperTest extends TestCase
     {
         $result = FullCalendarEventMapper::map($this->event(['recurring' => 1, 'endTime' => strtotime('2025-03-05 10:00')]));
 
-        $this->assertSame('fa-repeat', $result['event']['icon']);
+        $this->assertSame('repeat', $result['event']['icon']);
         $this->assertFalse($result['multiday']);
     }
 
