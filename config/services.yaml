@@ -10,7 +10,6 @@ services:
             - ../src/CgoitCalendarExtendedBundle.php
             - ../src/Classes/
             - ../src/ContaoManager/
-            - ../src/Controller/Module/
             - ../src/DependencyInjection/
             - ../src/Exception/
             - ../src/Widget/

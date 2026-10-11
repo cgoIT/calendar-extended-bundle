@@ -22,7 +22,8 @@ use Contao\ContentModel;
 use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Date;
-use Contao\Events;
+use Contao\Module;
+use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
@@ -48,7 +49,7 @@ class GetAllEventsHook
      *
      * @throws \Exception
      */
-    public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
+    public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Module|ModuleModel $objModule): array
     {
         $arrCalendars = array_map(\intval(...), $arrCalendars);
 
@@ -62,7 +63,7 @@ class GetAllEventsHook
         $arrEvents = $this->handleFixedDatesRecurrences($arrEvents, $arrCalendars, $timeStart, $timeEnd, $objModule);
 
         // Read and apply the calendar config (title and colors)
-        $this->calConf = Utils::getCalendarConfig($objModule);
+        $this->calConf = Utils::getCalendarConfig($arrCalendars);
         $arrEvents = $this->applyCalendarConfig($arrEvents);
 
         $arrEvents = $this->handleExceptions($arrEvents);
@@ -145,7 +146,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function addFilterFields(array $arrEvents, Events $objModule): array
+    private function addFilterFields(array $arrEvents, Module|ModuleModel $objModule): array
     {
         if (!empty($objModule->filter_fields)) {
             $arrFilterFields = StringUtil::deserialize($objModule->filter_fields, true);
@@ -174,7 +175,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function handleExtendedRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
+    private function handleExtendedRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Module|ModuleModel $objModule): array
     {
         if ([] === $arrCalendars) {
             return $arrEvents;
@@ -224,17 +225,17 @@ class GetAllEventsHook
     /**
      * Handle fixed dates with recurrences.
      *
-     * @param array<mixed> $arrEvents    Array of events
-     * @param array<int>   $arrCalendars Array of calendar IDs
-     * @param int          $timeStart    Start time
-     * @param int          $timeEnd      End time
-     * @param Events       $objModule    Events module object
+     * @param array<mixed>       $arrEvents    Array of events
+     * @param array<int>         $arrCalendars Array of calendar IDs
+     * @param int                $timeStart    Start time
+     * @param int                $timeEnd      End time
+     * @param Module|ModuleModel $objModule    module configuration
      *
      * @return array<mixed> Array of events with fixed dates recurrences
      *
      * @throws \Exception
      */
-    private function handleFixedDatesRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
+    private function handleFixedDatesRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Module|ModuleModel $objModule): array
     {
         if ([] === $arrCalendars) {
             return $arrEvents;
@@ -320,7 +321,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function handleShowOnlyNext(array $arrEvents, Events $objModule): array
+    private function handleShowOnlyNext(array $arrEvents, Module|ModuleModel $objModule): array
     {
         if (!empty($objModule->showOnlyNext)) {
             $currentTimestamp = time();
@@ -486,7 +487,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function hideHolidayEvents(array $arrEvents, Events $objModule, array $arrHolidayCalendars): array
+    private function hideHolidayEvents(array $arrEvents, Module|ModuleModel $objModule, array $arrHolidayCalendars): array
     {
         if (!empty($objModule->hide_holiday) && !empty($arrHolidayCalendars)) {
             foreach ($arrEvents as &$eventsOnDay) {
@@ -508,7 +509,7 @@ class GetAllEventsHook
      *
      * @return array<mixed>
      */
-    private function addDayAndTimeUrlParameters(array $arrEvents, Events $objModule): array
+    private function addDayAndTimeUrlParameters(array $arrEvents, Module|ModuleModel $objModule): array
     {
         if (empty($objModule->cal_ignoreDynamic)) {
             foreach ($arrEvents as &$eventsOnDay) {
@@ -562,7 +563,7 @@ class GetAllEventsHook
      *
      * @throws \Exception
      */
-    private function createEvents(CalendarEventsModel $objEvent, Events $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate, int|null $intRecurrences = null, string|null $reason = null): void
+    private function createEvents(CalendarEventsModel $objEvent, Module|ModuleModel $objModule, int $intStart, int $intEnd, array &$arrEvents, bool $isFixedDate, int|null $intRecurrences = null, string|null $reason = null): void
     {
         /** @var PageModel */
         global $objPage;

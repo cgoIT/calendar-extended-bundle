@@ -1,2 +1,2 @@
-.calendar[data-fullcalendar] { margin: auto 25px; }
-.calendar[data-fullcalendar] .fc-event-icon { padding-right: 5px; }
+.calendar[data-calendar-config] { margin: auto 25px; }
+.calendar[data-calendar-config] .fc-event-icon { padding-right: 5px; }

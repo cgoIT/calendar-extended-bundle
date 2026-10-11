@@ -16,7 +16,7 @@ namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
 use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
+use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
 use Contao\Controller;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\Date;
@@ -41,6 +41,10 @@ class FetchEventsController
      * Maximum requested time range in seconds (about 400 days).
      */
     private const MAX_RANGE = 400 * 86400;
+
+    public function __construct(private readonly EventsProvider $eventsProvider)
+    {
+    }
 
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
@@ -74,7 +78,7 @@ class FetchEventsController
         $request->attributes->set('pageModel', $page);
 
         try {
-            $events = $this->fetchEvents(new ModuleFullCalendar($objModule), $intStart, $intEnd);
+            $events = $this->fetchEvents($objModule, $intStart, $intEnd);
         } finally {
             $request->attributes->set('pageModel', null);
             $GLOBALS['objPage'] = $previousPage;
@@ -103,16 +107,16 @@ class FetchEventsController
      *
      * @return array<mixed>
      */
-    private function fetchEvents(ModuleFullCalendar $objModule, int $intStart, int $intEnd): array
+    private function fetchEvents(ModuleModel $objModule, int $intStart, int $intEnd): array
     {
         // Get all events of the calendars the user may access
-        $arrCalendars = $objModule->getAccessibleCalendars();
+        $arrCalendars = $this->eventsProvider->getAccessibleCalendars($objModule);
 
         if ([] === $arrCalendars) {
             return [];
         }
 
-        $arrAllEvents = $objModule->loadEvents($arrCalendars, $intStart, $intEnd);
+        $arrAllEvents = $this->eventsProvider->getAllEvents($objModule, $arrCalendars, $intStart, $intEnd);
 
         // Sort the days
         $sort = 'descending' === $objModule->cal_order ? 'krsort' : 'ksort';

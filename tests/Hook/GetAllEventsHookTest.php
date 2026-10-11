@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\Hook;
 
 use Cgoit\CalendarExtendedBundle\Hook\GetAllEventsHook;
-use Contao\Events;
+use Contao\Module;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +44,7 @@ final class GetAllEventsHookTest extends TestCase
         $hook = (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor();
         $events = ['20250303' => [1741000000 => [['title' => 'Concert']]]];
 
-        $result = (new \ReflectionMethod($hook, $handler))->invoke($hook, $events, [], 0, 1, $this->createStub(Events::class));
+        $result = (new \ReflectionMethod($hook, $handler))->invoke($hook, $events, [], 0, 1, $this->createStub(Module::class));
 
         $this->assertSame($events, $result);
     }
@@ -180,7 +180,7 @@ final class GetAllEventsHookTest extends TestCase
      */
     private function addFilterFields(array $filterFields, array $eventList): array
     {
-        $module = $this->createMock(Events::class);
+        $module = $this->createMock(Module::class);
         $module
             ->method('__isset')
             ->willReturn(true)

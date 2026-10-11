@@ -8,7 +8,7 @@
     }
 
     function init(el) {
-        const config = JSON.parse(el.dataset.fullcalendar || '{}');
+        const config = JSON.parse(el.dataset.calendarConfig || '{}');
 
         const options = {
             locale: config.locale,
@@ -65,8 +65,44 @@
         new FullCalendar.Calendar(el, options).render();
     }
 
+    function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = function () {
+                reject(new Error('Could not load ' + src));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    // FullCalendar reads the CSP nonce from the meta tag in the module template only once while it is loaded,
+    // so it must not be loaded before the page body exists.
+    let libraryPromise = null;
+
+    function loadLibrary(scripts) {
+        if ('undefined' !== typeof FullCalendar) {
+            return Promise.resolve();
+        }
+
+        if (null === libraryPromise) {
+            libraryPromise = scripts.reduce(function (chain, src) {
+                return chain.then(function () {
+                    return loadScript(src);
+                });
+            }, Promise.resolve());
+        }
+
+        return libraryPromise;
+    }
+
     function initAll() {
-        document.querySelectorAll('[data-fullcalendar]').forEach(init);
+        document.querySelectorAll('[data-calendar-config]').forEach(function (el) {
+            loadLibrary(JSON.parse(el.dataset.calendarScripts || '[]')).then(function () {
+                init(el);
+            });
+        });
     }
 
     if ('loading' === document.readyState) {

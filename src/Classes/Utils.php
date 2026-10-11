@@ -17,19 +17,19 @@ namespace Cgoit\CalendarExtendedBundle\Classes;
 use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
 use Contao\Date;
-use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
 
 class Utils
 {
     /**
+     * @param array<mixed> $arrCalendar IDs of the calendars
+     *
      * @return array<mixed>
      */
-    public static function getCalendarConfig(Events $objModule): array
+    public static function getCalendarConfig(array $arrCalendar): array
     {
         $calConf = [];
-        $arrCalendar = StringUtil::deserialize($objModule->cal_calendar, true);
 
         // Get the background and foreground colors of the calendars
         foreach ($arrCalendar as $cal) {
