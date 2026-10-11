@@ -53,6 +53,28 @@ final class UtilsTest extends TestCase
         yield 'string two' => ['2', 'every 2 days'];
     }
 
+    /**
+     * @param array<string> $expected
+     */
+    #[DataProvider('languages')]
+    public function testGetFullCalendarLocales(string $language, array $expected): void
+    {
+        $this->assertSame($expected, Utils::getFullCalendarLocales($language));
+    }
+
+    /**
+     * @return iterable<string, array{string, array<string>}>
+     */
+    public static function languages(): iterable
+    {
+        yield 'language only' => ['de', ['de']];
+        yield 'region with underscore' => ['de_CH', ['de-ch', 'de']];
+        yield 'region in upper case' => ['pt_BR', ['pt-br', 'pt']];
+        yield 'chinese' => ['zh_CN', ['zh-cn', 'zh']];
+        yield 'hyphen is kept' => ['en-GB', ['en-gb', 'en']];
+        yield 'empty' => ['', ['en']];
+    }
+
     public function testAppendDayAndTimesToUrl(): void
     {
         $begin = strtotime('2025-03-10 09:00');

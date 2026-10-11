@@ -1,11 +1,11 @@
-<div id="calendar" style="margin:auto 25px;"></div>
+<div id="calendar-<?= $this->moduleId ?>" class="calendar" style="margin:auto 25px;"></div>
 
 <script type="application/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        const calendarEl = document.getElementById('calendar');
+        const calendarEl = document.getElementById('calendar-<?= $this->moduleId ?>');
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
-            locale: '<?= $this->locale ?>',
+            locale: <?= $this->locale ?>,
             initialDate: '<?= $this->initialDate ?>',
             headerToolbar: {
                 left: 'prev,next today',

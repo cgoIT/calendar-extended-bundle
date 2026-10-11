@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Module;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Contao\BackendTemplate;
 use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\Date;
@@ -196,7 +197,8 @@ class ModuleFullCalendar extends Events
 
         // Set some fullcalendar options
         $objTemplate->url = '/fullcalendar/fetchEvents/'.$objPage->id.'/'.$this->id;
-        $objTemplate->locale = $GLOBALS['TL_LANGUAGE'];
+        $objTemplate->locale = json_encode(Utils::getFullCalendarLocales((string) $GLOBALS['TL_LANGUAGE']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        $objTemplate->moduleId = $this->id;
         $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
         $objTemplate->firstDay = $this->cal_startDay;
 

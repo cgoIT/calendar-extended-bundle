@@ -73,6 +73,29 @@ class Utils
     }
 
     /**
+     * Maps a Contao language (e.g. "de", "de_CH", "pt_BR") to the list of locale codes of FullCalendar in
+     * order of preference (e.g. ["de-ch", "de"]). FullCalendar uses the first locale that is available.
+     *
+     * @return array<string>
+     */
+    public static function getFullCalendarLocales(string $language): array
+    {
+        $locale = strtolower(str_replace('_', '-', trim($language)));
+
+        if ('' === $locale) {
+            return ['en'];
+        }
+
+        $locales = [$locale];
+
+        if (str_contains($locale, '-')) {
+            $locales[] = explode('-', $locale)[0];
+        }
+
+        return $locales;
+    }
+
+    /**
      * Appends the parameters "day" and "times" (the concrete occurrence of a recurring event) to an event URL.
      *
      * The URL may already contain a query string or a fragment. It is a plain URL (parameters separated
