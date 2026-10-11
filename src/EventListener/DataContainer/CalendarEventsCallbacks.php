@@ -119,7 +119,7 @@ class CalendarEventsCallbacks extends Backend
         }
 
         // Check if we have time overlapping events
-        $uniqueEvents = CalendarModel::findById($activeRecord->pid)->uniqueEvents;
+        $uniqueEvents = CalendarModel::findById($activeRecord->pid)?->uniqueEvents;
 
         if ($uniqueEvents) {
             // array for events

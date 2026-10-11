@@ -152,7 +152,7 @@ class GetAllEventsHook
                         $filter = [];
 
                         foreach ($arrFilterFields as $field) {
-                            $filter[$field] = $event[$field];
+                            $filter[$field] = $event[$field] ?? null;
                         }
 
                         $event['filter_data'] = json_encode($filter, JSON_FORCE_OBJECT);
@@ -546,11 +546,17 @@ class GetAllEventsHook
         global $objPage;
 
         if (empty($objPage)) {
-            System::getContainer()->get('request_stack')->getCurrentRequest();
-            $rootPage = PageModel::findPublishedFallbackByHostname(
-                System::getContainer()->get('request_stack')->getCurrentRequest()->getHost(),
+            $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+            $rootPage = null === $request ? null : PageModel::findPublishedFallbackByHostname(
+                $request->getHost(),
                 ['fallbackToEmpty' => true],
             );
+
+            // Without a page the date and time formats are not available
+            if (null === $rootPage) {
+                return;
+            }
+
             $objPage = $rootPage->loadDetails();
         }
 

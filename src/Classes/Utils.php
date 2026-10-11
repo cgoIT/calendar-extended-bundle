@@ -35,6 +35,11 @@ class Utils
         foreach ($arrCalendar as $cal) {
             $objCalendar = CalendarModel::findById($cal);
 
+            // the calendar might have been deleted
+            if (null === $objCalendar) {
+                continue;
+            }
+
             $calConf[$cal]['calendar'] = $objCalendar->title;
 
             if (!empty($objCalendar->bg_color)) {

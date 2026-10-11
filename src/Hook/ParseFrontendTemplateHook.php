@@ -47,6 +47,11 @@ class ParseFrontendTemplateHook extends Controller
             // Get the current event
             $objEvent = CalendarEventsModel::findPublishedByParentAndIdOrAlias(Input::get('auto_item'), $template->cal_calendar);
 
+            if (null === $objEvent) {
+                // Unknown or unpublished event, leave the output of the core module untouched
+                return $buffer;
+            }
+
             $objTemplate = new FrontendTemplate($template->cal_template ?: 'event_full');
             $objTemplate->setData($objEvent->row());
             $objTemplate->class = $objEvent->cssClass ? ' '.trim($objEvent->cssClass) : '';
