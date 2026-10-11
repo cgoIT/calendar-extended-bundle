@@ -16,6 +16,7 @@ namespace Cgoit\CalendarExtendedBundle\Tests\Support;
 
 use Contao\CalendarEventsModel;
 use Contao\Model;
+use Contao\ModuleModel;
 use Contao\PageModel;
 
 /**
@@ -39,6 +40,14 @@ final class Models
     public static function page(array $row): PageModel
     {
         return self::fill((new \ReflectionClass(PageModel::class))->newInstanceWithoutConstructor(), $row);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    public static function module(array $row): ModuleModel
+    {
+        return self::fill((new \ReflectionClass(ModuleModel::class))->newInstanceWithoutConstructor(), $row);
     }
 
     /**
