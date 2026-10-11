@@ -222,7 +222,7 @@ class ModuleFullCalendar extends Events
             $businessHours->startTime = date('H:i', $this->businessDayStart);
             $businessHours->endTime = date('H:i', $this->businessDayEnd);
 
-            $objTemplate->businessHours = json_encode($businessHours);
+            $objTemplate->businessHours = json_encode($businessHours, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
         }
 
         $objTemplate->weekNumbers = $this->weekNumbers;

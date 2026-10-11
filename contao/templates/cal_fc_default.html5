@@ -1,12 +1,15 @@
-<div id="calendar-<?= $this->moduleId ?>" class="calendar" style="margin:auto 25px;"></div>
+<?php
+$js = static fn ($value): string => json_encode($value, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
+?>
+<div id="calendar-<?= (int) $this->moduleId ?>" class="calendar" style="margin:auto 25px;"></div>
 
 <script type="application/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        const calendarEl = document.getElementById('calendar-<?= $this->moduleId ?>');
+        const calendarEl = document.getElementById('calendar-<?= (int) $this->moduleId ?>');
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             locale: <?= $this->locale ?>,
-            initialDate: '<?= $this->initialDate ?>',
+            initialDate: <?= $js($this->initialDate) ?>,
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -16,23 +19,23 @@
             editable: false,
             dayMaxEvents: true,
             timeZone: 'local',
-            initialView: '<?= $this->initialView ?>',
-            weekNumbers: '<?= $this->weekNumbers ?>',
+            initialView: <?= $js($this->initialView) ?>,
+            weekNumbers: <?= $js((bool) $this->weekNumbers) ?>,
             weekNumberCalculation: 'ISO',
-            firstDay: '<?= $this->firstDay ?>',
+            firstDay: <?= $js((int) $this->firstDay) ?>,
             <?php if (!empty($this->businessHours)): ?>
             businessHours: <?= $this->businessHours ?>,
             <?php endif; ?>
             eventSources: [{
-                url: '<?= $this->url ?>',
+                url: <?= $js($this->url) ?>,
                 method: 'POST',
                 extraParams: function () {
                     return {
-                        REQUEST_TOKEN: "<?= $this->requestToken ?>",
+                        REQUEST_TOKEN: <?= $js($this->requestToken) ?>,
                     }
                 },
                 failure: function () {
-                    alert('<?= $this->fetch_error ?>');
+                    alert(<?= $js($this->fetch_error) ?>);
                 }
             }],
 
