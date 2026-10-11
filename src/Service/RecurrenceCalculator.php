@@ -191,12 +191,8 @@ class RecurrenceCalculator
                     $arrRange = StringUtil::deserialize($record['repeatEach']);
 
                     if (isset($arrRange['unit'], $arrRange['value'])) {
-                        $arg = $arrRange['value'] * $record['recurrences'];
-                        $unit = $arrRange['unit'];
-
-                        $strtotime = '+ '.$arg.' '.$unit;
                         // endTime is only set in $arrSet when the end time is ignored
-                        $arrSet['repeatEnd'] = strtotime($strtotime, (int) ($arrSet['endTime'] ?? $record['endTime']));
+                        $arrSet['repeatEnd'] = $this->addInterval((int) ($arrSet['endTime'] ?? $record['endTime']), (int) $arrRange['value'] * (int) $record['recurrences'], (string) $arrRange['unit']);
                     }
                 }
             }
@@ -219,10 +215,13 @@ class RecurrenceCalculator
             // last date of the recurrences
             $end = $arrSet['repeatEnd'];
 
+            $step = 0;
+
             while ($next <= $end) {
-                $timetoadd = '+ '.$arrRange['value'].' '.$arrRange['unit'];
-                $candidate = strtotime($timetoadd, $next);
-                $candidateEnd = strtotime($timetoadd, $nextEnd);
+                // Always calculate from the start, otherwise the day of the month drifts (31st -> 3rd, see addInterval())
+                ++$step;
+                $candidate = $this->addInterval($intStart, $step * (int) $arrRange['value'], (string) $arrRange['unit']);
+                $candidateEnd = $this->addInterval($intEnd, $step * (int) $arrRange['value'], (string) $arrRange['unit']);
 
                 // Check if we are at the end
                 if (false === $candidate || false === $candidateEnd) {
@@ -297,70 +296,42 @@ class RecurrenceCalculator
                 // array of all recurrences
                 $arrAllRecurrences[$next] = $this->getRecurrenceArray($next, $nextEnd);
 
-                if ($count > 0) {
-                    for ($i = 0; $i < $count; ++$i) {
-                        ++$month;
+                // Count the occurrences, not the months: months without the weekday (e.g. a fifth Monday) have no occurrence
+                $limit = $count > 0 ? $count : PHP_INT_MAX;
+                $found = 0;
+                $misses = 0;
 
-                        if (0 === $month % 13) {
-                            $month = 1;
-                            ++$year;
-                        }
+                // A weekday occurs in at least every third month, so this only guards against endless loops
+                while ($found < $limit && $misses < 12) {
+                    ++$month;
 
-                        $timetoadd = $arg.' '.$unit.' of '.self::MONTHS[$month - 1].' '.$year;
-                        $strtotime = strtotime($timetoadd, $next);
-
-                        if (false === $strtotime) {
-                            break;
-                        }
-
-                        $next = Utils::parseTime(date('Y-m-d', $strtotime).' '.date('H:i', $record['startTime']));
-
-                        // array of all recurrences
-                        $nextEnd = $next + $eventDuration;
-                        $arrAllRecurrences[$next] = $this->getRecurrenceArray($next, $nextEnd);
-
-                        // check if have the configured max value
-                        if (\count($arrAllRecurrences) === $this->maxRepeatCount) {
-                            break;
-                        }
+                    if ($month > 12) {
+                        $month = 1;
+                        ++$year;
                     }
-                    $arrSet['repeatEnd'] = $next;
-                } else {
-                    $arrSet['repeatEnd'] = min(4294967295, PHP_INT_MAX);
-                    $end = $arrSet['repeatEnd'];
 
-                    while ($next <= $end) {
-                        $timetoadd = $arg.' '.$unit.' of '.self::MONTHS[$month - 1].' '.$year;
-                        $strtotime = strtotime($timetoadd, $next);
+                    $date = $this->findWeekdayOfMonth((string) $arg, (string) $unit, $month, $year);
 
-                        if (false === $strtotime) {
-                            break;
-                        }
+                    if (null === $date) {
+                        ++$misses;
 
-                        $next = Utils::parseTime(date('Y-m-d', $strtotime).' '.date('H:i', $record['startTime']));
+                        continue;
+                    }
 
-                        $strtotime = strtotime($timetoadd, $nextEnd);
+                    $misses = 0;
+                    ++$found;
 
-                        if (false === $strtotime) {
-                            break;
-                        }
+                    $next = Utils::parseTime($date.' '.date('H:i', $record['startTime']));
+                    $nextEnd = $next + $eventDuration;
+                    $arrAllRecurrences[$next] = $this->getRecurrenceArray($next, $nextEnd);
 
-                        $nextEnd = Utils::parseTime(date('Y-m-d', $strtotime).' '.date('H:i', $record['endTime']));
-                        $arrAllRecurrences[$next] = $this->getRecurrenceArray($next, $nextEnd);
-
-                        ++$month;
-
-                        if (0 === $month % 13) {
-                            $month = 1;
-                            ++$year;
-                        }
-
-                        // check if we reached the configured max value
-                        if (\count($arrAllRecurrences) === $this->maxRepeatCount) {
-                            break;
-                        }
+                    // check if we reached the configured max value
+                    if (\count($arrAllRecurrences) === $this->maxRepeatCount) {
+                        break;
                     }
                 }
+
+                $arrSet['repeatEnd'] = $count > 0 ? $next : min(4294967295, PHP_INT_MAX);
 
                 $maxRepeatEnd[] = $arrSet['repeatEnd'];
             }
@@ -597,5 +568,40 @@ class RecurrenceCalculator
         }
 
         return $arrRecurrence;
+    }
+
+    /**
+     * Adds the interval to the time. Months and years are calculated from the given time and keep its day of the
+     * month; if the target month is shorter, the last day of the month is used (31st of January + 1 month = 28th of February).
+     */
+    private function addInterval(int $time, int $amount, string $unit): int|false
+    {
+        if (!\in_array($unit, ['months', 'years'], true)) {
+            return strtotime('+ '.$amount.' '.$unit, $time);
+        }
+
+        $months = 'years' === $unit ? $amount * 12 : $amount;
+        $date = (new \DateTimeImmutable('@'.$time))->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+        $target = $date->modify('first day of this month')->modify(\sprintf('%+d months', $months));
+        $day = min((int) $date->format('j'), (int) $target->format('t'));
+
+        return $target->setDate((int) $target->format('Y'), (int) $target->format('n'), $day)->getTimestamp();
+    }
+
+    /**
+     * The date (Y-m-d) of the weekday in the given month, e.g. "first monday" or "last friday".
+     *
+     * @return string|null null if the month has no such day (e.g. no fifth Monday)
+     */
+    private function findWeekdayOfMonth(string $position, string $weekday, int $month, int $year): string|null
+    {
+        $timestamp = strtotime($position.' '.$weekday.' of '.self::MONTHS[$month - 1].' '.$year);
+
+        // strtotime() moves a missing day to the following month
+        if (false === $timestamp || (int) date('n', $timestamp) !== $month) {
+            return null;
+        }
+
+        return date('Y-m-d', $timestamp);
     }
 }
