@@ -537,9 +537,7 @@ class CalendarEventsCallbacks extends Backend
                     $end = $arrSet['repeatEnd'];
 
                     while ($next <= $end) {
-                        System::loadLanguageFile('default', 'en', true);
-                        $timetoadd = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
-                        System::loadLanguageFile('default');
+                        $timetoadd = $arg.' '.$unit.' of '.$this->arrMonths[$month - 1].' '.$year;
                         $strtotime = strtotime($timetoadd, $next);
 
                         if (false === $strtotime) {
@@ -610,9 +608,9 @@ class CalendarEventsCallbacks extends Backend
      */
     private function checkExceptionsByInterval(Result|\stdClass $activeRecord, array $exceptionRows, int $intStart, int $intRepeatEnd): array
     {
-        if ($activeRecord->repeatExceptionsInt && $activeRecord->weekday) {
-            // weekday
-            $unit = $this->arrDays[$activeRecord->weekday];
+        if (!empty($activeRecord->repeatExceptionsInt)) {
+            // weekday of the event, derived from the current start date (0 = Sunday)
+            $unit = $this->arrDays[(int) date('w', $activeRecord->startDate)];
 
             // exception rules
             $rows = StringUtil::deserialize($activeRecord->repeatExceptionsInt, true);
@@ -632,9 +630,7 @@ class CalendarEventsCallbacks extends Backend
                 $year = (int) date('Y', $searchNext);
 
                 while ($searchNext <= $searchEnd) {
-                    System::loadLanguageFile('default', 'en', true);
-                    $strDateToFind = $arg.' '.$unit.' of '.$GLOBALS['TL_LANG']['MONTHS'][$month - 1].' '.$year;
-                    System::loadLanguageFile('default');
+                    $strDateToFind = $arg.' '.$unit.' of '.$this->arrMonths[$month - 1].' '.$year;
 
                     $strDateToFind = strtotime($strDateToFind);
                     $searchNext = strtotime(date('Y-m-d', $strDateToFind).' '.date('H:i', $intStart));

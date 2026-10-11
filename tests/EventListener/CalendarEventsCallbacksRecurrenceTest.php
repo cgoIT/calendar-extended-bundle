@@ -24,6 +24,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class CalendarEventsCallbacksRecurrenceTest extends TestCase
 {
+    private const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
     private const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     /**
@@ -360,6 +362,71 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertCount(2, unserialize($set['exceptionList']));
     }
 
+    public function testExceptionByIntervalForWeekdayOfEvent(): void
+    {
+        // Monday 2025-03-03: first Monday of the month, 5 recurrences
+        $event = $this->dailyEvent([
+            'recurring' => 0,
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+            'recurrences' => 5,
+            'useExceptions' => 1,
+            'repeatExceptionsInt' => serialize([
+                ['exception' => 'second', 'action' => 'hide', 'new_exception' => '', 'new_start' => '', 'new_end' => ''],
+            ]),
+        ]);
+
+        [, $set] = $this->calculate($event);
+
+        // The second Monday of every month from March to August (the last extended recurrence)
+        $this->assertSame($this->times('2025-03-10', '2025-04-14', '2025-05-12', '2025-06-09', '2025-07-14', '2025-08-11'), \array_slice(array_keys(unserialize($set['exceptionList'])), 0, 6));
+    }
+
+    public function testExceptionByIntervalForSundayEvent(): void
+    {
+        // Sunday 2025-03-02: the weekday 0 must not be treated as "no weekday"
+        $event = $this->dailyEvent([
+            'startDate' => strtotime('2025-03-02'),
+            'endDate' => strtotime('2025-03-02'),
+            'startTime' => strtotime('2025-03-02 09:00'),
+            'endTime' => strtotime('2025-03-02 10:00'),
+            'recurring' => 0,
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'sunday']),
+            'recurrences' => 3,
+            'useExceptions' => 1,
+            // Stale value of the previous save, the current weekday must be derived from the start date
+            'weekday' => 0,
+            'repeatExceptionsInt' => serialize([
+                ['exception' => 'second', 'action' => 'hide', 'new_exception' => '', 'new_start' => '', 'new_end' => ''],
+            ]),
+        ]);
+
+        [, $set] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-09', '2025-04-13', '2025-05-11'), \array_slice(array_keys(unserialize($set['exceptionList'])), 0, 3));
+    }
+
+    public function testExceptionByIntervalIgnoresStoredWeekday(): void
+    {
+        // A new event has no (or an outdated) weekday value yet
+        $event = $this->dailyEvent([
+            'recurring' => 0,
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+            'recurrences' => 2,
+            'useExceptions' => 1,
+            'weekday' => null,
+            'repeatExceptionsInt' => serialize([
+                ['exception' => 'second', 'action' => 'hide', 'new_exception' => '', 'new_start' => '', 'new_end' => ''],
+            ]),
+        ]);
+
+        [, $set] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-10', '2025-04-14'), \array_slice(array_keys(unserialize($set['exceptionList'])), 0, 2));
+    }
+
     public function testIgnoreEndTimeSetsEndTimeToEndDateWithStartTime(): void
     {
         // Event spans 2025-03-03 to 2025-03-05, starts at 09:00, the end time is ignored
@@ -490,6 +557,7 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $callbacks = $reflection->newInstanceWithoutConstructor();
 
         $reflection->getProperty('arrMonths')->setValue($callbacks, self::MONTHS);
+        $reflection->getProperty('arrDays')->setValue($callbacks, self::DAYS);
         $reflection->getProperty('maxRepeatCount')->setValue($callbacks, $maxRepeatCount);
         $reflection->getProperty('maxExceptionsCount')->setValue($callbacks, $maxExceptionsCount);
 
