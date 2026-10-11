@@ -2,7 +2,14 @@ name: CI
 
 on:
     pull_request: ~
-    push: ~
+    push:
+        branches:
+            - main
+
+# Cancel runs that are superseded by a newer push to the same branch or pull request
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 permissions: read-all
 
@@ -52,3 +59,6 @@ jobs:
 
             -   name: Install the dependencies
                 run: composer install --no-interaction --no-progress
+
+            -   name: Run the tests
+                run: composer run tests
