@@ -45,6 +45,17 @@ Contao 5 support
 Starting with version 2 of this bundle only Contao 5.3 and newer is supported. Many things have been refactored in this version, many classes have been split or moved and the complete approach of handling things has changed. Therefore, the chance that something does not yet work 100% is quite high. Contao 4 is no longer supported by version 2; Contao 4 users have to stay on version 1.
 
 
+Recurrences are pre-calculated
+------------------------------
+
+The dates of a recurring event are calculated when the event is saved in the back end, not when it is shown. After an update of this bundle that changes how dates are calculated, existing events keep their old dates until you open and save them again.
+
+Two things changed in the calculation (events have to be saved again to get the new dates):
+
+- **Monthly and yearly repetition on a day that not every month has** (29th, 30th, 31st, 29 February): the day is now calculated from the start date of the event and the last day of a shorter month is used. An event starting on 31 January and repeating every month now takes place on 31 January, 28 February, 31 March, 30 April, ... Before, the date drifted: 31 January, 3 March, 3 April, 3 May, ... (the core calendar of Contao still behaves like that).
+- **Extended repetition with "fifth" weekday** (e.g. "every fifth Monday of the month"): months without a fifth Monday have no date. Before, the first weekday of the following month was used instead. The number of repetitions now counts dates, not months, so "3 repetitions" always results in three additional dates.
+
+
 Configuration
 -------------
 
