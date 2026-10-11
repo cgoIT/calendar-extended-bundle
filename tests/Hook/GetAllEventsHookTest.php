@@ -54,6 +54,23 @@ final class GetAllEventsHookTest extends TestCase
         $this->assertSame(['Holiday', 'Fair'], array_column($events[1741000000], 'title'));
     }
 
+    public function testHolidayHidesEventsWithDifferentStartTimesOfTheSameDay(): void
+    {
+        // All day holiday event at 00:00, concert at 09:00 and an event that stays visible at 12:00
+        $events = $this->hideEventsDuringHolidays(
+            [
+                1740960000 => [['pid' => '5', 'title' => 'Holiday']],
+                1740992400 => [['pid' => '7', 'title' => 'Concert']],
+                1741003200 => [['pid' => '7', 'title' => 'Fair', 'showOnFreeDay' => 1]],
+            ],
+            [5],
+        );
+
+        $this->assertSame(['Holiday'], array_column($events[1740960000], 'title'));
+        $this->assertSame([], $events[1740992400]);
+        $this->assertSame(['Fair'], array_column($events[1741003200], 'title'));
+    }
+
     public function testEventsAreKeptOnDaysWithoutHoliday(): void
     {
         $events = $this->hideEventsDuringHolidays([1741000000 => [['pid' => '7', 'title' => 'Concert']]], [5]);

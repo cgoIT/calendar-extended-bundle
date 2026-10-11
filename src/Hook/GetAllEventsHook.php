@@ -432,20 +432,37 @@ class GetAllEventsHook
     {
         if (!empty($arrHolidayCalendars)) {
             foreach ($arrEvents as &$eventsOnDay) {
-                foreach ($eventsOnDay as &$events) {
-                    // The pid might be a string, depending on the database driver
-                    $eventPids = array_map(intval(...), array_column($events, 'pid'));
-                    $dayIsAHoliday = !empty(array_filter($eventPids, static fn (int $pid) => \in_array($pid, $arrHolidayCalendars, true)));
+                // The events are grouped by start time, but a holiday affects the whole day.
+                // The pid might be a string, depending on the database driver.
+                $dayIsAHoliday = false;
 
+                foreach ($eventsOnDay as $events) {
+                    foreach ($events as $event) {
+                        if (\in_array((int) $event['pid'], $arrHolidayCalendars, true)) {
+                            $dayIsAHoliday = true;
+                            break 2;
+                        }
+                    }
+                }
+
+                if (!$dayIsAHoliday) {
+                    continue;
+                }
+
+                foreach ($eventsOnDay as &$events) {
                     foreach ($events as $pos => $event) {
                         $isHolidayEvent = \in_array((int) $event['pid'], $arrHolidayCalendars, true);
 
-                        if (!$isHolidayEvent && $dayIsAHoliday && empty($event['showOnFreeDay'])) {
+                        if (!$isHolidayEvent && empty($event['showOnFreeDay'])) {
                             unset($events[$pos]);
                         }
                     }
                 }
+
+                unset($events);
             }
+
+            unset($eventsOnDay);
         }
 
         return $arrEvents;
