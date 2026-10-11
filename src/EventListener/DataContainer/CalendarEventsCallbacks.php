@@ -80,7 +80,6 @@ class CalendarEventsCallbacks
         }
 
         // The submitted values are not yet part of the record
-        // @phpstan-ignore-next-line
         $record = array_merge((array) $dc->getCurrentRecord(), $values);
 
         // Return if the event is recurring
@@ -147,7 +146,6 @@ class CalendarEventsCallbacks
             return;
         }
 
-        // @phpstan-ignore-next-line
         $record = (array) $dc->getCurrentRecord();
 
         // Return if no start date has been set yet
@@ -186,7 +184,6 @@ class CalendarEventsCallbacks
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onbeforesubmit')]
     public function checkRecurrenceTypes(array $values, DataContainer $dc): array
     {
-        // @phpstan-ignore-next-line
         $record = array_merge((array) $dc->getCurrentRecord(), $values);
 
         if (!empty($record['recurring']) && !empty($record['recurringExt'])) {
@@ -201,7 +198,7 @@ class CalendarEventsCallbacks
     {
         if (empty($value)) {
             $weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-            $startDate = (int) ($dc->getCurrentRecord()['startDate'] ?? 0); // @phpstan-ignore-line
+            $startDate = (int) ($dc->getCurrentRecord()['startDate'] ?? 0);
 
             // Pre-select "first <weekday of the event>"
             $value = serialize(['value' => 'first', 'unit' => $weekdays[$startDate > 0 ? (int) date('w', $startDate) : 1]]);

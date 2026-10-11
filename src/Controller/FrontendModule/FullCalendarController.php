@@ -23,6 +23,7 @@ use Contao\Date;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
+use Contao\System;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -113,6 +114,9 @@ class FullCalendarController extends AbstractCalendarViewController
                 'endTime' => date('H:i', (int) $model->businessDayEnd),
             ];
         }
+
+        // The module labels are not part of the default language file
+        System::loadLanguageFile('tl_module');
 
         // The options are passed as data attribute and read by fullcalendar.js
         return $this->renderCalendar(

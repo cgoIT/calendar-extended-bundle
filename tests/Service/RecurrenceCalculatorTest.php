@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Tests\Service;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Service\RecurrenceCalculator;
 use PHPUnit\Framework\TestCase;
 
@@ -526,6 +527,6 @@ final class RecurrenceCalculatorTest extends TestCase
      */
     private function times(string ...$dates): array
     {
-        return array_map(static fn (string $date): int => strtotime($date.' 09:00'), $dates);
+        return array_map(static fn (string $date): int => Utils::parseTime($date.' 09:00'), $dates);
     }
 }

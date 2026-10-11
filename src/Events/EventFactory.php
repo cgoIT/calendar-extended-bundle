@@ -19,10 +19,12 @@ use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\ContentModel;
 use Contao\Controller;
+use Contao\CoreBundle\Routing\ContentUrlGenerator;
 use Contao\Date;
 use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -30,6 +32,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class EventFactory
 {
+    public function __construct(
+        #[Autowire(service: 'contao.routing.content_url_generator')]
+        private readonly ContentUrlGenerator $urlGenerator,
+    ) {
+    }
+
     /**
      * @param array<mixed> $arrEvents
      *
@@ -87,10 +95,7 @@ class EventFactory
         $arrEvent['link'] = $objEvent->title;
         $arrEvent['target'] = '';
         $arrEvent['title'] = StringUtil::specialchars($objEvent->title, true);
-        $arrEvent['href'] = System::getContainer()
-            ->get('contao.routing.content_url_generator')
-            ->generate($objEvent, [], UrlGeneratorInterface::ABSOLUTE_PATH)
-        ;
+        $arrEvent['href'] = $this->urlGenerator->generate($objEvent, [], UrlGeneratorInterface::ABSOLUTE_PATH);
         $arrEvent['class'] = $objEvent->cssClass ? ' '.$objEvent->cssClass : '';
         $arrEvent['recurring'] = $recurring;
         $arrEvent['until'] = $until;

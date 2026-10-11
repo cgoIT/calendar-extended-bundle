@@ -115,6 +115,38 @@ class Utils
     }
 
     /**
+     * Like strtotime(), but fails with an exception instead of returning false.
+     *
+     * @throws \InvalidArgumentException if the string is not a valid date and time
+     */
+    public static function parseTime(string $datetime, int|null $baseTimestamp = null): int
+    {
+        $timestamp = strtotime($datetime, $baseTimestamp ?? time());
+
+        if (false === $timestamp) {
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid date and time.', $datetime));
+        }
+
+        return $timestamp;
+    }
+
+    /**
+     * Like mktime(), but fails with an exception instead of returning false.
+     *
+     * @throws \InvalidArgumentException if the values do not result in a valid time
+     */
+    public static function makeTime(int $hour, int $minute, int $second, int $month, int $day, int $year): int
+    {
+        $timestamp = mktime($hour, $minute, $second, $month, $day, $year);
+
+        if (false === $timestamp) {
+            throw new \InvalidArgumentException(\sprintf('%d-%d-%d %d:%d:%d is not a valid date and time.', $year, $month, $day, $hour, $minute, $second));
+        }
+
+        return $timestamp;
+    }
+
+    /**
      * Calculates the start and end of a moved occurrence of an event.
      *
      * The dates are always handled in the ISO format, so the result does not depend on the date format of the page.
@@ -132,13 +164,13 @@ class Utils
     public static function calculateMovedTimes(int $occurrenceStart, int $duration, string $move, string|null $newStart = null, string|null $newEnd = null, int $endDayOffset = 0): array
     {
         if (null !== $newStart && null !== $newEnd && '' !== $newStart && '' !== $newEnd) {
-            $start = strtotime($move, strtotime(date('Y-m-d', $occurrenceStart).' '.$newStart));
+            $start = self::parseTime($move, self::parseTime(date('Y-m-d', $occurrenceStart).' '.$newStart));
             $endDate = (new \DateTimeImmutable(date('Y-m-d', $start)))->modify('+'.max(0, $endDayOffset).' days')->format('Y-m-d');
 
-            return [$start, strtotime($endDate.' '.$newEnd)];
+            return [$start, self::parseTime($endDate.' '.$newEnd)];
         }
 
-        $start = strtotime($move, $occurrenceStart);
+        $start = self::parseTime($move, $occurrenceStart);
 
         return [$start, $start + $duration];
     }
@@ -154,7 +186,9 @@ class Utils
             return $event['link'];
         }
 
-        return StringUtil::decodeEntities((string) ($event['title'] ?? ''));
+        $title = StringUtil::decodeEntities((string) ($event['title'] ?? ''));
+
+        return \is_string($title) ? $title : '';
     }
 
     /**
@@ -162,7 +196,9 @@ class Utils
      */
     public static function getPlainTeaser(mixed $teaser): string
     {
-        return trim(StringUtil::decodeEntities(strip_tags((string) $teaser)));
+        $text = StringUtil::decodeEntities(strip_tags((string) $teaser));
+
+        return \is_string($text) ? trim($text) : '';
     }
 
     /**
@@ -177,15 +213,15 @@ class Utils
         $startDate = (int) $record['startDate'];
         $endDate = !empty($record['endDate']) && (int) $record['endDate'] > $startDate ? (int) $record['endDate'] : $startDate;
 
-        $start = strtotime(date('Y-m-d', $startDate).' 00:00');
-        $end = strtotime(date('Y-m-d', $endDate).' 23:59');
+        $start = self::parseTime(date('Y-m-d', $startDate).' 00:00');
+        $end = self::parseTime(date('Y-m-d', $endDate).' 23:59');
 
         if (!empty($record['addTime'])) {
             $startTime = (int) ($record['startTime'] ?? 0);
             $endTime = !empty($record['endTime']) ? (int) $record['endTime'] : $startTime;
 
-            $start = strtotime(date('Y-m-d', $startDate).' '.date('H:i:s', $startTime));
-            $end = strtotime(date('Y-m-d', $endDate).' '.date('H:i:s', $endTime));
+            $start = self::parseTime(date('Y-m-d', $startDate).' '.date('H:i:s', $startTime));
+            $end = self::parseTime(date('Y-m-d', $endDate).' '.date('H:i:s', $endTime));
         }
 
         return [$start, $end];
@@ -213,7 +249,7 @@ class Utils
     /**
      * Returns the IDs of the events that overlap the given time range.
      *
-     * @param iterable<array{id: int|string, startTime: int|string, endTime: int|string}> $events the events to compare with
+     * @param iterable<array<string, mixed>> $events the events to compare with (rows of tl_calendar_events)
      *
      * @return array<int>
      */

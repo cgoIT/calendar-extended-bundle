@@ -46,9 +46,12 @@ class Plugin implements BundlePluginInterface, RoutingPluginInterface
 
     public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel)
     {
-        return $resolver
-            ->resolve('@CgoitCalendarExtendedBundle/src/Controller/Route')
-            ->load('@CgoitCalendarExtendedBundle/src/Controller/Route')
-        ;
+        $loader = $resolver->resolve('@CgoitCalendarExtendedBundle/src/Controller/Route');
+
+        if (false === $loader) {
+            throw new \RuntimeException('The routes of the CgoitCalendarExtendedBundle cannot be loaded.');
+        }
+
+        return $loader->load('@CgoitCalendarExtendedBundle/src/Controller/Route');
     }
 }

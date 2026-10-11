@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\FrontendModule;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsFrontendModule;
 use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\CoreBundle\Twig\FragmentTemplate;
@@ -49,7 +50,7 @@ class YearViewController extends AbstractCalendarViewController
 
         // Create the date object
         try {
-            $timeStamp = \is_string($year) ? strtotime($year.'-01-01') : false;
+            $timeStamp = \is_string($year) ? Utils::parseTime($year.'-01-01') : false;
             $date = false !== $timeStamp ? new Date($timeStamp) : new Date();
         } catch (\OutOfBoundsException) {
             throw new PageNotFoundException('Page not found: '.$request->getUri());
@@ -157,22 +158,22 @@ class YearViewController extends AbstractCalendarViewController
         $arrDays = [];
 
         // Get all events
-        $arrAllEvents = $this->eventsProvider->getAllEvents($model, $calendars, mktime(0, 0, 0, 1, 1, $currYear), mktime(23, 59, 59, 12, 31, $currYear));
+        $arrAllEvents = $this->eventsProvider->getAllEvents($model, $calendars, Utils::makeTime(0, 0, 0, 1, 1, $currYear), Utils::makeTime(23, 59, 59, 12, 31, $currYear));
 
         for ($m = 1; $m <= 12; ++$m) {
             for ($d = 1; $d <= 31; ++$d) {
                 if (checkdate($m, $d, $currYear)) {
-                    $day = mktime(12, 00, 00, $m, $d, $currYear);
+                    $day = Utils::makeTime(12, 00, 00, $m, $d, $currYear);
 
                     $intCurrentDay = (int) date('w', $day);
 
-                    $intKey = date('Ymd', strtotime(date('Y-m-d', $day)));
-                    $currDay = Date::parse($page->dateFormat, strtotime(date('Y-m-d', $day)));
+                    $intKey = date('Ymd', Utils::parseTime(date('Y-m-d', $day)));
+                    $currDay = Date::parse($page->dateFormat, Utils::parseTime(date('Y-m-d', $day)));
                     $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
                     $class .= 0 === $d % 2 ? ' even' : ' odd';
                     $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
 
-                    if ($currDay === Date::parse($page->dateFormat, strtotime(date('Y-m-d')))) {
+                    if ($currDay === Date::parse($page->dateFormat, Utils::parseTime(date('Y-m-d')))) {
                         $class .= ' today';
                     }
 

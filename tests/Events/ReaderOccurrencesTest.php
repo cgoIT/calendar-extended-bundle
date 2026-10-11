@@ -23,12 +23,16 @@ final class ReaderOccurrencesTest extends TestCase
     {
         $next = ReaderOccurrences::next($this->recurrences(), 150);
 
+        $this->assertNotNull($next);
         $this->assertSame(200, $next['int_start']);
     }
 
     public function testNextIncludesAnOccurrenceThatStartsNow(): void
     {
-        $this->assertSame(200, ReaderOccurrences::next($this->recurrences(), 200)['int_start']);
+        $next = ReaderOccurrences::next($this->recurrences(), 200);
+
+        $this->assertNotNull($next);
+        $this->assertSame(200, $next['int_start']);
     }
 
     public function testNextIsNullWithoutUpcomingOccurrences(): void
@@ -39,7 +43,10 @@ final class ReaderOccurrencesTest extends TestCase
 
     public function testNextIgnoresTheOrderOfTheRecurrences(): void
     {
-        $this->assertSame(200, ReaderOccurrences::next([300 => ['int_start' => 300, 'int_end' => 310], 200 => ['int_start' => 200, 'int_end' => 210]], 150)['int_start']);
+        $next = ReaderOccurrences::next([300 => ['int_start' => 300, 'int_end' => 310], 200 => ['int_start' => 200, 'int_end' => 210]], 150);
+
+        $this->assertNotNull($next);
+        $this->assertSame(200, $next['int_start']);
     }
 
     public function testUpcomingAreLimitedAndExcludeTheShownOccurrence(): void

@@ -404,6 +404,24 @@ final class UtilsTest extends TestCase
         );
     }
 
+    public function testParseTimeReturnsTheTimestamp(): void
+    {
+        $this->assertSame(strtotime('2025-03-03 09:00'), Utils::parseTime('2025-03-03 09:00'));
+        $this->assertSame(strtotime('2025-03-05 09:00'), Utils::parseTime('+2 days', strtotime('2025-03-03 09:00')));
+    }
+
+    public function testParseTimeFailsForInvalidValues(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Utils::parseTime('not a date');
+    }
+
+    public function testMakeTimeReturnsTheTimestamp(): void
+    {
+        $this->assertSame(strtotime('2025-03-03 09:30:15'), Utils::makeTime(9, 30, 15, 3, 3, 2025));
+    }
+
     /**
      * Contao models need a booted container, so the magic accessors are mocked.
      *

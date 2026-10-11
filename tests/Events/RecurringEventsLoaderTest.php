@@ -17,6 +17,7 @@ namespace Cgoit\CalendarExtendedBundle\Tests\Events;
 use Cgoit\CalendarExtendedBundle\Events\EventContext;
 use Cgoit\CalendarExtendedBundle\Events\EventFactory;
 use Cgoit\CalendarExtendedBundle\Events\RecurringEventsLoader;
+use Contao\CoreBundle\Routing\ContentUrlGenerator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +28,7 @@ final class RecurringEventsLoaderTest extends TestCase
     {
         $events = ['20250303' => [1741000000 => [['title' => 'Concert']]]];
 
-        $result = (new RecurringEventsLoader(new EventFactory()))->{$method}($events, new EventContext(start: 0, end: 1));
+        $result = (new RecurringEventsLoader(new EventFactory($this->createStub(ContentUrlGenerator::class))))->{$method}($events, new EventContext(start: 0, end: 1));
 
         $this->assertSame($events, $result);
     }

@@ -106,7 +106,7 @@ class CalendarEventsMCWCallbacks
             $start = strtotime((string) $start);
             $end = strtotime((string) $end);
 
-            while ($start <= $end) {
+            while (false !== $start && false !== $end && $start <= $end) {
                 $newTime = Date::parse(Config::get('timeFormat'), $start);
                 $arrSource4[$newTime] = $newTime;
                 $start = strtotime('+ '.$interval.' minutes', $start);

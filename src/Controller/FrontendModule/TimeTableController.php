@@ -72,9 +72,9 @@ class TimeTableController extends AbstractCalendarViewController
         [$weekBegin, $weekEnd] = $this->getWeekStartAndEnd($intYear, $intWeek);
 
         // Get total count of weeks of the year
-        $weeksTotal = date('W', mktime(0, 0, 0, 12, 31, $intYear));
+        $weeksTotal = date('W', Utils::makeTime(0, 0, 0, 12, 31, $intYear));
         if ('1' === $weeksTotal) {
-            $weeksTotal = date('W', mktime(0, 0, 0, 12, 24, $intYear));
+            $weeksTotal = date('W', Utils::makeTime(0, 0, 0, 12, 24, $intYear));
         }
 
         $time = Date::floorToMinute();
@@ -172,11 +172,14 @@ class TimeTableController extends AbstractCalendarViewController
 
         // if we start on Sunday we have to go back one day
         if (0 === $startDay) {
-            $weekBegin = strtotime(date('Y-m-d', $weekBegin).' -1 day');
+            $weekBegin = Utils::parseTime(date('Y-m-d', $weekBegin).' -1 day');
         }
 
         // Get all events
         $arrAllEvents = $this->eventsProvider->getAllEvents($model, $calendars, $weekBegin, $weekEnd);
+
+        $arrListTimes = [];
+        $cellheight = (int) ($model->cellheight ?: 60);
 
         // we create the array of times
         if ($model->cal_times) {
@@ -185,7 +188,7 @@ class TimeTableController extends AbstractCalendarViewController
             $arrTimes['stop'] = '00:00';
 
             for ($i = 0; $i < 7; ++$i) {
-                $intKey = date('Ymd', strtotime(date('Y-m-d', $weekBegin)." +$i day"));
+                $intKey = date('Ymd', Utils::parseTime(date('Y-m-d', $weekBegin)." +$i day"));
 
                 // Here we have to get the valid times
                 if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
@@ -223,9 +226,6 @@ class TimeTableController extends AbstractCalendarViewController
                 $arrTimes['stop'] = substr(date('H', $timerange['time_to']), 0, 2);
             }
 
-            $cellheight = $model->cellheight ?: 60;
-
-            $arrListTimes = [];
             $counter = 0;
 
             for ($i = $arrTimes['start']; $i <= $arrTimes['stop']; ++$i) {
@@ -242,15 +242,15 @@ class TimeTableController extends AbstractCalendarViewController
         for ($i = 0; $i < 7; ++$i) {
             $intCurrentDay = ($i + $startDay) % 7;
 
-            $intKey = date('Ymd', strtotime(date('Y-m-d', $weekBegin)." +$i day"));
-            $currDay = Date::parse($page->dateFormat, strtotime(date('Y-m-d', $weekBegin)." +$i day"));
+            $intKey = date('Ymd', Utils::parseTime(date('Y-m-d', $weekBegin)." +$i day"));
+            $currDay = Date::parse($page->dateFormat, Utils::parseTime(date('Y-m-d', $weekBegin)." +$i day"));
 
             $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
             $class .= 0 === $intCurrentDay % 2 ? ' even' : ' odd';
             $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
             $class .= 0 === $intCurrentDay ? ' last' : '';
 
-            if ($currDay === Date::parse($page->dateFormat, strtotime(date('Y-m-d')))) {
+            if ($currDay === Date::parse($page->dateFormat, Utils::parseTime(date('Y-m-d')))) {
                 $class .= ' today';
             }
 
@@ -278,14 +278,13 @@ class TimeTableController extends AbstractCalendarViewController
                         $h = date('H', $vv['startTime']);
                         $m = date('i', $vv['startTime']);
 
-                        // @phpstan-ignore-next-line
-                        if (isset($arrListTimes) && \is_array($arrListTimes[$h]) && isset($cellheight)) {
+                        if (isset($arrListTimes[$h])) {
                             // calculate the top of the event
                             $top = $arrListTimes[$h]['top'] + $m * $cellheight / 60;
 
                             // calculate the height of the event.
-                            $d1 = date_create(date('H:i', $vv['startTime']));
-                            $d2 = date_create(date('H:i', $vv['endTime']));
+                            $d1 = new \DateTime(date('H:i', $vv['startTime']));
+                            $d2 = new \DateTime(date('H:i', $vv['endTime']));
                             $d0 = date_diff($d1, $d2);
                             $height = ((int) $d0->format('%h') * $cellheight) + (int) $d0->format('%i') * $cellheight / 60;
 
@@ -306,7 +305,7 @@ class TimeTableController extends AbstractCalendarViewController
             }
         }
 
-        return [$arrDays, $arrListTimes ?? []];
+        return [$arrDays, $arrListTimes];
     }
 
     /**
@@ -319,12 +318,12 @@ class TimeTableController extends AbstractCalendarViewController
         // Set date to the first day of the given week
         $dt->setISODate($intYear, $intWeek);
         $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
-        $weekBegin = mktime(0, 0, 0, (int) date('m', $newDate->tstamp), (int) date('d', $newDate->tstamp), (int) date('Y', $newDate->tstamp));
+        $weekBegin = Utils::makeTime(0, 0, 0, (int) date('m', $newDate->tstamp), (int) date('d', $newDate->tstamp), (int) date('Y', $newDate->tstamp));
 
         // Set date to the last day of the given week
         $dt->setISODate($intYear, $intWeek, 7);
         $newDate = new Date((int) $dt->format('Ymd'), 'Ymd');
-        $weekEnd = mktime(23, 59, 59, (int) date('m', $newDate->tstamp), (int) date('d', $newDate->tstamp), (int) date('Y', $newDate->tstamp));
+        $weekEnd = Utils::makeTime(23, 59, 59, (int) date('m', $newDate->tstamp), (int) date('d', $newDate->tstamp), (int) date('Y', $newDate->tstamp));
 
         return [$weekBegin, $weekEnd];
     }
