@@ -38,6 +38,26 @@ final class GetAllEventsHookTest extends TestCase
         $this->assertSame('{"title":"Concert","location_plz":null}', $events[0]['filter_data']);
     }
 
+    #[DataProvider('recurrenceHandlers')]
+    public function testRecurrenceHandlersSkipTheQueryWithoutCalendars(string $handler): void
+    {
+        $hook = (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor();
+        $events = ['20250303' => [1741000000 => [['title' => 'Concert']]]];
+
+        $result = (new \ReflectionMethod($hook, $handler))->invoke($hook, $events, [], 0, 1, $this->createMock(Events::class));
+
+        $this->assertSame($events, $result);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function recurrenceHandlers(): iterable
+    {
+        yield 'extended recurrences' => ['handleExtendedRecurrences'];
+        yield 'fixed dates' => ['handleFixedDatesRecurrences'];
+    }
+
     public function testEventsOfOtherCalendarsAreHiddenDuringHolidays(): void
     {
         // The pid of the events is a string, the holiday calendars are integers

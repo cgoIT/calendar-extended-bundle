@@ -50,6 +50,8 @@ class GetAllEventsHook
      */
     public function __invoke(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
+        $arrCalendars = array_map(\intval(...), $arrCalendars);
+
         // Filter events based on weekdays (only valid for standard recurrences)
         $arrEvents = $this->handleRepeatWeekdaysForStandardRecurrence($arrEvents);
 
@@ -168,12 +170,16 @@ class GetAllEventsHook
 
     /**
      * @param array<mixed> $arrEvents
-     * @param array<mixed> $arrCalendars
+     * @param array<int>   $arrCalendars
      *
      * @return array<mixed>
      */
     private function handleExtendedRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
+        if ([] === $arrCalendars) {
+            return $arrEvents;
+        }
+
         $t = 'tl_calendar_events';
         $time = time();
         $arrRecurringEvents = CalendarEventsModel::findBy(
@@ -230,6 +236,10 @@ class GetAllEventsHook
      */
     private function handleFixedDatesRecurrences(array $arrEvents, array $arrCalendars, int $timeStart, int $timeEnd, Events $objModule): array
     {
+        if ([] === $arrCalendars) {
+            return $arrEvents;
+        }
+
         /** @var PageModel */
         global $objPage;
 
