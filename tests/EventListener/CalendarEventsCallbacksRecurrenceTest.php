@@ -19,8 +19,6 @@ use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\DataContainer;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Tests the pre-calculation of recurrences that runs when an event is saved in the back end.
@@ -506,66 +504,34 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame($existing, $callbacks->defaultRepeatEachExt($existing, $this->createDataContainer([])));
     }
 
-    public function testCheckRecurringThrowsIfExtendedRecurrenceIsSubmitted(): void
+    public function testCheckRecurrenceTypesThrowsIfBothAreSubmitted(): void
     {
-        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurringExt' => '1'], ['recurring' => 0]);
-
         $this->expectException(CalendarExtendedException::class);
         $this->expectExceptionMessage('Only one option can be active for recurrences.');
 
-        $callbacks->checkRecurring('1', $this->createDataContainer(['recurring' => 0]));
+        $this->createCallbacks(365, 250)->checkRecurrenceTypes(['recurring' => '1', 'recurringExt' => '1'], $this->createDataContainer([]));
     }
 
-    public function testCheckRecurringExtThrowsIfCoreRecurrenceIsSubmitted(): void
+    public function testCheckRecurrenceTypesThrowsIfSubmittedValueConflictsWithTheRecord(): void
     {
-        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurring' => '1']);
-
         $this->expectException(CalendarExtendedException::class);
 
-        $callbacks->checkRecurringExt('1', $this->createDataContainer([]));
+        $this->createCallbacks(365, 250)->checkRecurrenceTypes(['recurring' => '1'], $this->createDataContainer(['recurringExt' => 1]));
     }
 
-    public function testCheckRecurringAllowsSwitchingTheRecurrenceType(): void
+    public function testCheckRecurrenceTypesAllowsSwitchingTheRecurrenceType(): void
     {
         // The stored record still has the extended recurrence, but the form unchecks it
-        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurring' => '1']);
+        $values = ['recurring' => '1', 'recurringExt' => ''];
 
-        $this->assertSame('1', $callbacks->checkRecurring('1', $this->createDataContainer(['recurringExt' => 1])));
+        $this->assertSame($values, $this->createCallbacks(365, 250)->checkRecurrenceTypes($values, $this->createDataContainer(['recurringExt' => 1])));
     }
 
-    public function testCheckRecurringAllowsDisabling(): void
+    public function testCheckRecurrenceTypesAllowsUnrelatedChanges(): void
     {
-        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurringExt' => '1']);
+        $values = ['title' => 'Concert'];
 
-        $this->assertSame('', $callbacks->checkRecurring('', $this->createDataContainer([])));
-    }
-
-    public function testCheckRecurringFallsBackToStoredRecordWithoutFormSubmit(): void
-    {
-        $callbacks = $this->createCallbacksWithRequest([]);
-
-        $this->expectException(CalendarExtendedException::class);
-
-        $callbacks->checkRecurring('1', $this->createDataContainer(['recurringExt' => 1]));
-    }
-
-    /**
-     * @param array<string, mixed> $post
-     * @param array<string, mixed> $query
-     */
-    private function createCallbacksWithRequest(array $post, array $query = []): CalendarEventsCallbacks
-    {
-        $requestStack = new RequestStack();
-        $requestStack->push(Request::create('/contao', 'POST', $post));
-
-        if ([] !== $query) {
-            $requestStack->getCurrentRequest()->query->add($query);
-        }
-
-        $callbacks = $this->createCallbacks(365, 250);
-        (new \ReflectionProperty(CalendarEventsCallbacks::class, 'requestStack'))->setValue($callbacks, $requestStack);
-
-        return $callbacks;
+        $this->assertSame($values, $this->createCallbacks(365, 250)->checkRecurrenceTypes($values, $this->createDataContainer(['recurring' => 1])));
     }
 
     /**

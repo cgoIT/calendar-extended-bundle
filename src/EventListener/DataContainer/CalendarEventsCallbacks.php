@@ -28,7 +28,6 @@ use Contao\Date;
 use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class CalendarEventsCallbacks extends Backend
 {
@@ -44,7 +43,6 @@ class CalendarEventsCallbacks extends Backend
 
     public function __construct(
         private readonly Connection $db,
-        private readonly RequestStack $requestStack,
         private readonly int $maxRepeatCount,
         private readonly int $maxExceptionsCount,
     ) {
@@ -206,31 +204,25 @@ class CalendarEventsCallbacks extends Backend
     /**
      * Just check that only one option is active for recurring events.
      *
-     * @throws CalendarExtendedException
-     */
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.recurring.save')]
-    public function checkRecurring(mixed $value, DataContainer $dc): mixed
-    {
-        if (!empty($value) && $this->isOptionActive('recurringExt', $dc)) {
-            throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Just check that only one option is active for recurring events.
+     * The submitted values are merged into the record, so this works in all edit modes (also editAll/overrideAll).
+     *
+     * @param array<string, mixed> $values the submitted values (only the changed fields)
+     *
+     * @return array<string, mixed>
      *
      * @throws CalendarExtendedException
      */
-    #[AsCallback(table: 'tl_calendar_events', target: 'fields.recurringExt.save')]
-    public function checkRecurringExt(mixed $value, DataContainer $dc): mixed
+    #[AsCallback(table: 'tl_calendar_events', target: 'config.onbeforesubmit')]
+    public function checkRecurrenceTypes(array $values, DataContainer $dc): array
     {
-        if (!empty($value) && $this->isOptionActive('recurring', $dc)) {
+        // @phpstan-ignore-next-line
+        $record = array_merge((array) $dc->getCurrentRecord(), $values);
+
+        if (!empty($record['recurring']) && !empty($record['recurringExt'])) {
             throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
         }
 
-        return $value;
+        return $values;
     }
 
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.repeatEachExt.load')]
@@ -761,25 +753,5 @@ class CalendarEventsCallbacks extends Backend
         }
 
         return $arrRecurrence;
-    }
-
-    /**
-     * Checks if a checkbox is active in the submitted form. The database record is outdated
-     * while the form is processed, so it is only used if no form of the single edit mode was submitted.
-     */
-    private function isOptionActive(string $field, DataContainer $dc): bool
-    {
-        $request = $this->requestStack->getCurrentRequest();
-
-        if (
-            null !== $request
-            && $request->request->has('FORM_SUBMIT')
-            && !\in_array($request->query->get('act'), ['editAll', 'overrideAll'], true)
-        ) {
-            return !empty($request->request->get($field));
-        }
-
-        // @phpstan-ignore-next-line
-        return !empty($dc->getCurrentRecord()[$field]);
     }
 }

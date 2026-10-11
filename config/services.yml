@@ -5,7 +5,6 @@ services:
         public: false
         bind:
             $db: '@database_connection'
-            $requestStack: '@request_stack'
             $maxRepeatCount: '%cgoit_calendar_extended.max_repeat_count%'
             $maxExceptionsCount: '%cgoit_calendar_extended.exceptions.max_count%'
             $exceptionsMoveDays: '%cgoit_calendar_extended.exceptions.move_days%'
