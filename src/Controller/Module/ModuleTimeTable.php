@@ -182,7 +182,10 @@ class ModuleTimeTable extends Events
             throw new PageNotFoundException('Page not found: '.Environment::get('uri'));
         }
 
+        $GLOBALS['TL_CSS'][] = 'bundles/cgoitcalendarextended/css/timetable.css';
+
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_timetable');
+        $objTemplate->timeLabel = $GLOBALS['TL_LANG']['MSC']['cal_time'];
 
         $objTemplate->intYear = $intYear;
         $objTemplate->intWeek = $intWeek;

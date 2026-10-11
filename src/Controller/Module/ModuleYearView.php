@@ -158,6 +158,8 @@ class ModuleYearView extends Events
         $this->yearBegin = mktime(0, 0, 0, 1, 1, $intYear);
         $this->yearEnd = mktime(23, 59, 59, 12, 31, $intYear);
 
+        $GLOBALS['TL_CSS'][] = 'bundles/cgoitcalendarextended/css/yearview.css';
+
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_yearview');
 
         $objTemplate->intYear = $intYear;
@@ -343,7 +345,7 @@ class ModuleYearView extends Events
         if (!empty($this->use_horizontal)) {
             // months in columns, days in rows
             foreach ($months as $month) {
-                $month['attr'] = 'colspan="2"';
+                $month['colspan'] = 2;
                 $header[] = $month;
             }
 
@@ -352,7 +354,7 @@ class ModuleYearView extends Events
 
                 foreach (range(1, 12) as $month) {
                     $m = $yeardays[$day][$month];
-                    $m['attr'] = 'style="vertical-align: top; text-wrap: nowrap;"';
+                    $m['class'] .= ' nowrap top';
                     unset($m['events']);
                     $row[] = $m;
 
@@ -362,22 +364,22 @@ class ModuleYearView extends Events
             }
         } else {
             // days in columns, months in rows
-            $header[] = ['label' => '', 'class' => 'head', 'attr' => ''];
+            $header[] = ['label' => '', 'class' => 'head'];
 
             foreach (range(1, 31) as $day) {
-                $header[] = ['label' => $day, 'class' => 'head', 'attr' => ''];
+                $header[] = ['label' => $day, 'class' => 'head'];
             }
 
             foreach (range(1, 12) as $month) {
                 $row = [];
 
                 $m = $months[$month];
-                $m['attr'] = 'rowspan="2"';
+                $m['rowspan'] = 2;
                 $row[] = $m;
 
                 foreach (range(1, 31) as $day) {
                     $col = $yeardays[$month][$day];
-                    $col['attr'] = 'style="text-wrap: nowrap;"';
+                    $col['class'] .= ' nowrap';
                     $row[] = $col;
                 }
                 $body[] = $row;

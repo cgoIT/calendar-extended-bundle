@@ -1,0 +1,40 @@
+<div class="yearview full">
+    {{ include('@Contao_CgoitCalendarExtendedBundle/_cal_navigation.html.twig', {prefix: 'yearview'}) }}
+
+    <table class="yearview_body full">
+        {% if data.header is not empty %}
+            <thead>
+                <tr class="yearview_days">
+                    {% for header in data.header %}
+                        <th{% if header.colspan is defined %} colspan="{{ header.colspan }}"{% endif %} class="{{ header.class }}">{{ header.label }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+        {% endif %}
+        {% if data.body is not empty %}
+            <tbody>
+                {% for row in data.body %}
+                    <tr class="yearview_events">
+                        {% for col in row %}
+                            {% if col.label is defined %}
+                                <td{% if col.colspan is defined %} colspan="{{ col.colspan }}"{% endif %}{% if col.rowspan is defined %} rowspan="{{ col.rowspan }}"{% endif %} class="{{ col.class }}">{{ col.label }}</td>
+                            {% elseif col is not empty %}
+                                <td>
+                                    {% for event in col %}
+                                        <div class="event cal_{{ event.pid }}{{ event.class|default('') }}" style="{{ event.bgstyle|default('') }}" title="{{ event.title|raw }}">
+                                            <div class="event_title {{ event.fgstyle|default('') }}" title="{{ event.time }}">
+                                                {{ event.title|raw }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endif %}
+    </table>
+</div>

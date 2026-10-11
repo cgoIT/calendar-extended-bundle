@@ -202,45 +202,43 @@ class ModuleFullCalendar extends Events
 
         // CSS files
         $GLOBALS['TL_CSS'][] = $assets_path.$assets_fa.'/css/font-awesome.min.css';
+        $GLOBALS['TL_CSS'][] = $assets_path.'/css/fullcalendar.css';
         $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/dist/index.global.min.js';
         $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.$assets_fc.'/packages/core/locales-all.global.min.js';
+        $GLOBALS['TL_JAVASCRIPT'][] = $assets_path.'/js/fullcalendar.js';
 
         $objTemplate = new FrontendTemplate($this->cal_ctemplate ?: 'cal_fc_default');
 
-        // Set some fullcalendar options
-        $objTemplate->url = '/fullcalendar/fetchEvents/'.$objPage->id.'/'.$this->id;
-        $objTemplate->locale = json_encode(Utils::getFullCalendarLocales((string) $GLOBALS['TL_LANGUAGE']), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $objTemplate->moduleId = $this->id;
-        $objTemplate->initialDate = date('Y-m-d\TH:i:sP', $this->Date->tstamp);
-        $objTemplate->firstDay = $this->cal_startDay;
-
-        if (!empty($this->businessHours)) {
-            $arrDays = array_map(\intval(...), StringUtil::deserialize($this->businessDays, true));
-
-            $businessHours = new \stdClass();
-            $businessHours->daysOfWeek = $arrDays;
-            $businessHours->startTime = date('H:i', $this->businessDayStart);
-            $businessHours->endTime = date('H:i', $this->businessDayEnd);
-
-            $objTemplate->businessHours = json_encode($businessHours, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        }
-
-        $objTemplate->weekNumbers = $this->weekNumbers;
-
-        $objTemplate->confirm_drop = $GLOBALS['TL_LANG']['tl_module']['confirm_drop'];
-        $objTemplate->confirm_resize = $GLOBALS['TL_LANG']['tl_module']['confirm_resize'];
-        $objTemplate->fetch_error = $GLOBALS['TL_LANG']['tl_module']['fetch_error'];
-
-        $objTemplate->initialView = match ($this->cal_fcFormat) {
+        $initialView = match ($this->cal_fcFormat) {
             'cal_fc_month' => 'dayGridMonth',
             'cal_fc_day' => 'timeGridDay',
             'cal_fc_list' => 'listMonth',
             default => 'timeGridWeek',
         };
 
-        $objTemplate->pageId = $objPage->id;
+        $businessHours = null;
 
-        $objTemplate->requestToken = System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
+        if (!empty($this->businessHours)) {
+            $businessHours = [
+                'daysOfWeek' => array_map(\intval(...), StringUtil::deserialize($this->businessDays, true)),
+                'startTime' => date('H:i', (int) $this->businessDayStart),
+                'endTime' => date('H:i', (int) $this->businessDayEnd),
+            ];
+        }
+
+        // The options are passed as data attribute and read by fullcalendar.js
+        $objTemplate->moduleId = (int) $this->id;
+        $objTemplate->config = [
+            'url' => '/fullcalendar/fetchEvents/'.$objPage->id.'/'.$this->id,
+            'locale' => Utils::getFullCalendarLocales((string) $GLOBALS['TL_LANGUAGE']),
+            'initialDate' => date('Y-m-d\TH:i:sP', $this->Date->tstamp),
+            'initialView' => $initialView,
+            'firstDay' => (int) $this->cal_startDay,
+            'weekNumbers' => (bool) $this->weekNumbers,
+            'businessHours' => $businessHours,
+            'requestToken' => System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue(),
+            'fetchError' => $GLOBALS['TL_LANG']['tl_module']['fetch_error'],
+        ];
 
         // Render the template
         $this->Template->fullcalendar = $objTemplate->parse();

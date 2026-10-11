@@ -1,0 +1,10 @@
+{#
+    FullCalendar container. The configuration is read by bundles/cgoitcalendarextended/js/fullcalendar.js
+    from the data attribute, so no inline script is required.
+
+    Variables:
+      moduleId  int    ID of the frontend module
+      config    array  FullCalendar options (locale, initialDate, initialView, weekNumbers, firstDay,
+                       businessHours, url, requestToken, fetchError)
+#}
+<div id="calendar-{{ moduleId }}" class="calendar" data-fullcalendar="{{ config|json_encode|e('html_attr') }}"></div>
