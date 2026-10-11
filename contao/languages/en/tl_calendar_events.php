@@ -65,6 +65,7 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Define e
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Exception settings (extended)';
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
+$GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'] = 'The recurrences could not be calculated because the data of the event is invalid: %s';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'No option for recurrences is active.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'] = 'Time overlapping with another event.';
 

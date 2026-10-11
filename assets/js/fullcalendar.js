@@ -1,12 +1,12 @@
+import { config as fontAwesomeConfig, icon } from '@fortawesome/fontawesome-svg-core';
+import { faCalendar } from '@fortawesome/free-regular-svg-icons';
+import { faRepeat } from '@fortawesome/free-solid-svg-icons';
 import { Calendar } from 'fullcalendar';
 import dayGridPlugin from 'fullcalendar/daygrid';
-import timeGridPlugin from 'fullcalendar/timegrid';
 import listPlugin from 'fullcalendar/list';
-import classicThemePlugin from 'fullcalendar/themes/classic';
 import locales from 'fullcalendar/locales-all';
-import { config as fontAwesomeConfig, icon } from '@fortawesome/fontawesome-svg-core';
-import { faRepeat } from '@fortawesome/free-solid-svg-icons';
-import { faCalendar } from '@fortawesome/free-regular-svg-icons';
+import classicThemePlugin from 'fullcalendar/themes/classic';
+import timeGridPlugin from 'fullcalendar/timegrid';
 
 import 'fullcalendar/skeleton.css';
 import 'fullcalendar/themes/classic/theme.css';
@@ -56,17 +56,19 @@ function init(el) {
         weekNumbers: !!config.weekNumbers,
         weekNumberCalculation: 'ISO',
         firstDay: config.firstDay,
-        eventSources: [{
-            url: config.url,
-            method: 'POST',
-            extraParams() {
-                return { REQUEST_TOKEN: config.requestToken };
+        eventSources: [
+            {
+                url: config.url,
+                method: 'POST',
+                extraParams() {
+                    return { REQUEST_TOKEN: config.requestToken };
+                },
+                failure() {
+                    // eslint-disable-next-line no-alert
+                    alert(config.fetchError);
+                },
             },
-            failure() {
-                // eslint-disable-next-line no-alert
-                alert(config.fetchError);
-            },
-        }],
+        ],
         eventDidMount(info) {
             if (info.event.title) {
                 info.el.setAttribute('title', info.event.title);
@@ -79,7 +81,9 @@ function init(el) {
             // The markup of FullCalendar has no stable class names: the icon is put in front of the first text
             // of the event, which is the time or, for events without time, the title
             const iconElement = createIcon(info.event.extendedProps.icon);
-            const textElement = [...info.el.querySelectorAll('*')].find((child) => child.children.length === 0 && child.textContent.trim() !== '');
+            const textElement = [...info.el.querySelectorAll('*')].find(
+                (child) => child.children.length === 0 && child.textContent.trim() !== '',
+            );
 
             if (iconElement && textElement) {
                 textElement.parentNode.insertBefore(iconElement, textElement);

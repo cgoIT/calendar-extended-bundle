@@ -422,6 +422,33 @@ final class UtilsTest extends TestCase
         $this->assertSame(strtotime('2025-03-03 09:30:15'), Utils::makeTime(9, 30, 15, 3, 3, 2025));
     }
 
+    public function testParseYearParameter(): void
+    {
+        $this->assertNull(Utils::parseYearParameter(null));
+        $this->assertNull(Utils::parseYearParameter(''));
+        $this->assertSame(strtotime('2025-01-01'), Utils::parseYearParameter('2025'));
+    }
+
+    #[DataProvider('invalidYears')]
+    public function testParseYearParameterRejectsInvalidValues(mixed $year): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Utils::parseYearParameter($year);
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function invalidYears(): iterable
+    {
+        yield 'text' => ['abc'];
+        yield 'trailing text' => ['2025x'];
+        yield 'two digits' => ['25'];
+        yield 'five digits' => ['20255'];
+        yield 'array' => [['2025']];
+    }
+
     /**
      * Contao models need a booted container, so the magic accessors are mocked.
      *

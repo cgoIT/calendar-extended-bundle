@@ -24,6 +24,7 @@ use Contao\Config;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
 use Contao\Date;
+use Contao\Message;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 
@@ -161,7 +162,14 @@ class CalendarEventsCallbacks
 
         $arrSet['repeatEnd'] = 0;
 
-        [$arrAllRecurrences, $arrSet] = $this->recurrenceCalculator->calculate($record, [], [$arrSet['repeatEnd']], $arrSet);
+        try {
+            [$arrAllRecurrences, $arrSet] = $this->recurrenceCalculator->calculate($record, [], [$arrSet['repeatEnd']], $arrSet);
+        } catch (\InvalidArgumentException $exception) {
+            // The event is saved, but the recurrences cannot be calculated from the invalid data
+            Message::addError(\sprintf($GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'], $exception->getMessage()));
+
+            return;
+        }
 
         ksort($arrAllRecurrences);
         $arrSet['allRecurrences'] = serialize($arrAllRecurrences);

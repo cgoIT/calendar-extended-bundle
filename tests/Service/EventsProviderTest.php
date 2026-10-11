@@ -27,33 +27,50 @@ final class EventsProviderTest extends TestCase
     public function testBoundariesOnlyConsiderPublishedEventsOutsideOfThePreview(): void
     {
         $sql = '';
-        $provider = $this->createProvider(false, ['dateFrom' => '100', 'dateTo' => '200', 'repeatUntil' => null], $sql);
+        $params = [];
+        $provider = $this->createProvider(false, ['dateFrom' => '100', 'dateTo' => '200', 'repeatUntil' => null], $sql, $params);
 
         $this->assertSame([100, 200, 0], $provider->findBoundaries([3, 4]));
-        $this->assertStringContainsString('pid IN (3,4)', $sql);
+        $this->assertStringContainsString('pid IN (?, ?)', $sql);
         $this->assertStringContainsString("published='1'", $sql);
+        $this->assertCount(4, $params);
+        $this->assertSame([3, 4], \array_slice($params, 0, 2));
     }
 
     public function testBoundariesIncludeUnpublishedEventsInThePreview(): void
     {
         $sql = '';
-        $provider = $this->createProvider(true, false, $sql);
+        $params = [];
+        $provider = $this->createProvider(true, false, $sql, $params);
 
         $this->assertSame([0, 0, 0], $provider->findBoundaries([1]));
         $this->assertStringNotContainsString('published', $sql);
+        $this->assertSame([1], $params);
+    }
+
+    public function testBoundariesWithoutCalendarsDoNotQuery(): void
+    {
+        $sql = '';
+        $params = [];
+        $provider = $this->createProvider(false, false, $sql, $params);
+
+        $this->assertSame([0, 0, 0], $provider->findBoundaries([]));
+        $this->assertSame('', $sql);
     }
 
     /**
      * @param array<string, mixed>|false $row
+     * @param array<int, mixed>          $params
      */
-    private function createProvider(bool $preview, array|false $row, string &$sql): EventsProvider
+    private function createProvider(bool $preview, array|false $row, string &$sql, array &$params): EventsProvider
     {
         $connection = $this->createStub(Connection::class);
         $connection
             ->method('fetchAssociative')
             ->willReturnCallback(
-                static function (string $query) use ($row, &$sql) {
+                static function (string $query, array $queryParams) use ($row, &$sql, &$params) {
                     $sql = $query;
+                    $params = $queryParams;
 
                     return $row;
                 },

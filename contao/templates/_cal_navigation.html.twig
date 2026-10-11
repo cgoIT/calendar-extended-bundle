@@ -2,13 +2,13 @@
     <div class="{{ prefix }}_navi">
         {% if linkCurrent %}
             <div class="head current navi-current">
-                <a href="{{ currHref|raw }}" title="{{ currTitle|raw }}">{{ currLink }}</a>
+                <a href="{{ currHref|e('html_attr') }}" title="{{ currTitle|raw }}">{{ currLink }}</a>
             </div>
         {% endif %}
         <div class="navi-row">
-            <div class="head previous">{% if prevHref|default %}<a href="{{ prevHref|raw }}" title="{{ prevTitle|raw }}">{{ prevLink }}</a>{% endif %}</div>
+            <div class="head previous">{% if prevHref|default %}<a href="{{ prevHref|e('html_attr') }}" title="{{ prevTitle|raw }}">{{ prevLink }}</a>{% endif %}</div>
             <div class="head current">{{ current }}</div>
-            <div class="head next">{% if nextHref|default %}<a href="{{ nextHref|raw }}" title="{{ nextTitle|raw }}">{{ nextLink }}</a>{% endif %}</div>
+            <div class="head next">{% if nextHref|default %}<a href="{{ nextHref|e('html_attr') }}" title="{{ nextTitle|raw }}">{{ nextLink }}</a>{% endif %}</div>
         </div>
     </div>
 {% endif %}

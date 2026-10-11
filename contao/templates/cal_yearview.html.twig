@@ -21,8 +21,8 @@
                             {% elseif col is not empty %}
                                 <td>
                                     {% for event in col %}
-                                        <div class="event cal_{{ event.pid }}{{ event.class|default('') }}" style="{{ event.bgstyle|default('') }}" title="{{ event.title|raw }}">
-                                            <div class="event_title {{ event.fgstyle|default('') }}" title="{{ event.time }}">
+                                        <div class="event cal_{{ event.pid }}{{ event.class|default('') }}" style="{{ event.bgstyle|default('')|csp_unsafe_inline_style }}" title="{{ event.title|raw }}">
+                                            <div class="event_title" style="{{ event.fgstyle|default('')|csp_unsafe_inline_style }}" title="{{ event.time }}">
                                                 {{ event.title|raw }}
                                             </div>
                                         </div>

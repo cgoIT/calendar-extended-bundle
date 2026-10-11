@@ -25,6 +25,7 @@ use Contao\PageModel;
 use Contao\StringUtil;
 use Contao\System;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Routing\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -95,7 +96,14 @@ class EventFactory
         $arrEvent['link'] = $objEvent->title;
         $arrEvent['target'] = '';
         $arrEvent['title'] = StringUtil::specialchars($objEvent->title, true);
-        $arrEvent['href'] = $this->urlGenerator->generate($objEvent, [], UrlGeneratorInterface::ABSOLUTE_PATH);
+
+        try {
+            $arrEvent['href'] = $this->urlGenerator->generate($objEvent, [], UrlGeneratorInterface::ABSOLUTE_PATH);
+        } catch (ExceptionInterface) {
+            // There is no page to link to
+            $arrEvent['href'] = null;
+        }
+
         $arrEvent['class'] = $objEvent->cssClass ? ' '.$objEvent->cssClass : '';
         $arrEvent['recurring'] = $recurring;
         $arrEvent['until'] = $until;

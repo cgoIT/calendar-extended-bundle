@@ -32,6 +32,7 @@
     "ext-mbstring": "*",
     "contao/core-bundle": "^5.3",
     "contao/calendar-bundle": "^5.3",
+    "psr/log": "^1.1 || ^2.0 || ^3.0",
     "symfony/routing": "^6.4 || ^7.0",
     "symfony/security-bundle": "^6.4 || ^7.0",
     "symfony/event-dispatcher": "^6.4 || ^7.0",

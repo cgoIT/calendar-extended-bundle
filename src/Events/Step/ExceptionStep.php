@@ -20,12 +20,17 @@ use Cgoit\CalendarExtendedBundle\Events\EventTree;
 use Contao\Config;
 use Contao\Date;
 use Contao\StringUtil;
+use Psr\Log\LoggerInterface;
 
 /**
  * Applies the exceptions of the events (hide or move a single occurrence) and hides the events on weekends.
  */
 class ExceptionStep
 {
+    public function __construct(private readonly LoggerInterface|null $logger = null)
+    {
+    }
+
     /**
      * @param array<mixed> $events
      *
@@ -44,7 +49,14 @@ class ExceptionStep
 
                     if (\array_key_exists($startTime, $skipInfos) && \is_array($skipInfos[$startTime])) {
                         if ('move' === $skipInfos[$startTime]['action']) {
-                            $moved = $this->moveEvent($event, $skipInfos[$startTime], (int) $startTime, (string) $dateFormat);
+                            try {
+                                $moved = $this->moveEvent($event, $skipInfos[$startTime], (int) $startTime, (string) $dateFormat);
+                            } catch (\InvalidArgumentException $exception) {
+                                // A broken exception must not break the whole calendar, the occurrence stays where it is
+                                $this->logger?->warning(\sprintf('The exception of the event ID %s cannot be applied: %s', $event['id'] ?? '?', $exception->getMessage()));
+
+                                return $event;
+                            }
 
                             if (empty($moved['hideOnWeekend']) || !$this->isWeekend((int) $moved['startTime'])) {
                                 $movedEvents[] = $moved;

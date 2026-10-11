@@ -50,9 +50,9 @@ class YearViewController extends AbstractCalendarViewController
 
         // Create the date object
         try {
-            $timeStamp = \is_string($year) ? Utils::parseTime($year.'-01-01') : false;
-            $date = false !== $timeStamp ? new Date($timeStamp) : new Date();
-        } catch (\OutOfBoundsException) {
+            $timeStamp = Utils::parseYearParameter($year);
+            $date = null !== $timeStamp ? new Date($timeStamp) : new Date();
+        } catch (\OutOfBoundsException|\InvalidArgumentException) {
             throw new PageNotFoundException('Page not found: '.$request->getUri());
         }
 
@@ -218,13 +218,14 @@ class YearViewController extends AbstractCalendarViewController
                 if (\array_key_exists($intKey, $arrAllEvents) && \is_array($arrAllEvents[$intKey])) {
                     foreach ($arrAllEvents[$intKey] as $v) {
                         if (!empty($v) && \is_array($v)) {
-                            foreach ($v as &$vv) {
+                            foreach ($v as $vv) {
                                 // set class recurring
                                 if ($vv['recurring'] || $vv['recurringExt']) {
                                     $vv['class'] .= ' recurring';
                                 }
+
+                                $arrEvents[] = $vv;
                             }
-                            $arrEvents = $v;
                         }
                     }
                 }

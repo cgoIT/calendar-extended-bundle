@@ -17,6 +17,7 @@ namespace Cgoit\CalendarExtendedBundle\Tests\Events\Step;
 use Cgoit\CalendarExtendedBundle\Events\EventContext;
 use Cgoit\CalendarExtendedBundle\Events\Step\ExceptionStep;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 final class ExceptionStepTest extends TestCase
 {
@@ -75,6 +76,23 @@ final class ExceptionStepTest extends TestCase
         $this->assertSame('Holiday', $result['20250305'][$wednesday][0]['moveReason']);
         $this->assertSame($monday, $result['20250305'][$wednesday][0]['oldStartTime']);
         $this->assertStringContainsString('moved', (string) $result['20250305'][$wednesday][0]['class']);
+    }
+
+    public function testMoveExceptionWithAnInvalidValueKeepsTheOccurrenceAndIsLogged(): void
+    {
+        $monday = strtotime('2025-03-03 09:00');
+        $list = serialize([$monday => ['action' => 'move', 'new_exception' => 'not a date', 'reason' => 'x', 'cssclass' => '', 'new_start' => '', 'new_end' => '']]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger
+            ->expects($this->once())
+            ->method('warning')
+        ;
+
+        $result = (new ExceptionStep($logger))->process(['20250303' => [$monday => [$this->event($list)]]], new EventContext());
+
+        $this->assertCount(1, $result['20250303'][$monday]);
+        $this->assertArrayNotHasKey('moveReason', $result['20250303'][$monday][0]);
     }
 
     /**

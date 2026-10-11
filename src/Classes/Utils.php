@@ -131,6 +131,26 @@ class Utils
     }
 
     /**
+     * Reads the parameter "year" of the year view.
+     *
+     * @return int|null the time stamp of January 1st or null if no year is requested
+     *
+     * @throws \InvalidArgumentException if the value is not a four digit year
+     */
+    public static function parseYearParameter(mixed $year): int|null
+    {
+        if (null === $year || '' === $year) {
+            return null;
+        }
+
+        if (!\is_string($year) || 1 !== preg_match('/^\d{4}$/', $year)) {
+            throw new \InvalidArgumentException('The year must have four digits.');
+        }
+
+        return self::parseTime($year.'-01-01');
+    }
+
+    /**
      * Like mktime(), but fails with an exception instead of returning false.
      *
      * @throws \InvalidArgumentException if the values do not result in a valid time

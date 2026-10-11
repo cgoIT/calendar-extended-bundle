@@ -19,7 +19,7 @@
                     <td>
                         <div class="times">
                             {% for time in times %}
-                                <div class="time {{ time.class }}" style="{{ time.style }}">{{ time.label }}</div>
+                                <div class="time {{ time.class }}" style="{{ time.style|csp_unsafe_inline_style }}">{{ time.label }}</div>
                             {% endfor %}
                         </div>
                     </td>
@@ -29,9 +29,9 @@
                         <div class="events">
                             {% for event in day.events %}
                                 {% if event %}
-                                    <div class="event{{ event.class|default('') }}" style="{{ event.bgstyle|default('') }}{{ event.style|default('') }}" title="{{ event.title|raw }}">
-                                        <div class="event_title {{ event.fgstyle|default('') }}">
-                                            <a style="{{ event.fgstyle|default('') }}" href="{{ event.href|raw }}" title="{{ event.title|raw }} ({% if event.day %}{{ event.day }}, {% endif %}{{ event.date }}{% if event.time %}, {{ event.time }}{% endif %})"{{ event.target|default('')|raw }}>{{ event.link|raw }}</a>
+                                    <div class="event{{ event.class|default('') }}" style="{{ (event.bgstyle|default('') ~ event.style|default(''))|csp_unsafe_inline_style }}" title="{{ event.title|raw }}">
+                                        <div class="event_title" style="{{ event.fgstyle|default('')|csp_unsafe_inline_style }}">
+                                            <a style="{{ event.fgstyle|default('')|csp_unsafe_inline_style }}" href="{{ event.href|raw }}" title="{{ event.title|raw }} ({% if event.day %}{{ event.day }}, {% endif %}{{ event.date }}{% if event.time %}, {{ event.time }}{% endif %})"{{ event.target|default('')|raw }}>{{ event.link|raw }}</a>
                                         </div>
                                         <div class="event_time">
                                             {% if event.time %}{{ event.time }}<br>{% endif %}

@@ -102,14 +102,21 @@ class EventsProvider
      */
     public function findBoundaries(array $calendars): array
     {
-        $sql = 'SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid IN ('.implode(',', array_map(\intval(...), $calendars)).')';
+        if ([] === $calendars) {
+            return [0, 0, 0];
+        }
+
+        $params = array_map(\intval(...), array_values($calendars));
+        $sql = 'SELECT MIN(startTime) AS dateFrom, MAX(endTime) AS dateTo, MAX(repeatEnd) AS repeatUntil FROM tl_calendar_events WHERE pid IN ('.implode(', ', array_fill(0, \count($params), '?')).')';
 
         if (!$this->tokenChecker->isPreviewMode()) {
             $time = Date::floorToMinute();
-            $sql .= " AND published='1' AND (start='' OR start<=$time) AND (stop='' OR stop>$time)";
+            $sql .= " AND published='1' AND (start='' OR start<=?) AND (stop='' OR stop>?)";
+            $params[] = $time;
+            $params[] = $time;
         }
 
-        $row = $this->connection->fetchAssociative($sql) ?: [];
+        $row = $this->connection->fetchAssociative($sql, $params) ?: [];
 
         return [(int) ($row['dateFrom'] ?? 0), (int) ($row['dateTo'] ?? 0), (int) ($row['repeatUntil'] ?? 0)];
     }
