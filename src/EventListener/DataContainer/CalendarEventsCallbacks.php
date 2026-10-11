@@ -154,16 +154,8 @@ class CalendarEventsCallbacks
             return;
         }
 
-        $arrSet['weekday'] = (int) date('w', $record['startDate']);
-
-        if (!empty($record['addTime']) && !empty($record['ignoreEndTime']) && !empty($record['endDate']) && !empty($record['startTime'])) {
-            $arrSet['endTime'] = strtotime(date('Y-m-d', $record['endDate']).' '.date('H:i:s', $record['startTime']));
-        }
-
-        $arrSet['repeatEnd'] = 0;
-
         try {
-            [$arrAllRecurrences, $arrSet] = $this->recurrenceCalculator->calculate($record, [], [$arrSet['repeatEnd']], $arrSet);
+            $result = $this->recurrenceCalculator->calculate($record);
         } catch (\InvalidArgumentException $exception) {
             // The event is saved, but the recurrences cannot be calculated from the invalid data
             Message::addError(\sprintf($GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'], $exception->getMessage()));
@@ -171,11 +163,8 @@ class CalendarEventsCallbacks
             return;
         }
 
-        ksort($arrAllRecurrences);
-        $arrSet['allRecurrences'] = serialize($arrAllRecurrences);
-
         // Execute the update sql
-        $this->db->update('tl_calendar_events', $arrSet, ['id' => $dc->id]);
+        $this->db->update('tl_calendar_events', $result->toColumns(), ['id' => $dc->id]);
     }
 
     /**

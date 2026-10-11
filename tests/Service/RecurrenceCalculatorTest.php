@@ -513,13 +513,9 @@ final class RecurrenceCalculatorTest extends TestCase
     {
         $calculator = new RecurrenceCalculator($maxRepeatCount, $maxExceptionsCount);
 
-        // like the onsubmit callback: endTime is only set when the end time is ignored
-        $arrSet = ['repeatEnd' => 0];
-        [$all, $set] = $calculator->calculate((array) $event, [], [0], $arrSet);
+        $result = $calculator->calculate((array) $event);
 
-        ksort($all);
-
-        return [$all, $set];
+        return [$result->recurrences, $result->set];
     }
 
     /**

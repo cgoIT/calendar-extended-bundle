@@ -54,16 +54,21 @@ class RecurrenceCalculator
     /**
      * Calculate all recurrences and exceptions of an event.
      *
-     * @param array<string, mixed> $record            the row of the event (tl_calendar_events)
-     * @param array<mixed>         $arrAllRecurrences
-     * @param array<mixed>         $maxRepeatEnd      possible end dates of the series
-     * @param array<mixed>         $arrSet            values to be stored in the event (repeatEnd, exceptionList ...)
-     *
-     * @return array{0: array<int, array<string, mixed>>, 1: array<string, mixed>} all recurrences by start time and the values to be stored
+     * @param array<string, mixed> $record the row of the event (tl_calendar_events)
      */
-    public function calculate(array $record, array $arrAllRecurrences, array $maxRepeatEnd, array $arrSet): array
+    public function calculate(array $record): RecurrenceResult
     {
         $record += array_fill_keys(self::RECORD_FIELDS, null);
+
+        $arrSet = ['weekday' => (int) date('w', (int) $record['startDate']), 'repeatEnd' => 0];
+
+        if (!empty($record['addTime']) && !empty($record['ignoreEndTime']) && !empty($record['endDate']) && !empty($record['startTime'])) {
+            $arrSet['endTime'] = strtotime(date('Y-m-d', $record['endDate']).' '.date('H:i:s', $record['startTime']));
+        }
+
+        $arrAllRecurrences = [];
+        // The number of entries controls the calculation of repeatEnd, the first one is the initial value
+        $maxRepeatEnd = [0];
 
         // Process fixed dates
         [$repeatFixedDates, $arrAllRecurrences, $maxRepeatEnd] = $this->getFixedDates($record, $arrAllRecurrences, $maxRepeatEnd);
@@ -87,7 +92,9 @@ class RecurrenceCalculator
             $arrSet['repeatEnd'] = max($maxRepeatEnd);
         }
 
-        return [$arrAllRecurrences, $arrSet];
+        ksort($arrAllRecurrences);
+
+        return new RecurrenceResult($arrAllRecurrences, $arrSet);
     }
 
     /**
