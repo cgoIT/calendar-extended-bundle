@@ -175,9 +175,11 @@ abstract class CalendarViewTestCase extends TestCase
             ->method('findBoundaries')
             ->willReturn($boundaries)
         ;
+
         $provider
             ->method('getAllEvents')
-            ->willReturn($events);
+            ->willReturn($events)
+        ;
 
         return $provider;
     }

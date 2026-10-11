@@ -70,6 +70,38 @@ final class RecurrenceCalculatorTest extends TestCase
         $this->assertSame('2025-03-03 10:00', $first['str_end']);
     }
 
+    public function testRecurrencesKeepTheLocalTimeAcrossTheChangeToDaylightSavingTime(): void
+    {
+        $timezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            // Friday 2025-03-28, 09:00-10:00; the clocks change on Sunday 2025-03-30
+            foreach (['days' => ['2025-03-28', '2025-03-29', '2025-03-30', '2025-03-31'], 'weeks' => ['2025-03-28', '2025-04-04', '2025-04-11', '2025-04-18']] as $unit => $dates) {
+                $event = $this->event([
+                    'startDate' => strtotime('2025-03-28'),
+                    'endDate' => strtotime('2025-03-28'),
+                    'startTime' => strtotime('2025-03-28 09:00'),
+                    'endTime' => strtotime('2025-03-28 10:00'),
+                    'recurring' => 1,
+                    'repeatEach' => serialize(['value' => 1, 'unit' => $unit]),
+                    'recurrences' => 3,
+                ]);
+
+                [$all] = $this->calculate($event);
+
+                $this->assertSame($this->times(...$dates), array_keys($all), $unit);
+
+                foreach ($all as $recurrence) {
+                    $this->assertSame('09:00', date('H:i', $recurrence['int_start']), $unit);
+                    $this->assertSame('10:00', date('H:i', $recurrence['int_end']), $unit);
+                }
+            }
+        } finally {
+            date_default_timezone_set($timezone);
+        }
+    }
+
     public function testWeeklyRecurrenceKeepsDuration(): void
     {
         $event = $this->event([
