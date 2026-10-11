@@ -319,6 +319,53 @@ final class UtilsTest extends TestCase
         yield 'after' => [250, 300, false];
     }
 
+    public function testParseTimeRange(): void
+    {
+        $this->assertSame(
+            [strtotime('2025-03-01T00:00:00'), strtotime('2025-04-12T00:00:00')],
+            Utils::parseTimeRange('2025-03-01T00:00:00', '2025-04-12T00:00:00', 400 * 86400),
+        );
+    }
+
+    #[DataProvider('invalidTimeRanges')]
+    public function testParseTimeRangeRejectsInvalidValues(string $start, string $end): void
+    {
+        $this->assertNull(Utils::parseTimeRange($start, $end, 400 * 86400));
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function invalidTimeRanges(): iterable
+    {
+        yield 'empty' => ['', ''];
+        yield 'not a date' => ['foo', 'bar'];
+        yield 'end missing' => ['2025-03-01', ''];
+        yield 'end before start' => ['2025-04-01', '2025-03-01'];
+        yield 'too long' => ['2025-01-01', '2027-01-01'];
+    }
+
+    public function testFindOverlappingEventIdsIgnoresTheOwnEventAndNeighbours(): void
+    {
+        $events = [
+            ['id' => '1', 'startTime' => '100', 'endTime' => '200'], // own event
+            ['id' => '2', 'startTime' => '150', 'endTime' => '250'], // overlaps
+            ['id' => '3', 'startTime' => '200', 'endTime' => '300'], // touches
+            ['id' => '4', 'startTime' => '0', 'endTime' => '1000'], // encloses
+        ];
+
+        $this->assertSame([2, 4], Utils::findOverlappingEventIds(100, 200, 1, $events));
+        $this->assertSame([], Utils::findOverlappingEventIds(100, 200, 1, []));
+    }
+
+    public function testResolveRequestedTimesRejectsOccurrencesBeyondThePrecalculation(): void
+    {
+        // Only the stored recurrences are known, a later occurrence of an endless series is ignored
+        $recurrences = [1700100000 => ['int_start' => 1700100000, 'int_end' => 1700103600]];
+
+        $this->assertNull(Utils::resolveRequestedTimes('1900000000,1900003600', 1700000000, 1700003600, $recurrences, [], false));
+    }
+
     #[DataProvider('requestedTimes')]
     public function testResolveRequestedTimes(string $times, bool $valid): void
     {

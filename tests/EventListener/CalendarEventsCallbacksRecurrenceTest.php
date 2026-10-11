@@ -18,6 +18,7 @@ use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallb
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\DataContainer;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -532,6 +533,39 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $values = ['title' => 'Concert'];
 
         $this->assertSame($values, $this->createCallbacks(365, 250)->checkRecurrenceTypes($values, $this->createDataContainer(['recurring' => 1])));
+    }
+
+    /**
+     * @param array<string, mixed> $record
+     * @param array<string, mixed> $values
+     */
+    #[DataProvider('overlapChecksWithoutQuery')]
+    public function testCheckOverlappingSkipsRecordsThatAreNotChecked(int $id, array $record, array $values): void
+    {
+        $dc = $this->createMock(DataContainer::class);
+        $dc
+            ->method('__get')
+            ->with('id')
+            ->willReturn($id)
+        ;
+
+        $dc
+            ->method('getCurrentRecord')
+            ->willReturn($record)
+        ;
+
+        $this->assertSame($values, $this->createCallbacks(365, 250)->checkOverlapping($values, $dc));
+    }
+
+    /**
+     * @return iterable<string, array{int, array<string, mixed>, array<string, mixed>}>
+     */
+    public static function overlapChecksWithoutQuery(): iterable
+    {
+        yield 'no record id' => [0, ['startDate' => 1741000000], ['title' => 'Concert']];
+        yield 'core recurrence' => [1, ['startDate' => 1741000000, 'recurring' => 1], ['title' => 'Concert']];
+        yield 'extended recurrence submitted' => [1, ['startDate' => 1741000000], ['recurringExt' => '1']];
+        yield 'no start date' => [1, [], ['title' => 'Concert']];
     }
 
     /**

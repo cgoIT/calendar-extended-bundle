@@ -192,6 +192,49 @@ class Utils
     }
 
     /**
+     * Parses the requested time range of the FullCalendar request.
+     *
+     * @param int $maxRange maximum length of the range in seconds
+     *
+     * @return array{int, int}|null start and end time stamp or null if the range is not valid
+     */
+    public static function parseTimeRange(string $start, string $end, int $maxRange): array|null
+    {
+        $intStart = strtotime($start);
+        $intEnd = strtotime($end);
+
+        if (false === $intStart || false === $intEnd || $intEnd < $intStart || $intEnd - $intStart > $maxRange) {
+            return null;
+        }
+
+        return [$intStart, $intEnd];
+    }
+
+    /**
+     * Returns the IDs of the events that overlap the given time range.
+     *
+     * @param iterable<array{id: int|string, startTime: int|string, endTime: int|string}> $events the events to compare with
+     *
+     * @return array<int>
+     */
+    public static function findOverlappingEventIds(int $start, int $end, int $ownId, iterable $events): array
+    {
+        $ids = [];
+
+        foreach ($events as $event) {
+            if ((int) $event['id'] === $ownId) {
+                continue;
+            }
+
+            if (self::rangesOverlap($start, $end, (int) $event['startTime'], (int) $event['endTime'])) {
+                $ids[] = (int) $event['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
      * Checks if two time ranges overlap. Ranges that only touch each other do not overlap.
      */
     public static function rangesOverlap(int $start, int $end, int $otherStart, int $otherEnd): bool

@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
 use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
 use Contao\Controller;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
@@ -50,26 +51,42 @@ class FetchEventsController
             throw new NotFoundHttpException();
         }
 
-        if (!Controller::isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page))) {
+        // Load the details, otherwise the protection inherited from the parent pages is missing
+        $page->loadDetails();
+
+        if (!Controller::isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page)) || $this->isHiddenForMembers($objModule)) {
             throw new NotFoundHttpException();
         }
 
-        $intStart = strtotime((string) Input::post('start'));
-        $intEnd = strtotime((string) Input::post('end'));
+        $range = Utils::parseTimeRange((string) Input::post('start'), (string) Input::post('end'), self::MAX_RANGE);
 
-        if (false === $intStart || false === $intEnd || $intEnd < $intStart || $intEnd - $intStart > self::MAX_RANGE) {
+        if (null === $range) {
             throw new BadRequestHttpException('Invalid time range.');
         }
 
+        [$intStart, $intEnd] = $range;
+
+        // The hooks and the date formatting of the core expect the current page in the global variable
+        $previousPage = $GLOBALS['objPage'] ?? null;
+        $GLOBALS['objPage'] = $page;
         $request->attributes->set('pageModel', $page);
 
         try {
             $events = $this->fetchEvents(new ModuleFullCalendar($objModule), $intStart, $intEnd);
         } finally {
             $request->attributes->set('pageModel', null);
+            $GLOBALS['objPage'] = $previousPage;
         }
 
         return new JsonResponse($events);
+    }
+
+    /**
+     * The module can be restricted to guests (not logged in members).
+     */
+    private function isHiddenForMembers(ModuleModel $objModule): bool
+    {
+        return (bool) $objModule->guests && System::getContainer()->get('security.helper')->isGranted('ROLE_MEMBER');
     }
 
     private function isPageAccessible(PageModel $page): bool

@@ -93,7 +93,7 @@ class CalendarEventsCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'config.onbeforesubmit')]
     public function checkOverlapping(array $values, DataContainer $dc): array
     {
-        // Return if there is no active record (override all)
+        // Return if there is no record yet (the form is only rendered)
         if (!$dc->id) {
             return $values;
         }
@@ -114,22 +114,19 @@ class CalendarEventsCallbacks extends Backend
         [$intStart, $intEnd] = Utils::calculateEventRange($record);
 
         $objEvents = CalendarEventsModel::findCurrentByPid((int) $record['pid'], $intStart, $intEnd, ['return' => 'Collection']);
-        $nonUniqueEvents = [];
+
+        $rows = [];
 
         foreach ($objEvents ?? [] as $objEvent) {
-            // do not add the event with the current id
-            if ((int) $objEvent->id === (int) $dc->id) {
-                continue;
-            }
-
-            // findCurrentByPid also returns recurring events. therefor we have to check the times
-            if (Utils::rangesOverlap($intStart, $intEnd, (int) $objEvent->startTime, (int) $objEvent->endTime)) {
-                $nonUniqueEvents[] = $objEvent->id;
-            }
+            $rows[] = $objEvent->row();
         }
 
+        // findCurrentByPid also returns recurring events. therefor we have to check the times
+        $nonUniqueEvents = Utils::findOverlappingEventIds($intStart, $intEnd, (int) $dc->id, $rows);
+
         if ([] !== $nonUniqueEvents) {
-            throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'].' ('.implode(',', $nonUniqueEvents).')');
+            // In the multi edit modes all records are rolled back, so the message names the event that is checked
+            throw new CalendarExtendedException(\sprintf('"%s" (ID %d): %s (%s)', StringUtil::specialchars((string) ($record['title'] ?? '')), (int) $dc->id, $GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'], implode(',', $nonUniqueEvents)));
         }
 
         return $values;
