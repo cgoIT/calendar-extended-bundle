@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Events;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
-use Contao\CalendarEventsModel;
 use Contao\Date;
 use Contao\StringUtil;
 
@@ -24,8 +23,10 @@ use Contao\StringUtil;
  */
 class RecurringEventsLoader
 {
-    public function __construct(private readonly EventFactory $eventFactory)
-    {
+    public function __construct(
+        private readonly RecurringEventsFinder $finder,
+        private readonly EventFactory $eventFactory,
+    ) {
     }
 
     /**
@@ -43,40 +44,30 @@ class RecurringEventsLoader
             return $arrEvents;
         }
 
-        $t = 'tl_calendar_events';
-        $time = time();
-        $arrRecurringEvents = CalendarEventsModel::findBy(
-            [
-                "$t.pid IN (".implode(', ', $arrCalendars).')',
-                "$t.recurringExt=?",
-                "$t.published='1' AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)",
-            ],
-            ['1'],
-        );
-        if (!empty($arrRecurringEvents)) {
-            foreach ($arrRecurringEvents as $objEvent) {
-                $allRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
+        $arrRecurringEvents = $this->finder->findWithExtendedRecurrences($arrCalendars);
 
-                foreach ($allRecurrences as $recurrence) {
-                    if ($recurrence['int_start'] >= $timeStart && $recurrence['int_start'] <= $timeEnd) {
-                        $key = Date::parse('Ymd', $recurrence['int_start']);
-                        if (\array_key_exists($key, $arrEvents) && \array_key_exists($recurrence['int_start'], $arrEvents[$key])) {
-                            $alreadyInArray = false;
+        foreach ($arrRecurringEvents as $objEvent) {
+            $allRecurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
 
-                            foreach ($arrEvents[$key][$recurrence['int_start']] as $event) {
-                                if ($event['id'] === $objEvent->id) {
-                                    $alreadyInArray = true;
-                                    break;
-                                }
-                            }
+            foreach ($allRecurrences as $recurrence) {
+                if ($recurrence['int_start'] >= $timeStart && $recurrence['int_start'] <= $timeEnd) {
+                    $key = Date::parse('Ymd', $recurrence['int_start']);
+                    if (\array_key_exists($key, $arrEvents) && \array_key_exists($recurrence['int_start'], $arrEvents[$key])) {
+                        $alreadyInArray = false;
 
-                            if ($alreadyInArray) {
-                                continue;
+                        foreach ($arrEvents[$key][$recurrence['int_start']] as $event) {
+                            if ($event['id'] === $objEvent->id) {
+                                $alreadyInArray = true;
+                                break;
                             }
                         }
 
-                        $this->eventFactory->create($objEvent, $context, $recurrence['int_start'], $recurrence['int_end'], $arrEvents, false);
+                        if ($alreadyInArray) {
+                            continue;
+                        }
                     }
+
+                    $this->eventFactory->create($objEvent, $context, $recurrence['int_start'], $recurrence['int_end'], $arrEvents, false);
                 }
             }
         }
@@ -103,70 +94,59 @@ class RecurringEventsLoader
             return $arrEvents;
         }
 
-        $t = 'tl_calendar_events';
-        $time = time();
-        $arrEventsWithFixedRepeats = CalendarEventsModel::findBy(
-            [
-                "$t.pid IN (".implode(', ', $arrCalendars).')',
-                "$t.repeatFixedDates IS NOT NULL",
-                "$t.repeatFixedDates !=?",
-                "$t.published='1' AND ($t.start='' OR $t.start<=$time) AND ($t.stop='' OR $t.stop>$time)",
-            ],
-            [''],
-        );
-        if (!empty($arrEventsWithFixedRepeats)) {
-            foreach ($arrEventsWithFixedRepeats as $objEvent) {
-                $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
+        $arrEventsWithFixedRepeats = $this->finder->findWithFixedDates($arrCalendars);
 
-                if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
-                    $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
+        foreach ($arrEventsWithFixedRepeats as $objEvent) {
+            $arrFixedDates = StringUtil::deserialize($objEvent->repeatFixedDates);
 
-                    foreach ($arrFixedDates as $date) {
-                        $intStart = $date['new_repeat'];
-                        $intEnd = $intStart;
-                        $reason = $date['reason'] ?? null;
+            if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
+                $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
 
-                        if ($objEvent->addTime) {
-                            if (empty($date['new_start'])) {
-                                $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->startTime));
-                            } else {
-                                $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_start']));
-                            }
+                foreach ($arrFixedDates as $date) {
+                    $intStart = $date['new_repeat'];
+                    $intEnd = $intStart;
+                    $reason = $date['reason'] ?? null;
 
-                            if ($objEvent->ignoreEndTime) {
-                                $intEnd = $intStart;
-                            } else {
-                                if (empty($date['new_end'])) {
-                                    $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->endTime));
-                                } else {
-                                    $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
-                                }
-                            }
-                        } elseif (empty($objEvent->endDate)) {
-                            // Only start date is set. Event will take place the whole day.
-                            $intEnd = $intStart + $objEvent->endTime - $objEvent->startTime;
+                    if ($objEvent->addTime) {
+                        if (empty($date['new_start'])) {
+                            $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->startTime));
+                        } else {
+                            $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_start']));
                         }
 
-                        if ($intStart >= $timeStart && $intStart <= $timeEnd) {
-                            $key = Date::parse('Ymd', $intStart);
-                            if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
-                                $alreadyInArray = false;
+                        if ($objEvent->ignoreEndTime) {
+                            $intEnd = $intStart;
+                        } else {
+                            if (empty($date['new_end'])) {
+                                $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->endTime));
+                            } else {
+                                $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
+                            }
+                        }
+                    } elseif (empty($objEvent->endDate)) {
+                        // Only start date is set. Event will take place the whole day.
+                        $intEnd = $intStart + $objEvent->endTime - $objEvent->startTime;
+                    }
 
-                                foreach ($arrEvents[$key][$intStart] as $idx => $event) {
-                                    if ($event['id'] === $objEvent->id) {
-                                        $arrEvents[$key][$intStart][$idx]['recurrences'] = \count($arrFixedDates);
-                                        $alreadyInArray = true;
-                                        break;
-                                    }
-                                }
+                    if ($intStart >= $timeStart && $intStart <= $timeEnd) {
+                        $key = Date::parse('Ymd', $intStart);
+                        if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
+                            $alreadyInArray = false;
 
-                                if ($alreadyInArray) {
-                                    continue;
+                            foreach ($arrEvents[$key][$intStart] as $idx => $event) {
+                                if ($event['id'] === $objEvent->id) {
+                                    $arrEvents[$key][$intStart][$idx]['recurrences'] = \count($arrFixedDates);
+                                    $alreadyInArray = true;
+                                    break;
                                 }
                             }
 
-                            $this->eventFactory->create($objEvent, $context, $intStart, $intEnd, $arrEvents, true, \count($arrFixedDates), $reason);
+                            if ($alreadyInArray) {
+                                continue;
+                            }
                         }
+
+                        $this->eventFactory->create($objEvent, $context, $intStart, $intEnd, $arrEvents, true, \count($arrFixedDates), $reason);
                     }
                 }
             }

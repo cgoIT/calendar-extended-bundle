@@ -19,6 +19,7 @@ use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\ContentModel;
 use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Routing\ContentUrlGenerator;
 use Contao\Date;
 use Contao\PageModel;
@@ -36,6 +37,7 @@ class EventFactory
     public function __construct(
         #[Autowire(service: 'contao.routing.content_url_generator')]
         private readonly ContentUrlGenerator $urlGenerator,
+        private readonly ContaoFramework $framework,
     ) {
     }
 
@@ -53,7 +55,7 @@ class EventFactory
             return;
         }
 
-        System::loadLanguageFile('tl_calendar_events');
+        $this->framework->getAdapter(System::class)->loadLanguageFile('tl_calendar_events');
 
         $intDate = $intStart;
         $strDate = Date::parse($objPage->dateFormat, $intStart);

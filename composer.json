@@ -60,6 +60,11 @@
       "Cgoit\\CalendarExtendedBundle\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Cgoit\\CalendarExtendedBundle\\Tests\\": "tests/"
+    }
+  },
   "config": {
     "allow-plugins": {
       "contao-components/installer": true,
