@@ -72,10 +72,7 @@ class TimeTableController extends AbstractCalendarViewController
         [$weekBegin, $weekEnd] = $this->getWeekStartAndEnd($intYear, $intWeek);
 
         // Get total count of weeks of the year
-        $weeksTotal = date('W', Utils::makeTime(0, 0, 0, 12, 31, $intYear));
-        if ('1' === $weeksTotal) {
-            $weeksTotal = date('W', Utils::makeTime(0, 0, 0, 12, 24, $intYear));
-        }
+        $weeksTotal = $this->getWeeksInYear($intYear);
 
         $time = Date::floorToMinute();
 
@@ -124,7 +121,7 @@ class TimeTableController extends AbstractCalendarViewController
             }
 
             // Previous week
-            $prevWeek = str_pad((string) (1 === $intWeek ? $weeksTotal : $intWeek - 1), 2, '0', STR_PAD_LEFT);
+            $prevWeek = str_pad((string) (1 === $intWeek ? $this->getWeeksInYear($intYear - 1) : $intWeek - 1), 2, '0', STR_PAD_LEFT);
             $prevYear = 1 === $intWeek ? $intYear - 1 : $intYear;
 
             $prevWeekEnd = $this->getWeekBeginAndEnd($prevYear.$prevWeek)[1];
@@ -139,8 +136,8 @@ class TimeTableController extends AbstractCalendarViewController
             $variables['current'] = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$intWeek.' '.$intYear;
 
             // Next week
-            $nextWeek = str_pad((string) ($intWeek === (int) $weeksTotal ? 1 : $intWeek + 1), 2, '0', STR_PAD_LEFT);
-            $nextYear = $intWeek === (int) $weeksTotal ? $intYear + 1 : $intYear;
+            $nextWeek = str_pad((string) ($intWeek === $weeksTotal ? 1 : $intWeek + 1), 2, '0', STR_PAD_LEFT);
+            $nextYear = $intWeek === $weeksTotal ? $intYear + 1 : $intYear;
 
             $nextWeekBegin = $this->getWeekBeginAndEnd($nextYear.$nextWeek)[0];
             if ($nextWeekBegin->tstamp < $lastWeek->tstamp) {
@@ -306,6 +303,14 @@ class TimeTableController extends AbstractCalendarViewController
         }
 
         return [$arrDays, $arrListTimes];
+    }
+
+    /**
+     * The 28th of December is always in the last ISO week of the year.
+     */
+    private function getWeeksInYear(int $year): int
+    {
+        return (int) date('W', Utils::makeTime(0, 0, 0, 12, 28, $year));
     }
 
     /**
