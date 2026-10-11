@@ -92,6 +92,20 @@ final class ConfigurationTest extends TestCase
         yield 'to empty' => ['to', ''];
     }
 
+    public function testRejectsMoveTimesFromLaterThanTo(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['exceptions' => ['move_times' => ['from' => '18:00', 'to' => '08:00']]]);
+    }
+
+    public function testAcceptsMoveTimesWithSingleDigitHour(): void
+    {
+        $config = $this->process(['exceptions' => ['move_times' => ['from' => '8:00', 'to' => '9:30']]]);
+
+        $this->assertSame('8:00', $config['exceptions']['move_times']['from']);
+    }
+
     public function testAcceptsValidMoveTimes(): void
     {
         $config = $this->process(['exceptions' => ['move_times' => ['from' => '06:30', 'to' => '22:00']]]);

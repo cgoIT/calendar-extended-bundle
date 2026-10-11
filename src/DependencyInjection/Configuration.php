@@ -81,7 +81,7 @@ class Configuration implements ConfigurationInterface
             ->info('The start time for the move time option. Default: 00:00.')
             ->defaultValue('00:00')
             ->validate()
-            ->ifTrue(static fn ($v): bool => !\is_string($v) || 1 !== preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $v))
+            ->ifTrue(static fn ($v): bool => !\is_string($v) || 1 !== preg_match('/^([01]?\d|2[0-3]):[0-5]\d$/', $v))
             ->thenInvalid('The time must have the format HH:MM, "%s" given.')
             ->end()
             ->end()
@@ -90,7 +90,7 @@ class Configuration implements ConfigurationInterface
             ->info('The end time for the move time option. Default: 23:59.')
             ->defaultValue('23:59')
             ->validate()
-            ->ifTrue(static fn ($v): bool => !\is_string($v) || 1 !== preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $v))
+            ->ifTrue(static fn ($v): bool => !\is_string($v) || 1 !== preg_match('/^([01]?\d|2[0-3]):[0-5]\d$/', $v))
             ->thenInvalid('The time must have the format HH:MM, "%s" given.')
             ->end()
             ->end()
@@ -101,6 +101,11 @@ class Configuration implements ConfigurationInterface
             ->defaultValue(15)
             ->end()
 
+            ->end()
+
+            ->validate()
+            ->ifTrue(static fn (array $v): bool => strtotime($v['from']) > strtotime($v['to']))
+            ->thenInvalid('The start time "from" of the move times must not be later than "to".')
             ->end()
         ;
     }
