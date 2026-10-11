@@ -37,6 +37,44 @@ final class GetAllEventsHookTest extends TestCase
         $this->assertSame('{"title":"Concert","location_plz":null}', $events[0]['filter_data']);
     }
 
+    public function testEventsOfOtherCalendarsAreHiddenDuringHolidays(): void
+    {
+        // The pid of the events is a string, the holiday calendars are integers
+        $events = $this->hideEventsDuringHolidays(
+            [
+                1741000000 => [
+                    ['pid' => '5', 'title' => 'Holiday'],
+                    ['pid' => '7', 'title' => 'Concert'],
+                    ['pid' => '7', 'title' => 'Fair', 'showOnFreeDay' => 1],
+                ],
+            ],
+            [5],
+        );
+
+        $this->assertSame(['Holiday', 'Fair'], array_column($events[1741000000], 'title'));
+    }
+
+    public function testEventsAreKeptOnDaysWithoutHoliday(): void
+    {
+        $events = $this->hideEventsDuringHolidays([1741000000 => [['pid' => '7', 'title' => 'Concert']]], [5]);
+
+        $this->assertSame(['Concert'], array_column($events[1741000000], 'title'));
+    }
+
+    /**
+     * @param array<int, array<int, array<string, mixed>>> $events    time => events
+     * @param array<int>                                   $calendars
+     *
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    private function hideEventsDuringHolidays(array $events, array $calendars): array
+    {
+        $hook = (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod($hook, 'hideEventsDuringHolidays');
+
+        return $method->invoke($hook, ['20250303' => $events], $calendars)['20250303'];
+    }
+
     /**
      * @param array<string>                    $filterFields
      * @param array<int, array<string, mixed>> $eventList

@@ -64,8 +64,9 @@ class GetAllEventsHook
         $arrEvents = $this->applyCalendarConfig($arrEvents);
 
         $arrEvents = $this->handleExceptions($arrEvents);
-        $arrEvents = $this->hideEventsDuringHolidays($arrEvents);
-        $arrEvents = $this->hideHolidayEvents($arrEvents, $objModule);
+        $arrHolidayCalendars = $this->getHolidayCalendarIds();
+        $arrEvents = $this->hideEventsDuringHolidays($arrEvents, $arrHolidayCalendars);
+        $arrEvents = $this->hideHolidayEvents($arrEvents, $objModule, $arrHolidayCalendars);
 
         $arrEvents = $this->handleShowOnlyNext($arrEvents, $objModule);
 
@@ -423,21 +424,21 @@ class GetAllEventsHook
 
     /**
      * @param array<mixed> $arrEvents
+     * @param array<int>   $arrHolidayCalendars
      *
      * @return array<mixed>
      */
-    private function hideEventsDuringHolidays(array $arrEvents): array
+    private function hideEventsDuringHolidays(array $arrEvents, array $arrHolidayCalendars): array
     {
-        $arrHolidayCalendars = $this->getHolidayCalendarIds();
-
         if (!empty($arrHolidayCalendars)) {
             foreach ($arrEvents as &$eventsOnDay) {
                 foreach ($eventsOnDay as &$events) {
-                    $eventPids = array_column($events, 'pid');
-                    $dayIsAHoliday = !empty(array_filter($eventPids, static fn ($pid) => \in_array($pid, $arrHolidayCalendars, true)));
+                    // The pid might be a string, depending on the database driver
+                    $eventPids = array_map(intval(...), array_column($events, 'pid'));
+                    $dayIsAHoliday = !empty(array_filter($eventPids, static fn (int $pid) => \in_array($pid, $arrHolidayCalendars, true)));
 
                     foreach ($events as $pos => $event) {
-                        $isHolidayEvent = \in_array($event['pid'], $arrHolidayCalendars, true);
+                        $isHolidayEvent = \in_array((int) $event['pid'], $arrHolidayCalendars, true);
 
                         if (!$isHolidayEvent && $dayIsAHoliday && empty($event['showOnFreeDay'])) {
                             unset($events[$pos]);
@@ -452,21 +453,18 @@ class GetAllEventsHook
 
     /**
      * @param array<mixed> $arrEvents
+     * @param array<int>   $arrHolidayCalendars
      *
      * @return array<mixed>
      */
-    private function hideHolidayEvents(array $arrEvents, Events $objModule): array
+    private function hideHolidayEvents(array $arrEvents, Events $objModule, array $arrHolidayCalendars): array
     {
-        if (!empty($objModule->hide_holiday)) {
-            $arrHolidayCalendars = $this->getHolidayCalendarIds();
-
-            if (!empty($arrHolidayCalendars)) {
-                foreach ($arrEvents as &$eventsOnDay) {
-                    foreach ($eventsOnDay as &$events) {
-                        foreach ($events as $pos => $event) {
-                            if (\in_array((int) $event['pid'], $arrHolidayCalendars, true)) {
-                                unset($events[$pos]);
-                            }
+        if (!empty($objModule->hide_holiday) && !empty($arrHolidayCalendars)) {
+            foreach ($arrEvents as &$eventsOnDay) {
+                foreach ($eventsOnDay as &$events) {
+                    foreach ($events as $pos => $event) {
+                        if (\in_array((int) $event['pid'], $arrHolidayCalendars, true)) {
+                            unset($events[$pos]);
                         }
                     }
                 }
