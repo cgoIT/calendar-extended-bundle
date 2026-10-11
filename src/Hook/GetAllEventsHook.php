@@ -88,8 +88,9 @@ class GetAllEventsHook
             foreach ($eventsOnDay as $startTime => &$events) {
                 foreach ($events as $pos => &$event) {
                     if (!empty($event['recurring']) && !empty($event['repeatWeekday'])) {
-                        $weekdays = StringUtil::deserialize($event['repeatWeekday'], true);
-                        $eventWeekday = Date::parse('w', $startTime);
+                        // The stored weekdays might be strings or integers, depending on the origin of the event
+                        $weekdays = array_map(intval(...), StringUtil::deserialize($event['repeatWeekday'], true));
+                        $eventWeekday = (int) date('w', (int) $startTime);
                         if (!\in_array($eventWeekday, $weekdays, true)) {
                             unset($events[$pos]);
                         }
