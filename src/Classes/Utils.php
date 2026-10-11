@@ -42,6 +42,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'background', 'background-color:#'.$cssColor.';');
+                    $calConf[$cal]['backgroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 
                 if (!empty($cssOpacity)) {
@@ -54,6 +55,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'foreground', 'color:#'.$cssColor.';');
+                    $calConf[$cal]['foregroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 
                 if (!empty($cssOpacity)) {
@@ -63,6 +65,39 @@ class Utils
         }
 
         return $calConf;
+    }
+
+    /**
+     * Builds a plain CSS color value (e.g. for FullCalendar, which does not accept CSS declarations).
+     *
+     * @param string          $hex     the color as stored by the color picker, with or without leading "#"
+     * @param int|string|null $opacity the opacity in percent (0-100), empty for opaque
+     *
+     * @return string "#rrggbb", "rgba(r, g, b, a)" if an opacity below 100 is set, or an empty string for an invalid color
+     */
+    public static function buildCssColor(string $hex, int|string|null $opacity = null): string
+    {
+        $hex = ltrim($hex, '#');
+
+        if (1 !== preg_match('/^([0-9a-f]{3}|[0-9a-f]{6})$/i', $hex)) {
+            return '';
+        }
+
+        if (3 === \strlen($hex)) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+
+        if (empty($opacity) || (int) $opacity >= 100 || (int) $opacity < 0) {
+            return '#'.strtolower($hex);
+        }
+
+        return \sprintf(
+            'rgba(%d, %d, %d, %s)',
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+            (string) ((int) $opacity / 100),
+        );
     }
 
     /**

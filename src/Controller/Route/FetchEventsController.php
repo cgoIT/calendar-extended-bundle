@@ -150,8 +150,8 @@ class FetchEventsController
                             'overlap' => false,
                             'url' => $event['href'],
                             'icon' => $icon,
-                            'backgroundColor' => $event['bgstyle'] ?? '',
-                            'textColor' => $event['fgstyle'] ?? '',
+                            'backgroundColor' => $event['bgcolor'] ?? '',
+                            'textColor' => $event['fgcolor'] ?? '',
                         ];
                     }
 

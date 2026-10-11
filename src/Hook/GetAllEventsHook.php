@@ -114,6 +114,8 @@ class GetAllEventsHook
                 foreach ($events as &$event) {
                     $event['bgstyle'] = '';
                     $event['fgstyle'] = '';
+                    $event['bgcolor'] = '';
+                    $event['fgcolor'] = '';
 
                     if (isset($this->calConf[$event['pid']])) {
                         $conf = $this->calConf[$event['pid']];
@@ -124,6 +126,8 @@ class GetAllEventsHook
                         if (!empty($conf['foreground'])) {
                             $event['fgstyle'] = $conf['foreground'];
                         }
+                        $event['bgcolor'] = $conf['backgroundColor'] ?? '';
+                        $event['fgcolor'] = $conf['foregroundColor'] ?? '';
                     }
                 }
             }

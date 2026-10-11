@@ -15,10 +15,32 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\Classes;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    #[DataProvider('cssColors')]
+    public function testBuildCssColor(string $expected, string $hex, int|string|null $opacity): void
+    {
+        $this->assertSame($expected, Utils::buildCssColor($hex, $opacity));
+    }
+
+    /**
+     * @return iterable<string, array{string, string, int|string|null}>
+     */
+    public static function cssColors(): iterable
+    {
+        yield 'opaque' => ['#ff0000', 'ff0000', null];
+        yield 'leading hash' => ['#ff0000', '#FF0000', ''];
+        yield 'short notation' => ['#aabbcc', 'abc', '100'];
+        yield 'opacity as string' => ['rgba(255, 0, 0, 0.5)', 'ff0000', '50'];
+        yield 'opacity as int' => ['rgba(0, 128, 255, 0.25)', '0080ff', 25];
+        yield 'zero opacity is ignored like in the style attribute' => ['#00ff00', '00ff00', 0];
+        yield 'invalid color' => ['', 'red', null];
+        yield 'empty color' => ['', '', 50];
+    }
+
     public function testAppendToArrayKeyCreatesAndAppends(): void
     {
         $arr = [];
