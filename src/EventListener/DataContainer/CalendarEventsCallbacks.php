@@ -152,8 +152,8 @@ class CalendarEventsCallbacks extends Backend
                 }
 
                 if (!empty($nonUniqueEvents)) {
+                    // The event is already saved at this point, so only a message is shown
                     Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'].' ('.implode(',', $nonUniqueEvents).')');
-                    $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
                 }
             }
         }
@@ -235,13 +235,8 @@ class CalendarEventsCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.recurring.save')]
     public function checkRecurring(mixed $value, DataContainer $dc): mixed
     {
-        // @phpstan-ignore-next-line
-        $activeRecord = (object) $dc->getCurrentRecord();
-        if (!empty($value) && !empty($activeRecord->recurringExt)) {
-            Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
-            $activeRecord->recurring = false; // @phpstan-ignore-line
-
-            $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
+        if (!empty($value) && $this->isOptionActive('recurringExt', $dc)) {
+            throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
         }
 
         return $value;
@@ -255,13 +250,8 @@ class CalendarEventsCallbacks extends Backend
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.recurringExt.save')]
     public function checkRecurringExt(mixed $value, DataContainer $dc): mixed
     {
-        // @phpstan-ignore-next-line
-        $activeRecord = (object) $dc->getCurrentRecord();
-        if (!empty($value) && !empty($activeRecord->recurring)) {
-            Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
-            $activeRecord->recurringExt = false; // @phpstan-ignore-line
-
-            $this->redirect($this->addToUrl($this->requestStack->getCurrentRequest()->getUri()));
+        if (!empty($value) && $this->isOptionActive('recurring', $dc)) {
+            throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring']);
         }
 
         return $value;
@@ -791,5 +781,25 @@ class CalendarEventsCallbacks extends Backend
         }
 
         return $arrRecurrence;
+    }
+
+    /**
+     * Checks if a checkbox is active in the submitted form. The database record is outdated
+     * while the form is processed, so it is only used if no form of the single edit mode was submitted.
+     */
+    private function isOptionActive(string $field, DataContainer $dc): bool
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (
+            null !== $request
+            && $request->request->has('FORM_SUBMIT')
+            && !\in_array($request->query->get('act'), ['editAll', 'overrideAll'], true)
+        ) {
+            return !empty($request->request->get($field));
+        }
+
+        // @phpstan-ignore-next-line
+        return !empty($dc->getCurrentRecord()[$field]);
     }
 }

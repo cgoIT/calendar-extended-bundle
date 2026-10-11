@@ -15,9 +15,12 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\EventListener;
 
 use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallbacks;
+use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
 use Contao\DataContainer;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Tests the pre-calculation of recurrences that runs when an event is saved in the back end.
@@ -40,6 +43,7 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $GLOBALS['TL_CONFIG']['datimFormat'] = 'Y-m-d H:i';
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
         $GLOBALS['TL_LANG']['MONTHS'] = self::MONTHS;
+        $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
     }
 
     protected function tearDown(): void
@@ -473,6 +477,82 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $update = $this->save($event);
 
         $this->assertSame(strtotime('2025-03-05 09:00:00'), $update['endTime']);
+    }
+
+    public function testCheckRecurringThrowsIfExtendedRecurrenceIsSubmitted(): void
+    {
+        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurringExt' => '1'], ['recurring' => 0]);
+
+        $this->expectException(CalendarExtendedException::class);
+        $this->expectExceptionMessage('Only one option can be active for recurrences.');
+
+        $callbacks->checkRecurring('1', $this->createDataContainer(['recurring' => 0]));
+    }
+
+    public function testCheckRecurringExtThrowsIfCoreRecurrenceIsSubmitted(): void
+    {
+        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurring' => '1']);
+
+        $this->expectException(CalendarExtendedException::class);
+
+        $callbacks->checkRecurringExt('1', $this->createDataContainer([]));
+    }
+
+    public function testCheckRecurringAllowsSwitchingTheRecurrenceType(): void
+    {
+        // The stored record still has the extended recurrence, but the form unchecks it
+        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurring' => '1']);
+
+        $this->assertSame('1', $callbacks->checkRecurring('1', $this->createDataContainer(['recurringExt' => 1])));
+    }
+
+    public function testCheckRecurringAllowsDisabling(): void
+    {
+        $callbacks = $this->createCallbacksWithRequest(['FORM_SUBMIT' => 'tl_calendar_events', 'recurringExt' => '1']);
+
+        $this->assertSame('', $callbacks->checkRecurring('', $this->createDataContainer([])));
+    }
+
+    public function testCheckRecurringFallsBackToStoredRecordWithoutFormSubmit(): void
+    {
+        $callbacks = $this->createCallbacksWithRequest([]);
+
+        $this->expectException(CalendarExtendedException::class);
+
+        $callbacks->checkRecurring('1', $this->createDataContainer(['recurringExt' => 1]));
+    }
+
+    /**
+     * @param array<string, mixed> $post
+     * @param array<string, mixed> $query
+     */
+    private function createCallbacksWithRequest(array $post, array $query = []): CalendarEventsCallbacks
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/contao', 'POST', $post));
+
+        if ([] !== $query) {
+            $requestStack->getCurrentRequest()->query->add($query);
+        }
+
+        $callbacks = $this->createCallbacks(365, 250);
+        (new \ReflectionProperty(CalendarEventsCallbacks::class, 'requestStack'))->setValue($callbacks, $requestStack);
+
+        return $callbacks;
+    }
+
+    /**
+     * @param array<string, mixed> $record
+     */
+    private function createDataContainer(array $record): DataContainer
+    {
+        $dc = $this->createMock(DataContainer::class);
+        $dc
+            ->method('getCurrentRecord')
+            ->willReturn($record)
+        ;
+
+        return $dc;
     }
 
     /**
