@@ -269,6 +269,53 @@ final class UtilsTest extends TestCase
         $this->assertSame('', Utils::getPlainTeaser(null));
     }
 
+    public function testCalculateEventRangeWithoutTime(): void
+    {
+        [$start, $end] = Utils::calculateEventRange(['startDate' => strtotime('2025-03-03 00:00'), 'endDate' => '', 'addTime' => 0]);
+
+        $this->assertSame(strtotime('2025-03-03 00:00'), $start);
+        $this->assertSame(strtotime('2025-03-03 23:59'), $end);
+    }
+
+    public function testCalculateEventRangeWithTime(): void
+    {
+        [$start, $end] = Utils::calculateEventRange([
+            'startDate' => strtotime('2025-03-03 00:00'),
+            'endDate' => strtotime('2025-03-04 00:00'),
+            'addTime' => 1,
+            'startTime' => strtotime('1970-01-01 10:00'),
+            'endTime' => strtotime('1970-01-01 12:30'),
+        ]);
+
+        $this->assertSame(strtotime('2025-03-03 10:00'), $start);
+        $this->assertSame(strtotime('2025-03-04 12:30'), $end);
+    }
+
+    #[DataProvider('overlappingRanges')]
+    public function testRangesOverlap(int $start, int $end, bool $expected): void
+    {
+        // existing event: 100 - 200
+        $this->assertSame($expected, Utils::rangesOverlap($start, $end, 100, 200));
+    }
+
+    /**
+     * @return iterable<string, array{int, int, bool}>
+     */
+    public static function overlappingRanges(): iterable
+    {
+        yield 'identical' => [100, 200, true];
+        yield 'same start, shorter' => [100, 150, true];
+        yield 'same start, longer' => [100, 300, true];
+        yield 'starts inside' => [150, 250, true];
+        yield 'ends inside' => [50, 150, true];
+        yield 'encloses' => [50, 250, true];
+        yield 'inside' => [120, 180, true];
+        yield 'touches the end' => [200, 300, false];
+        yield 'touches the start' => [0, 100, false];
+        yield 'before' => [0, 50, false];
+        yield 'after' => [250, 300, false];
+    }
+
     #[DataProvider('requestedTimes')]
     public function testResolveRequestedTimes(string $times, bool $valid): void
     {

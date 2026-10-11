@@ -166,6 +166,40 @@ class Utils
     }
 
     /**
+     * Calculates the time range covered by a (not recurring) event record.
+     *
+     * @param array<string, mixed> $record the event with the (already converted) date and time fields
+     *
+     * @return array{int, int} start and end time stamp
+     */
+    public static function calculateEventRange(array $record): array
+    {
+        $startDate = (int) $record['startDate'];
+        $endDate = !empty($record['endDate']) && (int) $record['endDate'] > $startDate ? (int) $record['endDate'] : $startDate;
+
+        $start = strtotime(date('Y-m-d', $startDate).' 00:00');
+        $end = strtotime(date('Y-m-d', $endDate).' 23:59');
+
+        if (!empty($record['addTime'])) {
+            $startTime = (int) ($record['startTime'] ?? 0);
+            $endTime = !empty($record['endTime']) ? (int) $record['endTime'] : $startTime;
+
+            $start = strtotime(date('Y-m-d', $startDate).' '.date('H:i:s', $startTime));
+            $end = strtotime(date('Y-m-d', $endDate).' '.date('H:i:s', $endTime));
+        }
+
+        return [$start, $end];
+    }
+
+    /**
+     * Checks if two time ranges overlap. Ranges that only touch each other do not overlap.
+     */
+    public static function rangesOverlap(int $start, int $end, int $otherStart, int $otherEnd): bool
+    {
+        return $start < $otherEnd && $end > $otherStart;
+    }
+
+    /**
      * Validates the parameter "times" of an event URL ("start,end") against the occurrences of the event.
      *
      * Only the event itself, a pre-calculated recurrence or an occurrence moved by an exception is accepted,

@@ -44,7 +44,7 @@ final class GetAllEventsHookTest extends TestCase
         $hook = (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor();
         $events = ['20250303' => [1741000000 => [['title' => 'Concert']]]];
 
-        $result = (new \ReflectionMethod($hook, $handler))->invoke($hook, $events, [], 0, 1, $this->createMock(Events::class));
+        $result = (new \ReflectionMethod($hook, $handler))->invoke($hook, $events, [], 0, 1, $this->createStub(Events::class));
 
         $this->assertSame($events, $result);
     }

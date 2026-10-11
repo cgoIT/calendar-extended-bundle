@@ -25,7 +25,6 @@ use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\Database\Result;
 use Contao\DataContainer;
 use Contao\Date;
-use Contao\Message;
 use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
@@ -84,81 +83,58 @@ class CalendarEventsCallbacks extends Backend
         return '<div class="tl_content_left">'.$arrRow['title'].' <span class="label-info">['.$date.']</span>'.$recurringIndicator.'</div>';
     }
 
-    #[AsCallback(table: 'tl_calendar_events', target: 'config.onsubmit')]
-    public function checkOverlapping(DataContainer $dc): bool
+    /**
+     * Checks for overlapping events of the same calendar before the event is saved.
+     *
+     * @param array<string, mixed> $values the submitted values (only the changed fields)
+     *
+     * @return array<string, mixed>
+     *
+     * @throws CalendarExtendedException
+     */
+    #[AsCallback(table: 'tl_calendar_events', target: 'config.onbeforesubmit')]
+    public function checkOverlapping(array $values, DataContainer $dc): array
     {
         // Return if there is no active record (override all)
         if (!$dc->id) {
-            return false;
+            return $values;
         }
 
+        // The submitted values are not yet part of the record
         // @phpstan-ignore-next-line
-        $activeRecord = (object) $dc->getCurrentRecord();
+        $record = array_merge((array) $dc->getCurrentRecord(), $values);
 
         // Return if the event is recurring
-        if ($activeRecord->recurring || $activeRecord->recurringExt) {
-            return false;
+        if (!empty($record['recurring']) || !empty($record['recurringExt']) || empty($record['startDate'])) {
+            return $values;
         }
 
-        // Set start date
-        $intStart = $activeRecord->startDate;
-        $intEnd = $activeRecord->startDate;
-
-        $intStart = strtotime(date('Y-m-d', $intStart).' 00:00');
-
-        // Set end date
-        if (!empty($activeRecord->endDate) && $activeRecord->endDate > $activeRecord->startDate) { // @phpstan-ignore-line
-            $intEnd = $activeRecord->endDate;
-        }
-        $intEnd = strtotime(date('Y-m-d', $intEnd).' 23:59');
-
-        // Add time
-        if ($activeRecord->addTime) {
-            $intStart = strtotime(date('Y-m-d', $intStart).' '.date('H:i:s', $activeRecord->startTime));
-            $intEnd = strtotime(date('Y-m-d', $intEnd).' '.date('H:i:s', $activeRecord->endTime));
+        if (!CalendarModel::findById((int) $record['pid'])?->uniqueEvents) {
+            return $values;
         }
 
-        // Check if we have time overlapping events
-        $uniqueEvents = CalendarModel::findById($activeRecord->pid)?->uniqueEvents;
+        [$intStart, $intEnd] = Utils::calculateEventRange($record);
 
-        if ($uniqueEvents) {
-            // array for events
-            $nonUniqueEvents = [];
+        $objEvents = CalendarEventsModel::findCurrentByPid((int) $record['pid'], $intStart, $intEnd, ['return' => 'Collection']);
+        $nonUniqueEvents = [];
 
-            // find all events
-            $objEvents = CalendarEventsModel::findCurrentByPid(
-                (int) $activeRecord->pid,
-                (int) $activeRecord->startTime,
-                (int) $activeRecord->endTime,
-                ['return' => 'Collection'],
-            );
+        foreach ($objEvents ?? [] as $objEvent) {
+            // do not add the event with the current id
+            if ((int) $objEvent->id === (int) $dc->id) {
+                continue;
+            }
 
-            if (!empty($objEvents)) {
-                foreach ($objEvents as $objEvent) {
-                    // do not add the event with the current id
-                    if ($objEvent->id === $activeRecord->id) {
-                        continue;
-                    }
-
-                    // findCurrentByPid also returns recurring events. therefor we have to check the times
-                    if (
-                        ($intStart > $objEvent->startTime && $intStart < $objEvent->endTime)
-                        || ($intEnd > $objEvent->startTime && $intEnd < $objEvent->endTime)
-                        || ($intStart < $objEvent->startTime && $intEnd > $objEvent->endTime)
-                        || ($intStart === $objEvent->startTime && $intEnd === $objEvent->endTime)
-                    ) {
-                        $nonUniqueEvents[] = $objEvent->id;
-                    }
-                }
-
-                if (!empty($nonUniqueEvents)) {
-                    // The event is already saved at this point, so only a message is shown
-                    Message::addError($GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'].' ('.implode(',', $nonUniqueEvents).')');
-                }
+            // findCurrentByPid also returns recurring events. therefor we have to check the times
+            if (Utils::rangesOverlap($intStart, $intEnd, (int) $objEvent->startTime, (int) $objEvent->endTime)) {
+                $nonUniqueEvents[] = $objEvent->id;
             }
         }
 
-        return true;
+        if ([] !== $nonUniqueEvents) {
+            throw new CalendarExtendedException($GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'].' ('.implode(',', $nonUniqueEvents).')');
+        }
+
+        return $values;
     }
 
     #[AsCallback(table: 'tl_calendar_events', target: 'fields.repeatFixedDates.load')]
