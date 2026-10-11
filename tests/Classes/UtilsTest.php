@@ -20,6 +20,25 @@ use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    #[DataProvider('fixedDates')]
+    public function testHasFixedDates(bool $expected, mixed $value): void
+    {
+        $this->assertSame($expected, Utils::hasFixedDates($value));
+    }
+
+    /**
+     * @return iterable<string, array{bool, mixed}>
+     */
+    public static function fixedDates(): iterable
+    {
+        yield 'null' => [false, null];
+        yield 'empty string' => [false, ''];
+        yield 'empty wizard row' => [false, serialize([['new_repeat' => '', 'new_start' => '', 'new_end' => '']])];
+        yield 'one date' => [true, serialize([['new_repeat' => 1741564800, 'new_start' => '', 'new_end' => '']])];
+        yield 'date in second row' => [true, serialize([['new_repeat' => '', 'new_start' => ''], ['new_repeat' => 1741564800]])];
+        yield 'invalid structure' => [false, serialize(['new_repeat' => 1741564800])];
+    }
+
     #[DataProvider('cssColors')]
     public function testBuildCssColor(string $expected, string $hex, int|string|null $opacity): void
     {

@@ -68,6 +68,27 @@ class Utils
     }
 
     /**
+     * Checks if the (serialized) fixed dates of an event contain at least one date.
+     */
+    public static function hasFixedDates(mixed $repeatFixedDates): bool
+    {
+        $rows = StringUtil::deserialize($repeatFixedDates);
+
+        if (empty($rows) || !\is_array($rows)) {
+            return false;
+        }
+
+        foreach ($rows as $row) {
+            // the multi column wizard stores an empty row as empty strings
+            if (\is_array($row) && !empty($row['new_repeat'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Builds a plain CSS color value (e.g. for FullCalendar, which does not accept CSS declarations).
      *
      * @param string          $hex     the color as stored by the color picker, with or without leading "#"

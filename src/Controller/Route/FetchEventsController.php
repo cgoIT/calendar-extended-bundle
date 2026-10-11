@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
 use Contao\Date;
 use Contao\Input;
@@ -120,8 +121,7 @@ class FetchEventsController
                         $recurring = true;
                     }
 
-                    $row = StringUtil::deserialize($event['repeatFixedDates']);
-                    if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
+                    if (Utils::hasFixedDates($event['repeatFixedDates'] ?? null)) {
                         $recurring = true;
                     }
 
