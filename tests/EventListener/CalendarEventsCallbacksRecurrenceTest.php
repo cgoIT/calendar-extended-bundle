@@ -15,6 +15,8 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\EventListener;
 
 use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallbacks;
+use Contao\DataContainer;
+use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -356,6 +358,60 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         [, $set] = $this->calculate($event, 365, 2);
 
         $this->assertCount(2, unserialize($set['exceptionList']));
+    }
+
+    public function testIgnoreEndTimeSetsEndTimeToEndDateWithStartTime(): void
+    {
+        // Event spans 2025-03-03 to 2025-03-05, starts at 09:00, the end time is ignored
+        $event = $this->event([
+            'id' => 7,
+            'endDate' => strtotime('2025-03-05'),
+            'ignoreEndTime' => 1,
+        ]);
+
+        $update = $this->save($event);
+
+        $this->assertSame(strtotime('2025-03-05 09:00:00'), $update['endTime']);
+    }
+
+    /**
+     * Runs the onsubmit callback and returns the data written to the database.
+     *
+     * @return array<string, mixed>
+     */
+    private function save(\stdClass $event): array
+    {
+        $dc = $this->createMock(DataContainer::class);
+        $dc
+            ->method('__get')
+            ->with('id')
+            ->willReturn($event->id)
+        ;
+
+        $dc
+            ->method('getCurrentRecord')
+            ->willReturn((array) $event)
+        ;
+
+        $update = [];
+        $db = $this->createMock(Connection::class);
+        $db
+            ->method('update')
+            ->willReturnCallback(
+                static function (string $table, array $data) use (&$update): int {
+                    $update = $data;
+
+                    return 1;
+                },
+            )
+        ;
+
+        $callbacks = $this->createCallbacks(365, 250);
+        (new \ReflectionProperty(CalendarEventsCallbacks::class, 'db'))->setValue($callbacks, $db);
+
+        $callbacks->handleRecurrencesAndExceptions($dc);
+
+        return $update;
     }
 
     /**

@@ -207,7 +207,7 @@ class CalendarEventsCallbacks extends Backend
         $arrSet['weekday'] = (int) date('w', $activeRecord->startDate);
 
         if ($activeRecord->addTime && $activeRecord->ignoreEndTime && !empty($activeRecord->endDate) && !empty($activeRecord->startTime)) {
-            $arrSet['endTime'] = strtotime(date('Y-m-d', $activeRecord->endDate).' '.date('H:i.S', $activeRecord->startTime));
+            $arrSet['endTime'] = strtotime(date('Y-m-d', $activeRecord->endDate).' '.date('H:i:s', $activeRecord->startTime));
         }
 
         $arrSet['repeatEnd'] = 0;
