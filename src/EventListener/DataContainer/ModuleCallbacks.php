@@ -18,14 +18,19 @@ use Contao\Backend;
 use Contao\BackendUser;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\System;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+#[AsAlias('calendar_extended.module.callbacks', public: true)]
 class ModuleCallbacks extends Backend
 {
     /**
      * @param array<string> $arrFilterFields
      */
-    public function __construct(private readonly array $arrFilterFields)
-    {
+    public function __construct(
+        #[Autowire(param: 'cgoit_calendar_extended.filter_fields')]
+        private readonly array $arrFilterFields,
+    ) {
         parent::__construct();
         $this->import(BackendUser::class, 'User');
     }

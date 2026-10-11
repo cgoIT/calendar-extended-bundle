@@ -17,7 +17,9 @@ namespace Cgoit\CalendarExtendedBundle\EventListener;
 use Contao\System;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-#[AsEventListener]
+// Die Event-Klasse gehört zur optionalen Abhängigkeit cgoit/contao-calendar-ical-bundle und wird
+// daher nur als String referenziert.
+#[AsEventListener(event: 'Cgoit\\ContaoCalendarIcalBundle\\Event\\AfterImportItemEvent', method: 'calculateAllRecurrences')]
 final class AfterImportItemListener
 {
     public function calculateAllRecurrences(object $event): void

@@ -22,7 +22,10 @@ use Contao\Input;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+#[AsAlias('calendar_extended.mcw.callbacks', public: true)]
 class CalendarEventsMCWCallbacks extends Backend
 {
     /**
@@ -36,7 +39,9 @@ class CalendarEventsMCWCallbacks extends Backend
      */
     public function __construct(
         private readonly Connection $db,
+        #[Autowire(param: 'cgoit_calendar_extended.exceptions.move_days')]
         private readonly int $exceptionsMoveDays,
+        #[Autowire(param: 'cgoit_calendar_extended.exceptions.move_times')]
         private readonly array $exceptionsMoveTimes,
     ) {
         parent::__construct();

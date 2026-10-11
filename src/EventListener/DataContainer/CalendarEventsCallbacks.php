@@ -28,7 +28,10 @@ use Contao\Date;
 use Contao\StringUtil;
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+#[AsAlias('calendar_extended.events.callbacks', public: true)]
 class CalendarEventsCallbacks extends Backend
 {
     /**
@@ -43,7 +46,9 @@ class CalendarEventsCallbacks extends Backend
 
     public function __construct(
         private readonly Connection $db,
+        #[Autowire(param: 'cgoit_calendar_extended.max_repeat_count')]
         private readonly int $maxRepeatCount,
+        #[Autowire(param: 'cgoit_calendar_extended.exceptions.max_count')]
         private readonly int $maxExceptionsCount,
     ) {
         parent::__construct();
