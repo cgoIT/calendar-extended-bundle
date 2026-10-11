@@ -271,13 +271,19 @@ class Utils
     /**
      * Appends the "moved" class and an optional custom class of the exception to the CSS classes of an event.
      *
+     * The templates output the classes unescaped, so only plain class names (letters, digits, "-" and "_")
+     * of the custom class are used.
+     *
      * @param string $classes the current classes with a leading space, as used by the event templates
      */
     public static function appendMovedClass(string $classes, string $customClass = ''): string
     {
-        $customClass = trim($customClass);
+        $names = array_filter(
+            preg_split('/\s+/', trim($customClass)) ?: [],
+            static fn (string $name): bool => 1 === preg_match('/^[\w-]+$/', $name),
+        );
 
-        return $classes.' moved'.('' !== $customClass ? ' '.$customClass : '');
+        return $classes.' moved'.([] !== $names ? ' '.implode(' ', $names) : '');
     }
 
     /**

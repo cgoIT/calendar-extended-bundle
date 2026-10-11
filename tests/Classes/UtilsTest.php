@@ -164,6 +164,9 @@ final class UtilsTest extends TestCase
         $this->assertSame(' moved', Utils::appendMovedClass(''));
         $this->assertSame(' existing moved', Utils::appendMovedClass(' existing', ''));
         $this->assertSame(' existing moved custom', Utils::appendMovedClass(' existing', ' custom '));
+        $this->assertSame(' moved my-class other_1', Utils::appendMovedClass('', "my-class\tother_1"));
+        $this->assertSame(' moved ok', Utils::appendMovedClass('', 'a"onmouseover="alert(1) ok'));
+        $this->assertSame(' moved', Utils::appendMovedClass('', '"><script>'));
     }
 
     #[DataProvider('fixedDates')]
