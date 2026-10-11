@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Contao\ArrayUtil;
-use Contao\Backend;
 use Contao\Config;
 use Contao\Date;
 use Contao\Input;
@@ -26,7 +25,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsAlias('calendar_extended.mcw.callbacks', public: true)]
-class CalendarEventsMCWCallbacks extends Backend
+class CalendarEventsMCWCallbacks
 {
     /**
      * __construct().
@@ -44,7 +43,6 @@ class CalendarEventsMCWCallbacks extends Backend
         #[Autowire(param: 'cgoit_calendar_extended.exceptions.move_times')]
         private readonly array $exceptionsMoveTimes,
     ) {
-        parent::__construct();
     }
 
     /**

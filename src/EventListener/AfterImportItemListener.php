@@ -14,14 +14,18 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\EventListener;
 
-use Contao\System;
+use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallbacks;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 // Die Event-Klasse gehört zur optionalen Abhängigkeit cgoit/contao-calendar-ical-bundle und wird
 // daher nur als String referenziert.
 #[AsEventListener(event: 'Cgoit\\ContaoCalendarIcalBundle\\Event\\AfterImportItemEvent', method: 'calculateAllRecurrences')]
-final class AfterImportItemListener
+final readonly class AfterImportItemListener
 {
+    public function __construct(private CalendarEventsCallbacks $calendarEventsCallbacks)
+    {
+    }
+
     public function calculateAllRecurrences(object $event): void
     {
         $eventClass = 'Cgoit\\ContaoCalendarIcalBundle\\Event\\AfterImportItemEvent';
@@ -33,14 +37,12 @@ final class AfterImportItemListener
         $payload = $this->toStdClass($event);
         $calendarEvent = $payload->calendarEventModel;
 
-        $calendarEventsCallbacks = System::getContainer()->get('calendar_extended.events.callbacks');
-
         $maxRepeatEnd = [];
         $maxRepeatEnd[] = $calendarEvent->repeatEnd;
 
         $arrAllRecurrences = [];
 
-        [$arrAllRecurrences] = $calendarEventsCallbacks
+        [$arrAllRecurrences] = $this->calendarEventsCallbacks
             ->processAllRecurrences((object) $calendarEvent->row(), $arrAllRecurrences, $maxRepeatEnd, [])
         ;
 

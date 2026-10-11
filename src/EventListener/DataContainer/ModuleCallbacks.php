@@ -14,15 +14,14 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
-use Contao\Backend;
-use Contao\BackendUser;
+use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\System;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsAlias('calendar_extended.module.callbacks', public: true)]
-class ModuleCallbacks extends Backend
+class ModuleCallbacks
 {
     /**
      * @param array<string> $arrFilterFields
@@ -31,8 +30,6 @@ class ModuleCallbacks extends Backend
         #[Autowire(param: 'cgoit_calendar_extended.filter_fields')]
         private readonly array $arrFilterFields,
     ) {
-        parent::__construct();
-        $this->import(BackendUser::class, 'User');
     }
 
     /**
@@ -42,7 +39,7 @@ class ModuleCallbacks extends Backend
     public function getEventField(): array
     {
         // Load tl_calendar_events data
-        $this->loadDataContainer('tl_calendar_events');
+        Controller::loadDataContainer('tl_calendar_events');
         System::loadLanguageFile('tl_calendar_events');
 
         // Get the event fields

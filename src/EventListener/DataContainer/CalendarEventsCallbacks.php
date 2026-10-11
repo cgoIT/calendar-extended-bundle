@@ -16,7 +16,6 @@ namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
-use Contao\Backend;
 use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
@@ -32,7 +31,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[AsAlias('calendar_extended.events.callbacks', public: true)]
-class CalendarEventsCallbacks extends Backend
+class CalendarEventsCallbacks
 {
     /**
      * @var array<mixed>
@@ -51,8 +50,6 @@ class CalendarEventsCallbacks extends Backend
         #[Autowire(param: 'cgoit_calendar_extended.exceptions.max_count')]
         private readonly int $maxExceptionsCount,
     ) {
-        parent::__construct();
-
         System::loadLanguageFile('default', 'en', true);
         $this->arrMonths = $GLOBALS['TL_LANG']['MONTHS'];
         $this->arrDays = $GLOBALS['TL_LANG']['DAYS'];
