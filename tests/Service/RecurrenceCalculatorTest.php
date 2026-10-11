@@ -102,6 +102,137 @@ final class RecurrenceCalculatorTest extends TestCase
         }
     }
 
+    public function testMonthlyRecurrenceFromTheEndOfTheMonthUsesTheLastDayOfShorterMonths(): void
+    {
+        // The day is calculated from the start, so it does not drift to the 3rd after February
+        $event = $this->event([
+            'startDate' => strtotime('2025-01-31'),
+            'endDate' => strtotime('2025-01-31'),
+            'startTime' => strtotime('2025-01-31 09:00'),
+            'endTime' => strtotime('2025-01-31 10:00'),
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'months']),
+            'recurrences' => 4,
+        ]);
+
+        [$all, $set] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-01-31', '2025-02-28', '2025-03-31', '2025-04-30', '2025-05-31'), array_keys($all));
+        $this->assertSame(strtotime('2025-05-31 10:00'), $set['repeatEnd']);
+        $this->assertSame(strtotime('2025-02-28 10:00'), $all[strtotime('2025-02-28 09:00')]['int_end']);
+    }
+
+    public function testRecurrenceEveryTwoMonthsKeepsTheStartDay(): void
+    {
+        $event = $this->event([
+            'startDate' => strtotime('2025-01-30'),
+            'endDate' => strtotime('2025-01-30'),
+            'startTime' => strtotime('2025-01-30 09:00'),
+            'endTime' => strtotime('2025-01-30 10:00'),
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 2, 'unit' => 'months']),
+            'recurrences' => 3,
+        ]);
+
+        [$all] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-01-30', '2025-03-30', '2025-05-30', '2025-07-30'), array_keys($all));
+    }
+
+    public function testYearlyRecurrenceFromALeapDayUsesTheLastDayOfFebruary(): void
+    {
+        $event = $this->event([
+            'startDate' => strtotime('2024-02-29'),
+            'endDate' => strtotime('2024-02-29'),
+            'startTime' => strtotime('2024-02-29 09:00'),
+            'endTime' => strtotime('2024-02-29 10:00'),
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'years']),
+            'recurrences' => 4,
+        ]);
+
+        [$all] = $this->calculate($event);
+
+        $this->assertSame($this->times('2024-02-29', '2025-02-28', '2026-02-28', '2027-02-28', '2028-02-29'), array_keys($all));
+    }
+
+    public function testMonthlyRecurrenceKeepsTheLocalTimeAcrossTheChangeToDaylightSavingTime(): void
+    {
+        $timezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $event = $this->event([
+                'startDate' => strtotime('2025-02-28'),
+                'endDate' => strtotime('2025-02-28'),
+                'startTime' => strtotime('2025-02-28 09:00'),
+                'endTime' => strtotime('2025-02-28 10:00'),
+                'recurring' => 1,
+                'repeatEach' => serialize(['value' => 1, 'unit' => 'months']),
+                'recurrences' => 2,
+            ]);
+
+            [$all] = $this->calculate($event);
+
+            $this->assertSame($this->times('2025-02-28', '2025-03-28', '2025-04-28'), array_keys($all));
+        } finally {
+            date_default_timezone_set($timezone);
+        }
+    }
+
+    public function testExtendedRecurrenceSkipsMonthsWithoutAFifthWeekday(): void
+    {
+        // Monday 2025-03-31 is the fifth Monday of March; April, May, July and August have only four Mondays,
+        // the months without a fifth Monday have no occurrence and do not count
+        $event = $this->event([
+            'startDate' => strtotime('2025-03-31'),
+            'endDate' => strtotime('2025-03-31'),
+            'startTime' => strtotime('2025-03-31 09:00'),
+            'endTime' => strtotime('2025-03-31 10:00'),
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'fifth', 'unit' => 'monday']),
+            'recurrences' => 3,
+        ]);
+
+        [$all, $set] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-31', '2025-06-30', '2025-09-29', '2025-12-29'), array_keys($all));
+        $this->assertSame(strtotime('2025-12-29 09:00'), $set['repeatEnd']);
+    }
+
+    public function testExtendedRecurrenceWithoutEndSkipsMonthsWithoutAFifthWeekday(): void
+    {
+        $event = $this->event([
+            'startDate' => strtotime('2025-03-31'),
+            'endDate' => strtotime('2025-03-31'),
+            'startTime' => strtotime('2025-03-31 09:00'),
+            'endTime' => strtotime('2025-03-31 10:00'),
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'fifth', 'unit' => 'monday']),
+            'recurrences' => 0,
+        ]);
+
+        [$all] = $this->calculate($event, 5);
+
+        $this->assertSame($this->times('2025-03-31', '2025-06-30', '2025-09-29', '2025-12-29', '2026-03-30'), array_keys($all));
+    }
+
+    public function testExtendedRecurrenceOfAMultiDayEventKeepsTheDuration(): void
+    {
+        // Monday and Tuesday, every first Monday
+        $event = $this->event([
+            'endDate' => strtotime('2025-03-04'),
+            'endTime' => strtotime('2025-03-04 10:00'),
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+            'recurrences' => 0,
+        ]);
+
+        [$all] = $this->calculate($event, 3);
+
+        $this->assertSame(strtotime('2025-04-08 10:00'), $all[strtotime('2025-04-07 09:00')]['int_end']);
+    }
+
     public function testWeeklyRecurrenceKeepsDuration(): void
     {
         $event = $this->event([
