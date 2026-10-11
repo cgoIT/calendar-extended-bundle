@@ -86,8 +86,21 @@ class ParseFrontendTemplateHook extends Controller
             $intNextEndTime = $intEndTime;
 
             // Replace the date an time with the correct ones from the recurring event
+            $requestedTimes = null;
+
             if (Input::get('times')) {
-                [$intStartTime, $intEndTime] = array_map(\intval(...), explode(',', Input::get('times')));
+                $requestedTimes = Utils::resolveRequestedTimes(
+                    (string) Input::get('times'),
+                    (int) $objEvent->startTime,
+                    (int) $objEvent->endTime,
+                    StringUtil::deserialize($objEvent->allRecurrences, true),
+                    !empty($objEvent->useExceptions) ? StringUtil::deserialize($objEvent->exceptionList, true) : [],
+                    !empty($objEvent->addTime),
+                );
+            }
+
+            if (null !== $requestedTimes) {
+                [$intStartTime, $intEndTime] = $requestedTimes;
             }
 
             // Do not show dates in the past if the event is recurring (see #923)
@@ -101,7 +114,7 @@ class ParseFrontendTemplateHook extends Controller
                     $intNextStartTime = $nextRecurrence['int_start'];
                     $intNextEndTime = $nextRecurrence['int_end'];
 
-                    if (empty(Input::get('times'))) {
+                    if (null === $requestedTimes) {
                         $intStartTime = $intNextStartTime;
                         $intEndTime = $intNextEndTime;
                     }

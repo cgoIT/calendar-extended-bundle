@@ -257,6 +257,44 @@ final class UtilsTest extends TestCase
         $this->assertSame(0, $result[0]['new_start']);
     }
 
+    #[DataProvider('requestedTimes')]
+    public function testResolveRequestedTimes(string $times, bool $valid): void
+    {
+        $recurrences = [
+            1700100000 => ['int_start' => 1700100000, 'int_end' => 1700103600],
+            1700186400 => ['int_start' => 1700186400, 'int_end' => 1700190000],
+        ];
+
+        $result = Utils::resolveRequestedTimes($times, 1700000000, 1700003600, $recurrences, [], true);
+
+        $this->assertSame($valid ? array_map(\intval(...), explode(',', $times)) : null, $result);
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function requestedTimes(): iterable
+    {
+        yield 'event itself' => ['1700000000,1700003600', true];
+        yield 'recurrence' => ['1700186400,1700190000', true];
+        yield 'unknown occurrence' => ['1700200000,1700203600', false];
+        yield 'single value' => ['1700000000', false];
+        yield 'three values' => ['1700000000,1700003600,1', false];
+        yield 'not numeric' => ['abc,def', false];
+        yield 'end before start' => ['1700003600,1700000000', false];
+    }
+
+    public function testResolveRequestedTimesAcceptsMovedOccurrence(): void
+    {
+        $recurrences = [1700100000 => ['int_start' => 1700100000, 'int_end' => 1700103600]];
+        $exceptions = [1700100000 => ['action' => 'move', 'new_exception' => '+1 day']];
+
+        $this->assertSame(
+            [1700186400, 1700190000],
+            Utils::resolveRequestedTimes('1700186400,1700190000', 1700000000, 1700003600, $recurrences, $exceptions, false),
+        );
+    }
+
     /**
      * Contao models need a booted container, so the magic accessors are mocked.
      *

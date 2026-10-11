@@ -144,6 +144,67 @@ class Utils
     }
 
     /**
+     * Validates the parameter "times" of an event URL ("start,end") against the occurrences of the event.
+     *
+     * Only the event itself, a pre-calculated recurrence or an occurrence moved by an exception is accepted,
+     * so the reader page can not be used to show arbitrary dates.
+     *
+     * @param array<int|string, mixed> $allRecurrences unserialized "allRecurrences" column
+     * @param array<int|string, mixed> $exceptions     unserialized "exceptionList" column
+     *
+     * @return array{int, int}|null start and end time stamp or null if the value is not valid
+     */
+    public static function resolveRequestedTimes(string $times, int $eventStart, int $eventEnd, array $allRecurrences, array $exceptions, bool $addTime): array|null
+    {
+        if (1 !== preg_match('/^(\d{1,12}),(\d{1,12})$/', $times, $matches)) {
+            return null;
+        }
+
+        $start = (int) $matches[1];
+        $end = (int) $matches[2];
+
+        if ($end < $start) {
+            return null;
+        }
+
+        $occurrences = [[$eventStart, $eventEnd]];
+
+        foreach ($allRecurrences as $entry) {
+            if (\is_array($entry) && isset($entry['int_start'], $entry['int_end'])) {
+                $occurrences[$entry['int_start']] = [(int) $entry['int_start'], (int) $entry['int_end']];
+            }
+        }
+
+        $candidates = $occurrences;
+
+        foreach ($exceptions as $occurrenceStart => $exception) {
+            if (!\is_array($exception) || 'move' !== ($exception['action'] ?? null) || empty($exception['new_exception'])) {
+                continue;
+            }
+
+            [$origStart, $origEnd] = $occurrences[(int) $occurrenceStart] ?? [(int) $occurrenceStart, (int) $occurrenceStart + $eventEnd - $eventStart];
+            $useNewTimes = $addTime && !empty($exception['new_start']) && !empty($exception['new_end']);
+
+            $candidates[] = self::calculateMovedTimes(
+                $origStart,
+                $origEnd - $origStart,
+                (string) $exception['new_exception'],
+                $useNewTimes ? (string) $exception['new_start'] : null,
+                $useNewTimes ? (string) $exception['new_end'] : null,
+                self::daysBetween($origStart, $origEnd),
+            );
+        }
+
+        foreach ($candidates as [$candidateStart, $candidateEnd]) {
+            if ($candidateStart === $start && $candidateEnd === $end) {
+                return [$start, $end];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the number of calendar days between two time stamps (ignoring the time of the day).
      */
     public static function daysBetween(int $from, int $to): int

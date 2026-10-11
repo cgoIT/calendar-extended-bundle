@@ -34,7 +34,9 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/fullcalendar/fetchEvents/{pageId}/{moduleId}', name: FetchEventsController::class, defaults: ['_scope' => 'frontend', '_token_check' => true], methods: 'POST')]
 class FetchEventsController
 {
-    /** Maximum requested time range in seconds (about 400 days). */
+    /**
+     * Maximum requested time range in seconds (about 400 days).
+     */
     private const MAX_RANGE = 400 * 86400;
 
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
