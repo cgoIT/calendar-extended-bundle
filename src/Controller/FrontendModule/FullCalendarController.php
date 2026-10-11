@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Controller\FrontendModule;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use Cgoit\CalendarExtendedBundle\Controller\Route\FetchEventsController;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsFrontendModule;
 use Contao\CoreBundle\Exception\PageNotFoundException;
 use Contao\CoreBundle\Twig\FragmentTemplate;
@@ -133,7 +134,7 @@ class FullCalendarController extends AbstractCalendarViewController
             [
                 'moduleId' => (int) $model->id,
                 'config' => [
-                    'url' => '/fullcalendar/fetchEvents/'.$page->id.'/'.$model->id,
+                    'url' => $this->generateUrl(FetchEventsController::class, ['pageId' => (int) $page->id, 'moduleId' => (int) $model->id]),
                     'locale' => Utils::getFullCalendarLocales((string) $GLOBALS['TL_LANGUAGE']),
                     'initialDate' => date('Y-m-d\TH:i:sP', $date->tstamp),
                     'initialView' => match ($format) {

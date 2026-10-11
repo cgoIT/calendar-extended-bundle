@@ -18,13 +18,13 @@ use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
 use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\Date;
-use Contao\Input;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Contao\System;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,16 +42,19 @@ class FetchEventsController
      */
     private const MAX_RANGE = 400 * 86400;
 
-    public function __construct(private readonly EventsProvider $eventsProvider)
-    {
+    public function __construct(
+        private readonly ContaoFramework $framework,
+        private readonly EventsProvider $eventsProvider,
+        private readonly Security $security,
+    ) {
     }
 
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
-        System::getContainer()->get('contao.framework')->initialize();
+        $this->framework->initialize();
 
-        $page = PageModel::findPublishedById($pageId);
-        $objModule = ModuleModel::findById($moduleId);
+        $page = $this->framework->getAdapter(PageModel::class)->findPublishedById($pageId);
+        $objModule = $this->framework->getAdapter(ModuleModel::class)->findById($moduleId);
 
         if (!$page instanceof PageModel || !$objModule instanceof ModuleModel || 'fullcalendar' !== $objModule->type) {
             throw new NotFoundHttpException();
@@ -60,11 +63,11 @@ class FetchEventsController
         // Load the details, otherwise the protection inherited from the parent pages is missing
         $page->loadDetails();
 
-        if (!Controller::isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page)) || $this->isHiddenForMembers($objModule)) {
+        if (!$this->framework->getAdapter(Controller::class)->isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page)) || $this->isHiddenForMembers($objModule)) {
             throw new NotFoundHttpException();
         }
 
-        $range = Utils::parseTimeRange((string) Input::post('start'), (string) Input::post('end'), self::MAX_RANGE);
+        $range = Utils::parseTimeRange($request->request->getString('start'), $request->request->getString('end'), self::MAX_RANGE);
 
         if (null === $range) {
             throw new BadRequestHttpException('Invalid time range.');
@@ -74,13 +77,14 @@ class FetchEventsController
 
         // The hooks and the date formatting of the core expect the current page in the global variable
         $previousPage = $GLOBALS['objPage'] ?? null;
+        $previousPageModel = $request->attributes->get('pageModel');
         $GLOBALS['objPage'] = $page;
         $request->attributes->set('pageModel', $page);
 
         try {
             $events = $this->fetchEvents($objModule, $intStart, $intEnd);
         } finally {
-            $request->attributes->set('pageModel', null);
+            $request->attributes->set('pageModel', $previousPageModel);
             $GLOBALS['objPage'] = $previousPage;
         }
 
@@ -92,14 +96,12 @@ class FetchEventsController
      */
     private function isHiddenForMembers(ModuleModel $objModule): bool
     {
-        return (bool) $objModule->guests && System::getContainer()->get('security.helper')->isGranted('ROLE_MEMBER');
+        return (bool) $objModule->guests && $this->security->isGranted('ROLE_MEMBER');
     }
 
     private function isPageAccessible(PageModel $page): bool
     {
-        $security = System::getContainer()->get('security.helper');
-
-        return $security->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($page->groups, true));
+        return $this->security->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($page->groups, true));
     }
 
     /**
