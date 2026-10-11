@@ -109,6 +109,21 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame($this->times('2025-03-03', '2025-03-05', '2025-03-10', '2025-03-12'), array_keys($all));
     }
 
+    public function testRecurrencesCountRelativeToEndOfEvent(): void
+    {
+        // Weekly, 2 recurrences, no explicit end date: the series ends 2 weeks after the event end
+        $event = $this->event([
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'weeks']),
+            'recurrences' => 2,
+        ]);
+
+        [$all, $set] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-03', '2025-03-10', '2025-03-17'), array_keys($all));
+        $this->assertSame(strtotime('2025-03-17 10:00'), $set['repeatEnd']);
+    }
+
     public function testRecurrenceOnSundayWhenSundayIsSelected(): void
     {
         // The back end stores Sunday as "0" and Saturday as "6"
@@ -559,7 +574,8 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
     {
         $callbacks = $this->createCallbacks($maxRepeatCount, $maxExceptionsCount);
 
-        $arrSet = ['repeatEnd' => 0, 'endTime' => $event->endTime];
+        // like the onsubmit callback: endTime is only set when the end time is ignored
+        $arrSet = ['repeatEnd' => 0];
         [$all, $set] = $callbacks->processAllRecurrences($event, [], [0], $arrSet);
 
         ksort($all);

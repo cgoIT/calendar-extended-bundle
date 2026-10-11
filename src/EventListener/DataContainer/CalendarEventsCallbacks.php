@@ -407,7 +407,8 @@ class CalendarEventsCallbacks extends Backend
                         $unit = $arrRange['unit'];
 
                         $strtotime = '+ '.$arg.' '.$unit;
-                        $arrSet['repeatEnd'] = strtotime($strtotime, $arrSet['endTime']);
+                        // endTime is only set in $arrSet when the end time is ignored
+                        $arrSet['repeatEnd'] = strtotime($strtotime, (int) ($arrSet['endTime'] ?? $activeRecord->endTime));
                     }
                 }
             }
