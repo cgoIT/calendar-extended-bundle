@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\DependencyInjection;
 
 use Cgoit\CalendarExtendedBundle\DependencyInjection\Configuration;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -60,6 +61,43 @@ final class ConfigurationTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
 
         $this->process(['exceptions' => ['max_count' => 0]]);
+    }
+
+    public function testRejectsMoveTimesIntervalBelowOne(): void
+    {
+        // An interval of 0 would lead to an endless loop when the time options are generated
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['exceptions' => ['move_times' => ['interval' => 0]]]);
+    }
+
+    #[DataProvider('invalidTimes')]
+    public function testRejectsInvalidMoveTimes(string $key, mixed $time): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['exceptions' => ['move_times' => [$key => $time]]]);
+    }
+
+    /**
+     * @return iterable<string, array{string, mixed}>
+     */
+    public static function invalidTimes(): iterable
+    {
+        yield 'from without minutes' => ['from', '8'];
+        yield 'from with seconds' => ['from', '08:00:00'];
+        yield 'from out of range' => ['from', '24:00'];
+        yield 'to with invalid minutes' => ['to', '12:60'];
+        yield 'to text' => ['to', 'noon'];
+        yield 'to empty' => ['to', ''];
+    }
+
+    public function testAcceptsValidMoveTimes(): void
+    {
+        $config = $this->process(['exceptions' => ['move_times' => ['from' => '06:30', 'to' => '22:00']]]);
+
+        $this->assertSame('06:30', $config['exceptions']['move_times']['from']);
+        $this->assertSame('22:00', $config['exceptions']['move_times']['to']);
     }
 
     /**
