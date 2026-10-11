@@ -675,7 +675,7 @@ class GetAllEventsHook
             $arrEvent['class'] .= ' current';
         }
 
-        if (1 === $arrEvent['featured']) {
+        if (1 === (int) $arrEvent['featured']) {
             $arrEvent['class'] .= ' featured';
         }
 

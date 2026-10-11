@@ -227,7 +227,7 @@ class Utils
             $arrRange = StringUtil::deserialize($objEvent->repeatEach, true);
 
             if (!empty($arrRange) && !empty($arrRange['value']) && !empty($arrRange['unit'])) {
-                if (1 === $arrRange['value']) {
+                if (1 === (int) $arrRange['value']) {
                     $repeat = $GLOBALS['TL_LANG']['MSC']['cal_single_'.$arrRange['unit']];
                 } else {
                     $repeat = \sprintf($GLOBALS['TL_LANG']['MSC']['cal_multiple_'.$arrRange['unit']], $arrRange['value']);

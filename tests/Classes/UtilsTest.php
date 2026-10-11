@@ -15,11 +15,44 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\Tests\Classes;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use Contao\CalendarEventsModel;
+use Contao\PageModel;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    #[DataProvider('repeatValues')]
+    public function testGetUntilAndRecurringUsesSingularTextForOne(int|string $value, string $expectedRepeat): void
+    {
+        $GLOBALS['TL_LANG']['MSC']['cal_single_days'] = 'daily';
+        $GLOBALS['TL_LANG']['MSC']['cal_multiple_days'] = 'every %s days';
+        $GLOBALS['TL_LANG']['MSC']['cal_repeat'] = '%s|%s|%s|%s';
+
+        $event = $this->mockModel(CalendarEventsModel::class, [
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => $value, 'unit' => 'days']),
+            'recurrences' => 0,
+            'addTime' => 0,
+        ]);
+        $page = $this->mockModel(PageModel::class, ['dateFormat' => 'Y-m-d']);
+
+        [, $recurring] = Utils::getUntilAndRecurring($event, $page, strtotime('2025-03-03'), '2025-03-03', '', false);
+
+        $this->assertSame($expectedRepeat.'||2025-03-03|2025-03-03', $recurring);
+    }
+
+    /**
+     * @return iterable<string, array{int|string, string}>
+     */
+    public static function repeatValues(): iterable
+    {
+        yield 'integer one' => [1, 'daily'];
+        yield 'string one as stored by the widget' => ['1', 'daily'];
+        yield 'string two' => ['2', 'every 2 days'];
+    }
+
     public function testAppendDayAndTimesToUrl(): void
     {
         $begin = strtotime('2025-03-10 09:00');
@@ -173,5 +206,31 @@ final class UtilsTest extends TestCase
         ]);
 
         $this->assertSame(0, $result[0]['new_start']);
+    }
+
+    /**
+     * Contao models need a booted container, so the magic accessors are mocked.
+     *
+     * @template T of object
+     *
+     * @param class-string<T>      $class
+     * @param array<string, mixed> $data
+     *
+     * @return T&MockObject
+     */
+    private function mockModel(string $class, array $data): object
+    {
+        $model = $this->createMock($class);
+        $model
+            ->method('__isset')
+            ->willReturnCallback(static fn (string $key): bool => isset($data[$key]))
+        ;
+
+        $model
+            ->method('__get')
+            ->willReturnCallback(static fn (string $key): mixed => $data[$key] ?? null)
+        ;
+
+        return $model;
     }
 }
