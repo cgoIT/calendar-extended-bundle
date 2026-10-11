@@ -105,6 +105,21 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame($this->times('2025-03-03', '2025-03-05', '2025-03-10', '2025-03-12'), array_keys($all));
     }
 
+    public function testRecurrenceOnSundayWhenSundayIsSelected(): void
+    {
+        // The back end stores Sunday as "0" and Saturday as "6"
+        $event = $this->event([
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'days']),
+            'repeatWeekday' => serialize(['0', '6']),
+            'repeatEnd' => strtotime('2025-03-17 00:00'),
+        ]);
+
+        [$all] = $this->calculate($event);
+
+        $this->assertSame($this->times('2025-03-03', '2025-03-08', '2025-03-09', '2025-03-15', '2025-03-16'), array_keys($all));
+    }
+
     public function testHideOnWeekend(): void
     {
         $event = $this->event([

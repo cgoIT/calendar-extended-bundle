@@ -445,8 +445,9 @@ class CalendarEventsCallbacks extends Backend
                     break;
                 }
 
-                $weekday = date('N', $next);
-                $arrWeekdays = StringUtil::deserialize($activeRecord->repeatWeekday, true);
+                // The options of repeatWeekday use 0 (Sunday) to 6 (Saturday), like date('w')
+                $weekday = (int) date('w', $next);
+                $arrWeekdays = array_map(intval(...), StringUtil::deserialize($activeRecord->repeatWeekday, true));
                 if (!empty($arrWeekdays) && 'days' === $arrRange['unit']) {
                     if (!\in_array($weekday, $arrWeekdays, true)) {
                         continue;
@@ -454,7 +455,7 @@ class CalendarEventsCallbacks extends Backend
                 }
 
                 if ($activeRecord->hideOnWeekend) {
-                    if ((int) $weekday >= 6) {
+                    if (0 === $weekday || 6 === $weekday) {
                         continue;
                     }
                 }
