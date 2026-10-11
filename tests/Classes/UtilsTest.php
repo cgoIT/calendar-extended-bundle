@@ -20,6 +20,13 @@ use PHPUnit\Framework\TestCase;
 
 final class UtilsTest extends TestCase
 {
+    public function testAppendMovedClass(): void
+    {
+        $this->assertSame(' moved', Utils::appendMovedClass(''));
+        $this->assertSame(' existing moved', Utils::appendMovedClass(' existing', ''));
+        $this->assertSame(' existing moved custom', Utils::appendMovedClass(' existing', ' custom '));
+    }
+
     #[DataProvider('fixedDates')]
     public function testHasFixedDates(bool $expected, mixed $value): void
     {

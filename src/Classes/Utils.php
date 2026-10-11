@@ -68,6 +68,18 @@ class Utils
     }
 
     /**
+     * Appends the "moved" class and an optional custom class of the exception to the CSS classes of an event.
+     *
+     * @param string $classes the current classes with a leading space, as used by the event templates
+     */
+    public static function appendMovedClass(string $classes, string $customClass = ''): string
+    {
+        $customClass = trim($customClass);
+
+        return $classes.' moved'.('' !== $customClass ? ' '.$customClass : '');
+    }
+
+    /**
      * Checks if the (serialized) fixed dates of an event contain at least one date.
      */
     public static function hasFixedDates(mixed $repeatFixedDates): bool

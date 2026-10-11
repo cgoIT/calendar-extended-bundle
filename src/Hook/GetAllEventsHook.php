@@ -365,8 +365,8 @@ class GetAllEventsHook
                             $action = $skipInfo['action'];
 
                             if ('move' === $action) {
-                                $cssClass = $skipInfo['cssclass'];
-                                $event['cssClass'] .= 'moved '.$cssClass;
+                                // The templates use "class" (with leading space), not the raw "cssClass" column
+                                $event['class'] = Utils::appendMovedClass($event['class'] ?? '', $skipInfo['cssclass'] ?? '');
 
                                 $event['oldStartTime'] = $event['startTime'];
                                 $event['oldEndTime'] = $event['endTime'];
