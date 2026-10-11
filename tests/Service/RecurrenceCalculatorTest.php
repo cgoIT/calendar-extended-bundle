@@ -12,24 +12,16 @@ declare(strict_types=1);
  * @license    LGPL-3.0-or-later
  */
 
-namespace Cgoit\CalendarExtendedBundle\Tests\EventListener;
+namespace Cgoit\CalendarExtendedBundle\Tests\Service;
 
-use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsCallbacks;
-use Cgoit\CalendarExtendedBundle\Exception\CalendarExtendedException;
-use Contao\DataContainer;
-use Doctrine\DBAL\Connection;
-use PHPUnit\Framework\Attributes\DataProvider;
+use Cgoit\CalendarExtendedBundle\Service\RecurrenceCalculator;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the pre-calculation of recurrences that runs when an event is saved in the back end.
+ * Tests the pre-calculation of recurrences and exceptions that runs when an event is saved in the back end.
  */
-final class CalendarEventsCallbacksRecurrenceTest extends TestCase
+final class RecurrenceCalculatorTest extends TestCase
 {
-    private const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    private const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
     /**
      * @var array<string, mixed>
      */
@@ -37,18 +29,15 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->globalsBackup = ['TL_CONFIG' => $GLOBALS['TL_CONFIG'] ?? null, 'TL_LANG' => $GLOBALS['TL_LANG'] ?? null];
+        $this->globalsBackup = ['TL_CONFIG' => $GLOBALS['TL_CONFIG'] ?? null];
 
         $GLOBALS['TL_CONFIG']['datimFormat'] = 'Y-m-d H:i';
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
-        $GLOBALS['TL_LANG']['MONTHS'] = self::MONTHS;
-        $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
     }
 
     protected function tearDown(): void
     {
         $GLOBALS['TL_CONFIG'] = $this->globalsBackup['TL_CONFIG'];
-        $GLOBALS['TL_LANG'] = $this->globalsBackup['TL_LANG'];
     }
 
     public function testEventWithoutRecurrenceContainsOnlyItself(): void
@@ -464,164 +453,6 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
         $this->assertSame($this->times('2025-03-10', '2025-04-14'), \array_slice(array_keys(unserialize($set['exceptionList'])), 0, 2));
     }
 
-    public function testIgnoreEndTimeSetsEndTimeToEndDateWithStartTime(): void
-    {
-        // Event spans 2025-03-03 to 2025-03-05, starts at 09:00, the end time is ignored
-        $event = $this->event([
-            'id' => 7,
-            'endDate' => strtotime('2025-03-05'),
-            'ignoreEndTime' => 1,
-        ]);
-
-        $update = $this->save($event);
-
-        $this->assertSame(strtotime('2025-03-05 09:00:00'), $update['endTime']);
-    }
-
-    public function testDefaultRepeatEachExtPreselectsFirstWeekdayOfEvent(): void
-    {
-        $callbacks = $this->createCallbacks(365, 250);
-
-        // Sunday 2025-03-02
-        $value = $callbacks->defaultRepeatEachExt('', $this->createDataContainer(['startDate' => strtotime('2025-03-02')]));
-
-        $this->assertSame(['value' => 'first', 'unit' => 'sunday'], unserialize($value));
-    }
-
-    public function testDefaultRepeatEachExtFallsBackToMonday(): void
-    {
-        $callbacks = $this->createCallbacks(365, 250);
-
-        $value = $callbacks->defaultRepeatEachExt(null, $this->createDataContainer([]));
-
-        $this->assertSame(['value' => 'first', 'unit' => 'monday'], unserialize($value));
-    }
-
-    public function testDefaultRepeatEachExtKeepsExistingValue(): void
-    {
-        $callbacks = $this->createCallbacks(365, 250);
-        $existing = serialize(['value' => 'last', 'unit' => 'friday']);
-
-        $this->assertSame($existing, $callbacks->defaultRepeatEachExt($existing, $this->createDataContainer([])));
-    }
-
-    public function testCheckRecurrenceTypesThrowsIfBothAreSubmitted(): void
-    {
-        $this->expectException(CalendarExtendedException::class);
-        $this->expectExceptionMessage('Only one option can be active for recurrences.');
-
-        $this->createCallbacks(365, 250)->checkRecurrenceTypes(['recurring' => '1', 'recurringExt' => '1'], $this->createDataContainer([]));
-    }
-
-    public function testCheckRecurrenceTypesThrowsIfSubmittedValueConflictsWithTheRecord(): void
-    {
-        $this->expectException(CalendarExtendedException::class);
-
-        $this->createCallbacks(365, 250)->checkRecurrenceTypes(['recurring' => '1'], $this->createDataContainer(['recurringExt' => 1]));
-    }
-
-    public function testCheckRecurrenceTypesAllowsSwitchingTheRecurrenceType(): void
-    {
-        // The stored record still has the extended recurrence, but the form unchecks it
-        $values = ['recurring' => '1', 'recurringExt' => ''];
-
-        $this->assertSame($values, $this->createCallbacks(365, 250)->checkRecurrenceTypes($values, $this->createDataContainer(['recurringExt' => 1])));
-    }
-
-    public function testCheckRecurrenceTypesAllowsUnrelatedChanges(): void
-    {
-        $values = ['title' => 'Concert'];
-
-        $this->assertSame($values, $this->createCallbacks(365, 250)->checkRecurrenceTypes($values, $this->createDataContainer(['recurring' => 1])));
-    }
-
-    /**
-     * @param array<string, mixed> $record
-     * @param array<string, mixed> $values
-     */
-    #[DataProvider('overlapChecksWithoutQuery')]
-    public function testCheckOverlappingSkipsRecordsThatAreNotChecked(int $id, array $record, array $values): void
-    {
-        $dc = $this->createMock(DataContainer::class);
-        $dc
-            ->method('__get')
-            ->with('id')
-            ->willReturn($id)
-        ;
-
-        $dc
-            ->method('getCurrentRecord')
-            ->willReturn($record)
-        ;
-
-        $this->assertSame($values, $this->createCallbacks(365, 250)->checkOverlapping($values, $dc));
-    }
-
-    /**
-     * @return iterable<string, array{int, array<string, mixed>, array<string, mixed>}>
-     */
-    public static function overlapChecksWithoutQuery(): iterable
-    {
-        yield 'no record id' => [0, ['startDate' => 1741000000], ['title' => 'Concert']];
-        yield 'core recurrence' => [1, ['startDate' => 1741000000, 'recurring' => 1], ['title' => 'Concert']];
-        yield 'extended recurrence submitted' => [1, ['startDate' => 1741000000], ['recurringExt' => '1']];
-        yield 'no start date' => [1, [], ['title' => 'Concert']];
-    }
-
-    /**
-     * @param array<string, mixed> $record
-     */
-    private function createDataContainer(array $record): DataContainer
-    {
-        $dc = $this->createMock(DataContainer::class);
-        $dc
-            ->method('getCurrentRecord')
-            ->willReturn($record)
-        ;
-
-        return $dc;
-    }
-
-    /**
-     * Runs the onsubmit callback and returns the data written to the database.
-     *
-     * @return array<string, mixed>
-     */
-    private function save(\stdClass $event): array
-    {
-        $dc = $this->createMock(DataContainer::class);
-        $dc
-            ->method('__get')
-            ->with('id')
-            ->willReturn($event->id)
-        ;
-
-        $dc
-            ->method('getCurrentRecord')
-            ->willReturn((array) $event)
-        ;
-
-        $update = [];
-        $db = $this->createMock(Connection::class);
-        $db
-            ->method('update')
-            ->willReturnCallback(
-                static function (string $table, array $data) use (&$update): int {
-                    $update = $data;
-
-                    return 1;
-                },
-            )
-        ;
-
-        $callbacks = $this->createCallbacks(365, 250);
-        (new \ReflectionProperty(CalendarEventsCallbacks::class, 'db'))->setValue($callbacks, $db);
-
-        $callbacks->handleRecurrencesAndExceptions($dc);
-
-        return $update;
-    }
-
     /**
      * @param array<string, mixed> $overrides
      */
@@ -679,31 +510,15 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
      */
     private function calculate(\stdClass $event, int $maxRepeatCount = 365, int $maxExceptionsCount = 250): array
     {
-        $callbacks = $this->createCallbacks($maxRepeatCount, $maxExceptionsCount);
+        $calculator = new RecurrenceCalculator($maxRepeatCount, $maxExceptionsCount);
 
         // like the onsubmit callback: endTime is only set when the end time is ignored
         $arrSet = ['repeatEnd' => 0];
-        [$all, $set] = $callbacks->processAllRecurrences($event, [], [0], $arrSet);
+        [$all, $set] = $calculator->calculate((array) $event, [], [0], $arrSet);
 
         ksort($all);
 
         return [$all, $set];
-    }
-
-    /**
-     * The constructor extends Contao's Backend and needs a booted kernel, so it is skipped.
-     */
-    private function createCallbacks(int $maxRepeatCount, int $maxExceptionsCount): CalendarEventsCallbacks
-    {
-        $reflection = new \ReflectionClass(CalendarEventsCallbacks::class);
-        $callbacks = $reflection->newInstanceWithoutConstructor();
-
-        $reflection->getProperty('arrMonths')->setValue($callbacks, self::MONTHS);
-        $reflection->getProperty('arrDays')->setValue($callbacks, self::DAYS);
-        $reflection->getProperty('maxRepeatCount')->setValue($callbacks, $maxRepeatCount);
-        $reflection->getProperty('maxExceptionsCount')->setValue($callbacks, $maxExceptionsCount);
-
-        return $callbacks;
     }
 
     /**
