@@ -16,6 +16,8 @@ namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
 use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
+use Contao\Controller;
+use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\Date;
 use Contao\Input;
 use Contao\ModuleModel;
@@ -25,25 +27,54 @@ use Contao\System;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/fullcalendar/fetchEvents/{pageId}/{moduleId}', name: FetchEventsController::class, defaults: ['_scope' => 'frontend', '_token_check' => true], methods: 'POST')]
 class FetchEventsController
 {
+    /** Maximum requested time range in seconds (about 400 days). */
+    private const MAX_RANGE = 400 * 86400;
+
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
         System::getContainer()->get('contao.framework')->initialize();
 
-        $page = PageModel::findById($pageId);
+        $page = PageModel::findPublishedById($pageId);
+        $objModule = ModuleModel::findById($moduleId);
+
+        if (!$page instanceof PageModel || !$objModule instanceof ModuleModel || 'fullcalendar' !== $objModule->type) {
+            throw new NotFoundHttpException();
+        }
+
+        if (!Controller::isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page))) {
+            throw new NotFoundHttpException();
+        }
+
+        $intStart = strtotime((string) Input::post('start'));
+        $intEnd = strtotime((string) Input::post('end'));
+
+        if (false === $intStart || false === $intEnd || $intEnd < $intStart || $intEnd - $intStart > self::MAX_RANGE) {
+            throw new BadRequestHttpException('Invalid time range.');
+        }
+
         $request->attributes->set('pageModel', $page);
 
-        $objModule = ModuleModel::findById($moduleId);
-        $moduleFullcalendar = new ModuleFullCalendar($objModule);
-        $events = $this->fetchEvents($moduleFullcalendar);
-
-        $request->attributes->set('pageModel', null);
+        try {
+            $events = $this->fetchEvents(new ModuleFullCalendar($objModule), $intStart, $intEnd);
+        } finally {
+            $request->attributes->set('pageModel', null);
+        }
 
         return new JsonResponse($events);
+    }
+
+    private function isPageAccessible(PageModel $page): bool
+    {
+        $security = System::getContainer()->get('security.helper');
+
+        return $security->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($page->groups, true));
     }
 
     /**
@@ -51,13 +82,15 @@ class FetchEventsController
      *
      * @return array<mixed>
      */
-    private function fetchEvents(ModuleFullCalendar $objModule): array
+    private function fetchEvents(ModuleFullCalendar $objModule, int $intStart, int $intEnd): array
     {
-        $intStart = strtotime((string) Input::post('start'));
-        $intEnd = strtotime((string) Input::post('end'));
+        // Get all events of the calendars the user may access
+        $arrCalendars = $objModule->getAccessibleCalendars();
 
-        // Get all events
-        $arrCalendars = array_map(intval(...), StringUtil::deserialize($objModule->cal_calendar, true));
+        if ([] === $arrCalendars) {
+            return [];
+        }
+
         $arrAllEvents = $objModule->loadEvents($arrCalendars, $intStart, $intEnd);
 
         // Sort the days

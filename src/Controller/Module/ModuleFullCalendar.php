@@ -120,6 +120,18 @@ class ModuleFullCalendar extends Events
     }
 
     /**
+     * Return the configured calendars the current user is allowed to see.
+     *
+     * @return array<int>
+     */
+    public function getAccessibleCalendars(): array
+    {
+        $calendars = $this->sortOutProtected(StringUtil::deserialize($this->cal_calendar, true));
+
+        return array_map(intval(...), \is_array($calendars) ? $calendars : []);
+    }
+
+    /**
      * Generate the module.
      */
     protected function compile(): void
