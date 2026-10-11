@@ -144,6 +144,28 @@ class Utils
     }
 
     /**
+     * Returns the title of an event as plain text (the event arrays contain it already escaped).
+     *
+     * @param array<string, mixed> $event
+     */
+    public static function getPlainTitle(array $event): string
+    {
+        if (isset($event['link']) && \is_string($event['link'])) {
+            return $event['link'];
+        }
+
+        return StringUtil::decodeEntities((string) ($event['title'] ?? ''));
+    }
+
+    /**
+     * Returns the teaser of an event as plain text without HTML.
+     */
+    public static function getPlainTeaser(mixed $teaser): string
+    {
+        return trim(StringUtil::decodeEntities(strip_tags((string) $teaser)));
+    }
+
+    /**
      * Validates the parameter "times" of an event URL ("start,end") against the occurrences of the event.
      *
      * Only the event itself, a pre-calculated recurrence or an occurrence moved by an exception is accepted,

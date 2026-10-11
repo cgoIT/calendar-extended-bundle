@@ -257,6 +257,18 @@ final class UtilsTest extends TestCase
         $this->assertSame(0, $result[0]['new_start']);
     }
 
+    public function testGetPlainTitleUsesTheRawTitle(): void
+    {
+        $this->assertSame('Fish & Chips', Utils::getPlainTitle(['title' => 'Fish &amp; Chips', 'link' => 'Fish & Chips']));
+        $this->assertSame('Fish & Chips', Utils::getPlainTitle(['title' => 'Fish &amp; Chips']));
+    }
+
+    public function testGetPlainTeaserStripsHtml(): void
+    {
+        $this->assertSame('Fish & Chips', Utils::getPlainTeaser('<p>Fish &amp; <b>Chips</b></p>'));
+        $this->assertSame('', Utils::getPlainTeaser(null));
+    }
+
     #[DataProvider('requestedTimes')]
     public function testResolveRequestedTimes(string $times, bool $valid): void
     {

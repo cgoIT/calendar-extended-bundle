@@ -141,7 +141,8 @@ class FetchEventsController
                     }
 
                     // Set title
-                    $title = StringUtil::specialchars((string) $event['title']);
+                    // FullCalendar renders the title as text, so it must not be escaped here
+                    $title = Utils::getPlainTitle($event);
 
                     // Some options
                     $multiday = false;
@@ -180,7 +181,7 @@ class FetchEventsController
                             'title' => $title,
                             'start' => $event['datetime_start'],
                             'end' => \array_key_exists('datetime_end', $event) ? $event['datetime_end'] : null,
-                            'description' => $event['teaser'],
+                            'description' => Utils::getPlainTeaser($event['teaser'] ?? ''),
                             'allDay' => $allDay,
                             'overlap' => false,
                             'url' => $event['href'],
