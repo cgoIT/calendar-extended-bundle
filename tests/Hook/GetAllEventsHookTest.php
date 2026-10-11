@@ -58,6 +58,30 @@ final class GetAllEventsHookTest extends TestCase
         yield 'fixed dates' => ['handleFixedDatesRecurrences'];
     }
 
+    public function testCalendarConfigAddsStylesAndColors(): void
+    {
+        $hook = (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor();
+        (new \ReflectionProperty($hook, 'calConf'))->setValue($hook, [
+            5 => [
+                'calendar' => 'Holidays',
+                'background' => 'background-color:#ff0000;',
+                'foreground' => 'color:#ffffff;',
+                'backgroundColor' => '#ff0000',
+                'foregroundColor' => '#ffffff',
+            ],
+        ]);
+
+        $events = ['20250303' => [1741000000 => [['pid' => 5], ['pid' => 7]]]];
+        $result = (new \ReflectionMethod($hook, 'applyCalendarConfig'))->invoke($hook, $events)['20250303'][1741000000];
+
+        $this->assertSame('Holidays', $result[0]['calendar_title']);
+        $this->assertSame('background-color:#ff0000;', $result[0]['bgstyle']);
+        $this->assertSame('#ff0000', $result[0]['bgcolor']);
+        $this->assertSame('#ffffff', $result[0]['fgcolor']);
+        $this->assertSame('', $result[1]['bgcolor']);
+        $this->assertSame('', $result[1]['bgstyle']);
+    }
+
     public function testEventsOfOtherCalendarsAreHiddenDuringHolidays(): void
     {
         // The pid of the events is a string, the holiday calendars are integers

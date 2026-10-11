@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
-use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
 use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
 use Contao\Controller;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
@@ -125,74 +125,15 @@ class FetchEventsController
                         continue;
                     }
 
-                    // Set start and end of each event to the right format for the fullcalendar
-                    $allDay = $event['addTime'] ? false : true;
-
-                    if ($allDay) {
-                        $event['datetime_start'] = date('Y-m-d', $event['startDate']);
-
-                        if (!empty($event['endDate'])) {
-                            // We have to add one day for fullcalendar to display the event correctly
-                            $event['datetime_end'] = date('Y-m-d', $event['endDate'] + 86400);
-                        }
-                    } else {
-                        $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
-                        $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
-                    }
-
-                    // Set title
-                    // FullCalendar renders the title as text, so it must not be escaped here
-                    $title = Utils::getPlainTitle($event);
-
-                    // Some options
-                    $multiday = false;
-                    $recurring = false;
-
-                    /*
-                     * Editing is allowd if we have a single or multi day event. Any kind of recurring event
-                     * is not allowed right now.
-                     */
-                    // Disable editing if event is recurring...
-                    if ($event['recurring'] || $event['recurringExt'] || $event['useExceptions']) {
-                        $recurring = true;
-                    }
-
-                    if (Utils::hasFixedDates($event['repeatFixedDates'] ?? null)) {
-                        $recurring = true;
-                    }
-
-                    // If event is not recurring
-                    if (!$recurring) {
-                        // Multi day event?
-                        if (Date::parse('dmY', $event['startTime']) !== Date::parse('dmY', $event['endTime'])) {
-                            $multiday = true;
-                        }
-                    }
-
-                    // Set the icon
-                    $icon = $recurring ? 'fa-repeat' : 'fa-calendar-o';
+                    $mapped = FullCalendarEventMapper::map($event);
 
                     // Ignore if this is not the first multi day entry
                     if (false === array_search($event['id'], $multiday_event, true)) {
-                        // Add the event to array of events
-                        $json_events[] = [
-                            'id' => $event['id'],
-                            'calendarId' => $event['pid'],
-                            'title' => $title,
-                            'start' => $event['datetime_start'],
-                            'end' => \array_key_exists('datetime_end', $event) ? $event['datetime_end'] : null,
-                            'description' => Utils::getPlainTeaser($event['teaser'] ?? ''),
-                            'allDay' => $allDay,
-                            'overlap' => false,
-                            'url' => $event['href'],
-                            'icon' => $icon,
-                            'backgroundColor' => $event['bgcolor'] ?? '',
-                            'textColor' => $event['fgcolor'] ?? '',
-                        ];
+                        $json_events[] = $mapped['event'];
                     }
 
                     // Remember if multi day event
-                    if ($multiday && false === array_search($event['id'], $multiday_event, true)) {
+                    if ($mapped['multiday'] && false === array_search($event['id'], $multiday_event, true)) {
                         $multiday_event[] = $event['id'];
                     }
                 }
