@@ -63,6 +63,18 @@ class ParseTemplateHook
 
         System::loadLanguageFile('tl_calendar_events');
 
+        $times = $this->requestStack->getCurrentRequest()?->query->get('times');
+
+        $this->adjustTemplate($template, $objEvent, $objPage, \is_string($times) ? $times : null);
+    }
+
+    /**
+     * @param string|null $times the value of the parameter "times" (start and end of the requested occurrence)
+     * @param int|null    $now   the current time, defaults to time()
+     */
+    public function adjustTemplate(Template $template, CalendarEventsModel $objEvent, PageModel $objPage, string|null $times, int|null $now = null): void
+    {
+        $now ??= time();
         $recurrences = StringUtil::deserialize($objEvent->allRecurrences, true);
         $intStartTime = (int) $objEvent->startTime;
         $intEndTime = (int) $objEvent->endTime;
@@ -71,9 +83,8 @@ class ParseTemplateHook
 
         // Replace the date an time with the correct ones from the recurring event
         $requestedTimes = null;
-        $times = $this->requestStack->getCurrentRequest()?->query->get('times');
 
-        if (\is_string($times) && '' !== $times) {
+        if (null !== $times && '' !== $times) {
             $requestedTimes = Utils::resolveRequestedTimes(
                 $times,
                 $intStartTime,
@@ -89,7 +100,7 @@ class ParseTemplateHook
         }
 
         // Do not show dates in the past if the event is recurring (see #923)
-        if (null !== ($nextRecurrence = ReaderOccurrences::next($recurrences, time()))) {
+        if (null !== ($nextRecurrence = ReaderOccurrences::next($recurrences, $now))) {
             $intNextStartTime = $nextRecurrence['int_start'];
             $intNextEndTime = $nextRecurrence['int_end'];
 
@@ -107,7 +118,7 @@ class ParseTemplateHook
         [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intNextStartTime, $strNextDate, $strNextTime, $isFixedDates);
 
         // The core marks the event with the class of its own start and end
-        $status = ReaderOccurrences::statusClass($intStartTime, $intEndTime, strtotime('00:00:00'), strtotime('23:59:59'));
+        $status = ReaderOccurrences::statusClass($intStartTime, $intEndTime, strtotime('00:00:00', $now), strtotime('23:59:59', $now));
         $template->class = ' '.trim(preg_replace('/\s+(bygone|upcoming|current)(?=\s|$)/', '', (string) $template->class).' '.$status);
 
         $template->date = $strDate;

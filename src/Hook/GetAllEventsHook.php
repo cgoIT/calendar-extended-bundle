@@ -75,6 +75,18 @@ class GetAllEventsHook
             $this->getPage(),
         );
 
+        return $this->process($arrEvents, $context);
+    }
+
+    /**
+     * Applies the steps to the events of the core. The order of the steps is relevant.
+     *
+     * @param array<mixed> $arrEvents
+     *
+     * @return array<mixed>
+     */
+    public function process(array $arrEvents, EventContext $context): array
+    {
         // Filter events based on weekdays (only valid for standard recurrences)
         $arrEvents = $this->repeatWeekdayStep->process($arrEvents);
 
