@@ -120,25 +120,35 @@ class Utils
      * The dates are always handled in the ISO format, so the result does not depend on the date format of the page.
      *
      * @param int         $occurrenceStart start of the occurrence that is moved
-     * @param int         $duration        duration of the event in seconds
+     * @param int         $duration        duration of the event in seconds, used if no new times are given
      * @param string      $move            relative move, e.g. "+1 day" or "-2 days"
      * @param string|null $newStart        new start time (H:i) or null to keep the time
      * @param string|null $newEnd          new end time (H:i) or null to keep the duration
+     * @param int         $endDayOffset    number of days between the start and the end date of the event (e.g. 1 if
+     *                                     it ends on the next day), used together with new times
      *
      * @return array{int, int} start and end time stamp
      */
-    public static function calculateMovedTimes(int $occurrenceStart, int $duration, string $move, string|null $newStart = null, string|null $newEnd = null): array
+    public static function calculateMovedTimes(int $occurrenceStart, int $duration, string $move, string|null $newStart = null, string|null $newEnd = null, int $endDayOffset = 0): array
     {
         if (null !== $newStart && null !== $newEnd && '' !== $newStart && '' !== $newEnd) {
             $start = strtotime($move, strtotime(date('Y-m-d', $occurrenceStart).' '.$newStart));
-            $end = strtotime(date('Y-m-d', $start + $duration).' '.$newEnd);
+            $endDate = (new \DateTimeImmutable(date('Y-m-d', $start)))->modify('+'.max(0, $endDayOffset).' days')->format('Y-m-d');
 
-            return [$start, $end];
+            return [$start, strtotime($endDate.' '.$newEnd)];
         }
 
         $start = strtotime($move, $occurrenceStart);
 
         return [$start, $start + $duration];
+    }
+
+    /**
+     * Returns the number of calendar days between two time stamps (ignoring the time of the day).
+     */
+    public static function daysBetween(int $from, int $to): int
+    {
+        return (int) (new \DateTimeImmutable(date('Y-m-d', $from)))->diff(new \DateTimeImmutable(date('Y-m-d', $to)))->format('%r%a');
     }
 
     /**

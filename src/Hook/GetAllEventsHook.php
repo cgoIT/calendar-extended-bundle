@@ -384,6 +384,7 @@ class GetAllEventsHook
                                     $dateChangeValue,
                                     $useNewTimes ? (string) $skipInfo['new_start'] : null,
                                     $useNewTimes ? (string) $skipInfo['new_end'] : null,
+                                    Utils::daysBetween((int) $event['startTime'], (int) $event['endTime']),
                                 );
 
                                 $event['startTime'] = $newStartTime;

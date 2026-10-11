@@ -124,6 +124,33 @@ final class UtilsTest extends TestCase
         $this->assertSame(strtotime('2025-03-01 16:00'), $end);
     }
 
+    public function testCalculateMovedTimesKeepsEndOnTheSameDayForShortEvents(): void
+    {
+        // A one hour event moved to 23:00-23:30 must not end on the next day
+        [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 3600, '+0 days', '23:00', '23:30', 0);
+
+        $this->assertSame(strtotime('2025-03-03 23:00'), $start);
+        $this->assertSame(strtotime('2025-03-03 23:30'), $end);
+    }
+
+    public function testCalculateMovedTimesKeepsEventsOverMidnight(): void
+    {
+        // The event runs from 22:00 to 02:00 of the next day and is moved to 21:00-03:00
+        [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 22:00'), 4 * 3600, '+1 day', '21:00', '03:00', 1);
+
+        $this->assertSame(strtotime('2025-03-04 21:00'), $start);
+        $this->assertSame(strtotime('2025-03-05 03:00'), $end);
+    }
+
+    public function testDaysBetween(): void
+    {
+        $this->assertSame(0, Utils::daysBetween(strtotime('2025-03-03 09:00'), strtotime('2025-03-03 23:59')));
+        $this->assertSame(1, Utils::daysBetween(strtotime('2025-03-03 22:00'), strtotime('2025-03-04 02:00')));
+        $this->assertSame(-1, Utils::daysBetween(strtotime('2025-03-04'), strtotime('2025-03-03')));
+        // across the switch to daylight saving time
+        $this->assertSame(2, Utils::daysBetween(strtotime('2025-03-29 12:00'), strtotime('2025-03-31 12:00')));
+    }
+
     public function testCalculateMovedTimesWithEmptyNewTimes(): void
     {
         [$start, $end] = Utils::calculateMovedTimes(strtotime('2025-03-03 09:00'), 5400, '+0 days', '', '');
