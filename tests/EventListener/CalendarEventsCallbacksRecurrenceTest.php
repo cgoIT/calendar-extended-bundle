@@ -336,7 +336,8 @@ final class CalendarEventsCallbacksRecurrenceTest extends TestCase
     {
         $event = $this->dailyEvent([
             'useExceptions' => 1,
-            'allRecurrences' => serialize(array_fill_keys($this->times('2025-03-03', '2025-03-04', '2025-03-05', '2025-03-06', '2025-03-07'), [])),
+            // Stale value of the previous save, the freshly calculated recurrences must be used
+            'allRecurrences' => serialize(array_fill_keys($this->times('2025-02-03', '2025-02-04'), [])),
             'repeatExceptionsPer' => serialize([
                 ['exception' => strtotime('2025-03-04'), 'exceptionTo' => strtotime('2025-03-05'), 'action' => 'hide', 'new_start' => '', 'new_end' => '23:59'],
             ]),

@@ -301,7 +301,7 @@ class CalendarEventsCallbacks extends Backend
         // process exceptions
         $currentEndDate = \count($maxRepeatEnd) > 1 ? (int) max($maxRepeatEnd) : (int) ($arrSet['repeatEnd'] ?? 0);
         [$exceptionList, $maxRepeatEnd] =
-            $this->processExceptions($activeRecord, $currentEndDate, $maxRepeatEnd);
+            $this->processExceptions($activeRecord, $currentEndDate, $maxRepeatEnd, $arrAllRecurrences);
         $arrSet['exceptionList'] = $exceptionList;
 
         if (\count($maxRepeatEnd) > 1) {
@@ -573,10 +573,11 @@ class CalendarEventsCallbacks extends Backend
 
     /**
      * @param array<mixed> $maxRepeatEnd
+     * @param array<mixed> $arrAllRecurrences
      *
      * @return array<mixed>
      */
-    private function processExceptions(Result|\stdClass $activeRecord, int $currentEndDate, array $maxRepeatEnd): array
+    private function processExceptions(Result|\stdClass $activeRecord, int $currentEndDate, array $maxRepeatEnd, array $arrAllRecurrences): array
     {
         $exceptions = null;
         if ($activeRecord->useExceptions) {
@@ -587,7 +588,7 @@ class CalendarEventsCallbacks extends Backend
             $exceptionRows = $this->checkExceptionsByInterval($activeRecord, $exceptionRows, $activeRecord->startTime, $currentEndDate);
 
             // check by time range
-            $exceptionRows = $this->checkExceptionsByTimeRange($activeRecord, $exceptionRows);
+            $exceptionRows = $this->checkExceptionsByTimeRange($activeRecord, $exceptionRows, $arrAllRecurrences);
 
             // check by date
             [$exceptionRows, $maxRepeatEnd] = $this->checkExceptionsByDate($activeRecord, $currentEndDate, $exceptionRows, $maxRepeatEnd);
@@ -675,17 +676,15 @@ class CalendarEventsCallbacks extends Backend
 
     /**
      * @param array<mixed> $exceptionRows
+     * @param array<mixed> $arrRecurrences the recurrences calculated during the current save operation
      *
      * @return array<mixed>
      */
-    private function checkExceptionsByTimeRange(Result|\stdClass $activeRecord, array $exceptionRows): array
+    private function checkExceptionsByTimeRange(Result|\stdClass $activeRecord, array $exceptionRows, array $arrRecurrences): array
     {
         if (!empty($activeRecord->repeatExceptionsPer)) {
             // exception rules
             $rows = StringUtil::deserialize($activeRecord->repeatExceptionsPer, true);
-
-            // all recurrences...
-            $arrRecurrences = StringUtil::deserialize($activeRecord->allRecurrences, true);
 
             // run through all dates
             foreach ($rows as $row) {
