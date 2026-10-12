@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 final class TimeTableControllerTest extends CalendarViewTestCase
 {
-    private const MODULE = ['id' => '5', 'use_navigation' => '1', 'linkCurrent' => '1', 'cal_startDay' => '1'];
+    private const array MODULE = ['id' => '5', 'use_navigation' => '1', 'linkCurrent' => '1', 'cal_startDay' => '1'];
 
     public function testWithoutCalendarsNothingIsRendered(): void
     {

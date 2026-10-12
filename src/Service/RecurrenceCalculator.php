@@ -29,14 +29,14 @@ class RecurrenceCalculator
     /**
      * strtotime() needs the English names, regardless of the language of the back end.
      */
-    private const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    private const array MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    private const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    private const array DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     /**
      * The fields of the event that are used for the calculation.
      */
-    private const RECORD_FIELDS = [
+    private const array RECORD_FIELDS = [
         'startDate', 'endDate', 'addTime', 'startTime', 'endTime', 'ignoreEndTime',
         'recurring', 'repeatEach', 'repeatEnd', 'recurrences', 'repeatWeekday', 'hideOnWeekend',
         'recurringExt', 'repeatEachExt', 'repeatFixedDates',

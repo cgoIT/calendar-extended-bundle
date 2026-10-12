@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 final class FullCalendarControllerTest extends CalendarViewTestCase
 {
-    private const MODULE = ['id' => '5', 'cal_startDay' => '1'];
+    private const array MODULE = ['id' => '5', 'cal_startDay' => '1'];
 
     public function testWithoutCalendarsNothingIsRendered(): void
     {

@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class CalendarEventsCallbacksTest extends TestCase
 {
-    private const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    private const array MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     /**
      * @var array<string, mixed>

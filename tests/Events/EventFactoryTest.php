@@ -26,7 +26,7 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 final class EventFactoryTest extends TestCase
 {
-    private const SEPARATOR = ' - ';
+    private const string SEPARATOR = ' - ';
 
     /**
      * @var array<string, mixed>
