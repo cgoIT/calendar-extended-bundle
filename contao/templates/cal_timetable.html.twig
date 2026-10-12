@@ -1,0 +1,51 @@
+<div class="timetable">
+    {{ include('@Contao/_cal_navigation.html.twig', {prefix: 'timetable'}) }}
+
+    <div class="timetable_body">
+        <table class="timetable_body full">
+            <tr class="timetable_days">
+                {% if cal_times %}
+                    <td class="time">{{ timeLabel }}</td>
+                {% endif %}
+                {% for day in weekday %}
+                    <td class="{{ day.class }}">
+                        <div class="head">{{ day.label|raw }}</div>
+                    </td>
+                {% endfor %}
+            </tr>
+
+            <tr class="timetable_events">
+                {% if cal_times %}
+                    <td>
+                        <div class="times">
+                            {% for time in times %}
+                                <div class="time {{ time.class }}" style="{{ time.style|csp_unsafe_inline_style }}">{{ time.label }}</div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                {% endif %}
+                {% for day in weekday %}
+                    <td class="{{ day.class }}">
+                        <div class="events">
+                            {% for event in day.events %}
+                                {% if event %}
+                                    <div class="event{{ event.class|default('') }}" style="{{ (event.bgstyle|default('') ~ event.style|default(''))|csp_unsafe_inline_style }}" title="{{ event.title|raw }}">
+                                        <div class="event_title" style="{{ event.fgstyle|default('')|csp_unsafe_inline_style }}">
+                                            <a style="{{ event.fgstyle|default('')|csp_unsafe_inline_style }}" href="{{ event.href|raw }}" title="{{ event.title|raw }} ({% if event.day %}{{ event.day }}, {% endif %}{{ event.date }}{% if event.time %}, {{ event.time }}{% endif %})"{{ event.target|default('')|raw }}>{{ event.link|raw }}</a>
+                                        </div>
+                                        <div class="event_time">
+                                            {% if event.time %}{{ event.time }}<br>{% endif %}
+                                        </div>
+                                        <div class="event_body">
+                                            {% if event.teaser %}{{ event.teaser|raw }}{% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
+</div>

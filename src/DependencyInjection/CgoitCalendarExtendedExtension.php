@@ -32,8 +32,7 @@ class CgoitCalendarExtendedExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
-        $loader->load('services.yml');
-        $loader->load('listener.yml');
+        $loader->load('services.yaml');
 
         // Configuration
         $container->setParameter('cgoit_calendar_extended.max_repeat_count', (int) $config['max_repeat_count']);

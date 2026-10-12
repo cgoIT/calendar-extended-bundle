@@ -15,15 +15,17 @@ declare(strict_types=1);
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
 use Contao\ArrayUtil;
-use Contao\Backend;
 use Contao\Config;
 use Contao\Date;
 use Contao\Input;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-class CalendarEventsMCWCallbacks extends Backend
+#[AsAlias('calendar_extended.mcw.callbacks', public: true)]
+class CalendarEventsMCWCallbacks
 {
     /**
      * __construct().
@@ -36,10 +38,11 @@ class CalendarEventsMCWCallbacks extends Backend
      */
     public function __construct(
         private readonly Connection $db,
+        #[Autowire(param: 'cgoit_calendar_extended.exceptions.move_days')]
         private readonly int $exceptionsMoveDays,
+        #[Autowire(param: 'cgoit_calendar_extended.exceptions.move_times')]
         private readonly array $exceptionsMoveTimes,
     ) {
-        parent::__construct();
     }
 
     /**
@@ -103,7 +106,7 @@ class CalendarEventsMCWCallbacks extends Backend
             $start = strtotime((string) $start);
             $end = strtotime((string) $end);
 
-            while ($start <= $end) {
+            while (false !== $start && false !== $end && $start <= $end) {
                 $newTime = Date::parse(Config::get('timeFormat'), $start);
                 $arrSource4[$newTime] = $newTime;
                 $start = strtotime('+ '.$interval.' minutes', $start);

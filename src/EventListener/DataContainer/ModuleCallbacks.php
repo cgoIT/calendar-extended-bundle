@@ -6,7 +6,7 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
  * @copyright  Copyright (c) Kester Mielke
- * @copyright  Copyright (c) 2024, cgoIT
+ * @copyright  Copyright (c) cgoIT
  * @author     Kester Mielke
  * @author     cgoIT <https://cgo-it.de>
  * @license    LGPL-3.0-or-later
@@ -14,20 +14,22 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\EventListener\DataContainer;
 
-use Contao\Backend;
-use Contao\BackendUser;
+use Contao\Controller;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\System;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-class ModuleCallbacks extends Backend
+#[AsAlias('calendar_extended.module.callbacks', public: true)]
+class ModuleCallbacks
 {
     /**
      * @param array<string> $arrFilterFields
      */
-    public function __construct(private readonly array $arrFilterFields)
-    {
-        parent::__construct();
-        $this->import(BackendUser::class, 'User');
+    public function __construct(
+        #[Autowire(param: 'cgoit_calendar_extended.filter_fields')]
+        private readonly array $arrFilterFields,
+    ) {
     }
 
     /**
@@ -37,7 +39,7 @@ class ModuleCallbacks extends Backend
     public function getEventField(): array
     {
         // Load tl_calendar_events data
-        $this->loadDataContainer('tl_calendar_events');
+        Controller::loadDataContainer('tl_calendar_events');
         System::loadLanguageFile('tl_calendar_events');
 
         // Get the event fields

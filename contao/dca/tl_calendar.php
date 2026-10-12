@@ -27,12 +27,6 @@ PaletteManipulator::create()->addLegend('extended_legend', 'extended_type_legend
     ->applyToPalette('default', 'tl_calendar')
 ;
 
-$GLOBALS['TL_DCA']['tl_calendar']['palettes']['__selector__'] = array_merge(
-    ['isHolidayCal'],
-    $GLOBALS['TL_DCA']['tl_calendar']['palettes']['__selector__'],
-);
-$GLOBALS['TL_DCA']['tl_calendar']['subpalettes']['isHolidayCal'] = 'allowEvents';
-
 // Hinzufügen der Feld-Konfiguration
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['bg_color'] = [
     'inputType' => 'text',
@@ -49,14 +43,6 @@ $GLOBALS['TL_DCA']['tl_calendar']['fields']['fg_color'] = [
 ];
 
 $GLOBALS['TL_DCA']['tl_calendar']['fields']['isHolidayCal'] = [
-    'default' => 0,
-    'exclude' => true,
-    'inputType' => 'checkbox',
-    'eval' => ['submitOnChange' => true, 'tl_class' => 'w50'],
-    'sql' => ['type' => 'string', 'length' => 1, 'fixed' => true, 'default' => ''],
-];
-
-$GLOBALS['TL_DCA']['tl_calendar']['fields']['allowEvents'] = [
     'default' => 0,
     'exclude' => true,
     'inputType' => 'checkbox',

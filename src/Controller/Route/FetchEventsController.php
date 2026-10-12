@@ -14,35 +14,101 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Controller\Route;
 
-use Cgoit\CalendarExtendedBundle\Controller\Module\ModuleFullCalendar;
+use Cgoit\CalendarExtendedBundle\Classes\FullCalendarEventMapper;
+use Cgoit\CalendarExtendedBundle\Classes\Utils;
+use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
+use Cgoit\CalendarExtendedBundle\Service\FetchEventsSignature;
+use Contao\Controller;
+use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\Date;
-use Contao\Input;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Contao\System;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/fullcalendar/fetchEvents/{pageId}/{moduleId}', name: FetchEventsController::class, defaults: ['_scope' => 'frontend', '_token_check' => true], methods: 'POST')]
+#[AsController]
 class FetchEventsController
 {
+    /**
+     * Maximum requested time range in seconds (about 400 days).
+     */
+    private const MAX_RANGE = 400 * 86400;
+
+    public function __construct(
+        private readonly ContaoFramework $framework,
+        private readonly EventsProvider $eventsProvider,
+        private readonly Security $security,
+        private readonly FetchEventsSignature $signature,
+    ) {
+    }
+
     public function __invoke(Request $request, int $pageId, int $moduleId): Response
     {
-        System::getContainer()->get('contao.framework')->initialize();
+        // The signature binds the module to the page it is shown on, see FetchEventsSignature
+        if (!$this->signature->verify($pageId, $moduleId, $request->query->getString('signature'))) {
+            throw new NotFoundHttpException();
+        }
 
-        $page = PageModel::findById($pageId);
+        $this->framework->initialize();
+
+        $page = $this->framework->getAdapter(PageModel::class)->findPublishedById($pageId);
+        $objModule = $this->framework->getAdapter(ModuleModel::class)->findById($moduleId);
+
+        if (!$page instanceof PageModel || !$objModule instanceof ModuleModel || 'fullcalendar' !== $objModule->type) {
+            throw new NotFoundHttpException();
+        }
+
+        // Load the details, otherwise the protection inherited from the parent pages is missing
+        $page->loadDetails();
+
+        if (!$this->framework->getAdapter(Controller::class)->isVisibleElement($objModule) || ($page->protected && !$this->isPageAccessible($page)) || $this->isHiddenForMembers($objModule)) {
+            throw new NotFoundHttpException();
+        }
+
+        $range = Utils::parseTimeRange($request->request->getString('start'), $request->request->getString('end'), self::MAX_RANGE);
+
+        if (null === $range) {
+            throw new BadRequestHttpException('Invalid time range.');
+        }
+
+        [$intStart, $intEnd] = $range;
+
+        // The hooks and the date formatting of the core expect the current page in the global variable
+        $previousPage = $GLOBALS['objPage'] ?? null;
+        $previousPageModel = $request->attributes->get('pageModel');
+        $GLOBALS['objPage'] = $page;
         $request->attributes->set('pageModel', $page);
 
-        $objModule = ModuleModel::findById($moduleId);
-        $moduleFullcalendar = new ModuleFullCalendar($objModule);
-        $events = $this->fetchEvents($moduleFullcalendar);
-
-        $request->attributes->set('pageModel', null);
+        try {
+            $events = $this->fetchEvents($objModule, $intStart, $intEnd);
+        } finally {
+            $request->attributes->set('pageModel', $previousPageModel);
+            $GLOBALS['objPage'] = $previousPage;
+        }
 
         return new JsonResponse($events);
+    }
+
+    /**
+     * The module can be restricted to guests (not logged in members).
+     */
+    private function isHiddenForMembers(ModuleModel $objModule): bool
+    {
+        return (bool) $objModule->guests && $this->security->isGranted('ROLE_MEMBER');
+    }
+
+    private function isPageAccessible(PageModel $page): bool
+    {
+        return $this->security->isGranted(ContaoCorePermissions::MEMBER_IN_GROUPS, StringUtil::deserialize($page->groups, true));
     }
 
     /**
@@ -50,14 +116,16 @@ class FetchEventsController
      *
      * @return array<mixed>
      */
-    private function fetchEvents(ModuleFullCalendar $objModule): array
+    private function fetchEvents(ModuleModel $objModule, int $intStart, int $intEnd): array
     {
-        $intStart = strtotime((string) Input::post('start'));
-        $intEnd = strtotime((string) Input::post('end'));
+        // Get all events of the calendars the user may access
+        $arrCalendars = $this->eventsProvider->getAccessibleCalendars($objModule);
 
-        // Get all events
-        $arrCalendars = array_map(intval(...), StringUtil::deserialize($objModule->cal_calendar, true));
-        $arrAllEvents = $objModule->loadEvents($arrCalendars, $intStart, $intEnd);
+        if ([] === $arrCalendars) {
+            return [];
+        }
+
+        $arrAllEvents = $this->eventsProvider->getAllEvents($objModule, $arrCalendars, $intStart, $intEnd);
 
         // Sort the days
         $sort = 'descending' === $objModule->cal_order ? 'krsort' : 'ksort';
@@ -89,74 +157,15 @@ class FetchEventsController
                         continue;
                     }
 
-                    // Set start and end of each event to the right format for the fullcalendar
-                    $allDay = $event['addTime'] ? false : true;
-
-                    if ($allDay) {
-                        $event['datetime_start'] = date('Y-m-d', $event['startDate']);
-
-                        if (!empty($event['endDate'])) {
-                            // We have to add one day for fullcalendar to display the event correctly
-                            $event['datetime_end'] = date('Y-m-d', $event['endDate'] + 86400);
-                        }
-                    } else {
-                        $event['datetime_start'] = date('Y-m-d\TH:i:s', $event['begin']);
-                        $event['datetime_end'] = date('Y-m-d\TH:i:s', $event['end']);
-                    }
-
-                    // Set title
-                    $title = StringUtil::specialchars((string) $event['title']);
-
-                    // Some options
-                    $multiday = false;
-                    $recurring = false;
-
-                    /*
-                     * Editing is allowd if we have a single or multi day event. Any kind of recurring event
-                     * is not allowed right now.
-                     */
-                    // Disable editing if event is recurring...
-                    if ($event['recurring'] || $event['recurringExt'] || $event['useExceptions']) {
-                        $recurring = true;
-                    }
-
-                    $row = StringUtil::deserialize($event['repeatFixedDates']);
-                    if (!empty($row) && \is_array($row) && \array_key_exists('new_repeat', $row) && $row[0]['new_repeat'] > 0) {
-                        $recurring = true;
-                    }
-
-                    // If event is not recurring
-                    if (!$recurring) {
-                        // Multi day event?
-                        if (Date::parse('dmY', $event['startTime']) !== Date::parse('dmY', $event['endTime'])) {
-                            $multiday = true;
-                        }
-                    }
-
-                    // Set the icon
-                    $icon = $recurring ? 'fa-repeat' : 'fa-calendar-o';
+                    $mapped = FullCalendarEventMapper::map($event);
 
                     // Ignore if this is not the first multi day entry
                     if (false === array_search($event['id'], $multiday_event, true)) {
-                        // Add the event to array of events
-                        $json_events[] = [
-                            'id' => $event['id'],
-                            'calendarId' => $event['pid'],
-                            'title' => $title,
-                            'start' => $event['datetime_start'],
-                            'end' => \array_key_exists('datetime_end', $event) ? $event['datetime_end'] : null,
-                            'description' => $event['teaser'],
-                            'allDay' => $allDay,
-                            'overlap' => false,
-                            'url' => $event['href'],
-                            'icon' => $icon,
-                            'backgroundColor' => $event['bgstyle'] ?? '',
-                            'textColor' => $event['fgstyle'] ?? '',
-                        ];
+                        $json_events[] = $mapped['event'];
                     }
 
                     // Remember if multi day event
-                    if ($multiday && false === array_search($event['id'], $multiday_event, true)) {
+                    if ($mapped['multiday'] && false === array_search($event['id'], $multiday_event, true)) {
                         $multiday_event[] = $event['id'];
                     }
                 }

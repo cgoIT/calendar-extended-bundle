@@ -1,0 +1,2 @@
+.timetable .navi-current{display:flex;justify-content:center}.timetable .navi-row{display:flex;flex-direction:row;justify-content:space-between}.timetable .events,.timetable .times{position:relative}.timetable .event{overflow:hidden}div.timetable_body{position:relative}table.timetable_body{border-collapse:collapse;border-spacing:0;border-width:1px}.timetable_days td.time{vertical-align:bottom}
+/*# sourceMappingURL=timetable-css.bdefa51e.css.map*/

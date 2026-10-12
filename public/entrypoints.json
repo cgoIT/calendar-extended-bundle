@@ -1,0 +1,22 @@
+{
+  "entrypoints": {
+    "fullcalendar-js": {
+      "css": [
+        "/bundles/cgoitcalendarextended/fullcalendar-js.32e3e748.css"
+      ],
+      "js": [
+        "/bundles/cgoitcalendarextended/fullcalendar-js.6aa8ecef.js"
+      ]
+    },
+    "timetable-css": {
+      "css": [
+        "/bundles/cgoitcalendarextended/timetable-css.bdefa51e.css"
+      ]
+    },
+    "yearview-css": {
+      "css": [
+        "/bundles/cgoitcalendarextended/yearview-css.ba0283d3.css"
+      ]
+    }
+  }
+}

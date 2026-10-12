@@ -65,6 +65,7 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Ausnahme
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Ausnahmen für Wiederholungen';
 
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Es kann nur eine der Optionen für die Wiederholungen aktiv sein.';
+$GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'] = 'Die Wiederholungen konnten nicht berechnet werden, weil die Daten des Termins ungültig sind: %s';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'Keine Option für Wiederholungen aktiv.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'] = 'Es gibt eine Zeitüberschneidung mit einem anderen Event.';
 

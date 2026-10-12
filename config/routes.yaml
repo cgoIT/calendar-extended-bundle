@@ -1,0 +1,3 @@
+cgoit_calendar_extended:
+    resource: ../src/Controller/
+    type: attribute

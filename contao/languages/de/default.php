@@ -16,6 +16,7 @@ declare(strict_types=1);
  * Miscellaneous
  */
 $GLOBALS['TL_LANG']['MSC']['calendar_week'] = 'Kalenderwoche';
+$GLOBALS['TL_LANG']['MSC']['cal_time'] = 'Zeit';
 $GLOBALS['TL_LANG']['MSC']['curr_week'] = 'Aktuelle Woche';
 $GLOBALS['TL_LANG']['MSC']['calendar_year'] = 'Jahr';
 $GLOBALS['TL_LANG']['MSC']['curr_year'] = 'Aktuelles Jahr';

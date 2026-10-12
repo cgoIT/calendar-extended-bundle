@@ -6,7 +6,7 @@ declare(strict_types=1);
  * This file is part of cgoit\calendar-extended-bundle for Contao Open Source CMS.
  *
  * @copyright  Copyright (c) Kester Mielke
- * @copyright  Copyright (c) 2024, cgoIT
+ * @copyright  Copyright (c) cgoIT
  * @author     Kester Mielke
  * @author     cgoIT <https://cgo-it.de>
  * @license    LGPL-3.0-or-later
@@ -17,23 +17,28 @@ namespace Cgoit\CalendarExtendedBundle\Classes;
 use Contao\CalendarEventsModel;
 use Contao\CalendarModel;
 use Contao\Date;
-use Contao\Events;
 use Contao\PageModel;
 use Contao\StringUtil;
 
 class Utils
 {
     /**
+     * @param array<mixed> $arrCalendar IDs of the calendars
+     *
      * @return array<mixed>
      */
-    public static function getCalendarConfig(Events $objModule): array
+    public static function getCalendarConfig(array $arrCalendar): array
     {
         $calConf = [];
-        $arrCalendar = StringUtil::deserialize($objModule->cal_calendar, true);
 
         // Get the background and foreground colors of the calendars
         foreach ($arrCalendar as $cal) {
             $objCalendar = CalendarModel::findById($cal);
+
+            // the calendar might have been deleted
+            if (null === $objCalendar) {
+                continue;
+            }
 
             $calConf[$cal]['calendar'] = $objCalendar->title;
 
@@ -42,6 +47,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'background', 'background-color:#'.$cssColor.';');
+                    $calConf[$cal]['backgroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 
                 if (!empty($cssOpacity)) {
@@ -54,6 +60,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'foreground', 'color:#'.$cssColor.';');
+                    $calConf[$cal]['foregroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 
                 if (!empty($cssOpacity)) {
@@ -63,6 +70,373 @@ class Utils
         }
 
         return $calConf;
+    }
+
+    /**
+     * Maps a Contao language (e.g. "de", "de_CH", "pt_BR") to the list of locale codes of FullCalendar in
+     * order of preference (e.g. ["de-ch", "de"]). FullCalendar uses the first locale that is available.
+     *
+     * @return array<string>
+     */
+    public static function getFullCalendarLocales(string $language): array
+    {
+        $locale = strtolower(str_replace('_', '-', trim($language)));
+
+        if ('' === $locale) {
+            return ['en'];
+        }
+
+        $locales = [$locale];
+
+        if (str_contains($locale, '-')) {
+            $locales[] = explode('-', $locale)[0];
+        }
+
+        return $locales;
+    }
+
+    /**
+     * Appends the parameters "day" and "times" (the concrete occurrence of a recurring event) to an event URL.
+     *
+     * The URL may already contain a query string or a fragment. It is a plain URL (parameters separated
+     * with "&"), escaping is up to the output, like it is for the URLs of the core.
+     */
+    public static function appendDayAndTimesToUrl(string $url, int $begin, int $end): string
+    {
+        $fragment = '';
+        $pos = strpos($url, '#');
+
+        if (false !== $pos) {
+            $fragment = substr($url, $pos);
+            $url = substr($url, 0, $pos);
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'day='.date('Ymd', $begin).'&times='.$begin.','.$end.$fragment;
+    }
+
+    /**
+     * Like strtotime(), but fails with an exception instead of returning false.
+     *
+     * @throws \InvalidArgumentException if the string is not a valid date and time
+     */
+    public static function parseTime(string $datetime, int|null $baseTimestamp = null): int
+    {
+        $timestamp = strtotime($datetime, $baseTimestamp ?? time());
+
+        if (false === $timestamp) {
+            throw new \InvalidArgumentException(\sprintf('"%s" is not a valid date and time.', $datetime));
+        }
+
+        return $timestamp;
+    }
+
+    /**
+     * Reads the parameter "year" of the year view.
+     *
+     * @return int|null the time stamp of January 1st or null if no year is requested
+     *
+     * @throws \InvalidArgumentException if the value is not a four digit year
+     */
+    public static function parseYearParameter(mixed $year): int|null
+    {
+        if (null === $year || '' === $year) {
+            return null;
+        }
+
+        if (!\is_string($year) || 1 !== preg_match('/^\d{4}$/', $year)) {
+            throw new \InvalidArgumentException('The year must have four digits.');
+        }
+
+        return self::parseTime($year.'-01-01');
+    }
+
+    /**
+     * Like mktime(), but fails with an exception instead of returning false.
+     *
+     * @throws \InvalidArgumentException if the values do not result in a valid time
+     */
+    public static function makeTime(int $hour, int $minute, int $second, int $month, int $day, int $year): int
+    {
+        $timestamp = mktime($hour, $minute, $second, $month, $day, $year);
+
+        if (false === $timestamp) {
+            throw new \InvalidArgumentException(\sprintf('%d-%d-%d %d:%d:%d is not a valid date and time.', $year, $month, $day, $hour, $minute, $second));
+        }
+
+        return $timestamp;
+    }
+
+    /**
+     * Calculates the start and end of a moved occurrence of an event.
+     *
+     * The dates are always handled in the ISO format, so the result does not depend on the date format of the page.
+     *
+     * @param int         $occurrenceStart start of the occurrence that is moved
+     * @param int         $duration        duration of the event in seconds, used if no new times are given
+     * @param string      $move            relative move, e.g. "+1 day" or "-2 days"
+     * @param string|null $newStart        new start time (H:i) or null to keep the time
+     * @param string|null $newEnd          new end time (H:i) or null to keep the duration
+     * @param int         $endDayOffset    number of days between the start and the end date of the event (e.g. 1 if
+     *                                     it ends on the next day), used together with new times
+     *
+     * @return array{int, int} start and end time stamp
+     */
+    public static function calculateMovedTimes(int $occurrenceStart, int $duration, string $move, string|null $newStart = null, string|null $newEnd = null, int $endDayOffset = 0): array
+    {
+        if (null !== $newStart && null !== $newEnd && '' !== $newStart && '' !== $newEnd) {
+            $start = self::parseTime($move, self::parseTime(date('Y-m-d', $occurrenceStart).' '.$newStart));
+            $endDate = (new \DateTimeImmutable(date('Y-m-d', $start)))->modify('+'.max(0, $endDayOffset).' days')->format('Y-m-d');
+
+            return [$start, self::parseTime($endDate.' '.$newEnd)];
+        }
+
+        $start = self::parseTime($move, $occurrenceStart);
+
+        return [$start, $start + $duration];
+    }
+
+    /**
+     * Returns the title of an event as plain text (the event arrays contain it already escaped).
+     *
+     * @param array<string, mixed> $event
+     */
+    public static function getPlainTitle(array $event): string
+    {
+        if (isset($event['link']) && \is_string($event['link'])) {
+            return $event['link'];
+        }
+
+        $title = StringUtil::decodeEntities((string) ($event['title'] ?? ''));
+
+        return \is_string($title) ? $title : '';
+    }
+
+    /**
+     * Returns the teaser of an event as plain text without HTML.
+     */
+    public static function getPlainTeaser(mixed $teaser): string
+    {
+        $text = StringUtil::decodeEntities(strip_tags((string) $teaser));
+
+        return \is_string($text) ? trim($text) : '';
+    }
+
+    /**
+     * Calculates the time range covered by a (not recurring) event record.
+     *
+     * @param array<string, mixed> $record the event with the (already converted) date and time fields
+     *
+     * @return array{int, int} start and end time stamp
+     */
+    public static function calculateEventRange(array $record): array
+    {
+        $startDate = (int) $record['startDate'];
+        $endDate = !empty($record['endDate']) && (int) $record['endDate'] > $startDate ? (int) $record['endDate'] : $startDate;
+
+        $start = self::parseTime(date('Y-m-d', $startDate).' 00:00');
+        $end = self::parseTime(date('Y-m-d', $endDate).' 23:59');
+
+        if (!empty($record['addTime'])) {
+            $startTime = (int) ($record['startTime'] ?? 0);
+            $endTime = !empty($record['endTime']) ? (int) $record['endTime'] : $startTime;
+
+            $start = self::parseTime(date('Y-m-d', $startDate).' '.date('H:i:s', $startTime));
+            $end = self::parseTime(date('Y-m-d', $endDate).' '.date('H:i:s', $endTime));
+        }
+
+        return [$start, $end];
+    }
+
+    /**
+     * Parses the requested time range of the FullCalendar request.
+     *
+     * @param int $maxRange maximum length of the range in seconds
+     *
+     * @return array{int, int}|null start and end time stamp or null if the range is not valid
+     */
+    public static function parseTimeRange(string $start, string $end, int $maxRange): array|null
+    {
+        $intStart = strtotime($start);
+        $intEnd = strtotime($end);
+
+        if (false === $intStart || false === $intEnd || $intEnd < $intStart || $intEnd - $intStart > $maxRange) {
+            return null;
+        }
+
+        return [$intStart, $intEnd];
+    }
+
+    /**
+     * Returns the IDs of the events that overlap the given time range.
+     *
+     * @param iterable<array<string, mixed>> $events the events to compare with (rows of tl_calendar_events)
+     *
+     * @return array<int>
+     */
+    public static function findOverlappingEventIds(int $start, int $end, int $ownId, iterable $events): array
+    {
+        $ids = [];
+
+        foreach ($events as $event) {
+            if ((int) $event['id'] === $ownId) {
+                continue;
+            }
+
+            if (self::rangesOverlap($start, $end, (int) $event['startTime'], (int) $event['endTime'])) {
+                $ids[] = (int) $event['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Checks if two time ranges overlap. Ranges that only touch each other do not overlap.
+     */
+    public static function rangesOverlap(int $start, int $end, int $otherStart, int $otherEnd): bool
+    {
+        return $start < $otherEnd && $end > $otherStart;
+    }
+
+    /**
+     * Validates the parameter "times" of an event URL ("start,end") against the occurrences of the event.
+     *
+     * Only the event itself, a pre-calculated recurrence or an occurrence moved by an exception is accepted,
+     * so the reader page can not be used to show arbitrary dates.
+     *
+     * @param array<int|string, mixed> $allRecurrences unserialized "allRecurrences" column
+     * @param array<int|string, mixed> $exceptions     unserialized "exceptionList" column
+     *
+     * @return array{int, int}|null start and end time stamp or null if the value is not valid
+     */
+    public static function resolveRequestedTimes(string $times, int $eventStart, int $eventEnd, array $allRecurrences, array $exceptions, bool $addTime): array|null
+    {
+        if (1 !== preg_match('/^(\d{1,12}),(\d{1,12})$/', $times, $matches)) {
+            return null;
+        }
+
+        $start = (int) $matches[1];
+        $end = (int) $matches[2];
+
+        if ($end < $start) {
+            return null;
+        }
+
+        $occurrences = [[$eventStart, $eventEnd]];
+
+        foreach ($allRecurrences as $entry) {
+            if (\is_array($entry) && isset($entry['int_start'], $entry['int_end'])) {
+                $occurrences[$entry['int_start']] = [(int) $entry['int_start'], (int) $entry['int_end']];
+            }
+        }
+
+        $candidates = $occurrences;
+
+        foreach ($exceptions as $occurrenceStart => $exception) {
+            if (!\is_array($exception) || 'move' !== ($exception['action'] ?? null) || empty($exception['new_exception'])) {
+                continue;
+            }
+
+            [$origStart, $origEnd] = $occurrences[(int) $occurrenceStart] ?? [(int) $occurrenceStart, (int) $occurrenceStart + $eventEnd - $eventStart];
+            $useNewTimes = $addTime && !empty($exception['new_start']) && !empty($exception['new_end']);
+
+            $candidates[] = self::calculateMovedTimes(
+                $origStart,
+                $origEnd - $origStart,
+                (string) $exception['new_exception'],
+                $useNewTimes ? (string) $exception['new_start'] : null,
+                $useNewTimes ? (string) $exception['new_end'] : null,
+                self::daysBetween($origStart, $origEnd),
+            );
+        }
+
+        foreach ($candidates as [$candidateStart, $candidateEnd]) {
+            if ($candidateStart === $start && $candidateEnd === $end) {
+                return [$start, $end];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the number of calendar days between two time stamps (ignoring the time of the day).
+     */
+    public static function daysBetween(int $from, int $to): int
+    {
+        return (int) (new \DateTimeImmutable(date('Y-m-d', $from)))->diff(new \DateTimeImmutable(date('Y-m-d', $to)))->format('%r%a');
+    }
+
+    /**
+     * Appends the "moved" class and an optional custom class of the exception to the CSS classes of an event.
+     *
+     * The templates output the classes unescaped, so only plain class names (letters, digits, "-" and "_")
+     * of the custom class are used.
+     *
+     * @param string $classes the current classes with a leading space, as used by the event templates
+     */
+    public static function appendMovedClass(string $classes, string $customClass = ''): string
+    {
+        $names = array_filter(
+            preg_split('/\s+/', trim($customClass)) ?: [],
+            static fn (string $name): bool => 1 === preg_match('/^[\w-]+$/', $name),
+        );
+
+        return $classes.' moved'.([] !== $names ? ' '.implode(' ', $names) : '');
+    }
+
+    /**
+     * Checks if the (serialized) fixed dates of an event contain at least one date.
+     */
+    public static function hasFixedDates(mixed $repeatFixedDates): bool
+    {
+        $rows = StringUtil::deserialize($repeatFixedDates);
+
+        if (empty($rows) || !\is_array($rows)) {
+            return false;
+        }
+
+        foreach ($rows as $row) {
+            // the multi column wizard stores an empty row as empty strings
+            if (\is_array($row) && !empty($row['new_repeat'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Builds a plain CSS color value (e.g. for FullCalendar, which does not accept CSS declarations).
+     *
+     * @param string          $hex     the color as stored by the color picker, with or without leading "#"
+     * @param int|string|null $opacity the opacity in percent (0-100), empty for opaque
+     *
+     * @return string "#rrggbb", "rgba(r, g, b, a)" if an opacity below 100 is set, or an empty string for an invalid color
+     */
+    public static function buildCssColor(string $hex, int|string|null $opacity = null): string
+    {
+        $hex = ltrim($hex, '#');
+
+        if (1 !== preg_match('/^([0-9a-f]{3}|[0-9a-f]{6})$/i', $hex)) {
+            return '';
+        }
+
+        if (3 === \strlen($hex)) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+
+        if (empty($opacity) || (int) $opacity >= 100 || (int) $opacity < 0) {
+            return '#'.strtolower($hex);
+        }
+
+        return \sprintf(
+            'rgba(%d, %d, %d, %s)',
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+            (string) ((int) $opacity / 100),
+        );
     }
 
     /**
@@ -108,7 +482,7 @@ class Utils
             $arrRange = StringUtil::deserialize($objEvent->repeatEach, true);
 
             if (!empty($arrRange) && !empty($arrRange['value']) && !empty($arrRange['unit'])) {
-                if (1 === $arrRange['value']) {
+                if (1 === (int) $arrRange['value']) {
                     $repeat = $GLOBALS['TL_LANG']['MSC']['cal_single_'.$arrRange['unit']];
                 } else {
                     $repeat = \sprintf($GLOBALS['TL_LANG']['MSC']['cal_multiple_'.$arrRange['unit']], $arrRange['value']);

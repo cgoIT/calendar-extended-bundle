@@ -4,6 +4,8 @@
 
 # PhpUnit
 /.phpunit.result.cache
+/.phpunit.cache
+/build/
 /phpunit.xml
 
 # Tools
@@ -17,3 +19,11 @@
 
 # Studio
 /studio.json
+
+# Claude / lokale Notizen
+/CLAUDE.md
+/TODO.md
+.tool-versions
+
+# Node
+/node_modules/

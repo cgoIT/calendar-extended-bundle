@@ -1,0 +1,9 @@
+{% extends '@Contao/frontend_module/_base.html.twig' %}
+
+{% block content %}
+    {% add 'cgoit_calendar_extended_yearview' to head %}
+        <link rel="stylesheet" href="{{ asset('yearview-css.css', 'cgoit_calendar_extended') }}">
+    {% endadd %}
+
+    {{ include(calendar_template, calendar) }}
+{% endblock %}

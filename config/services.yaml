@@ -1,0 +1,15 @@
+services:
+    _defaults:
+        autoconfigure: true
+        autowire: true
+        public: false
+
+    Cgoit\CalendarExtendedBundle\:
+        resource: ../src/
+        exclude:
+            - ../src/CgoitCalendarExtendedBundle.php
+            - ../src/Classes/
+            - ../src/ContaoManager/
+            - ../src/DependencyInjection/
+            - ../src/Exception/
+            - ../src/Widget/

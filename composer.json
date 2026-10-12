@@ -1,7 +1,7 @@
 {
   "name": "cgoit/calendar-extended-bundle",
   "type": "contao-bundle",
-  "description": "Contao 4/5 LTS calendar extension bundle. Better recurring events and exceptions.",
+  "description": "Contao 5 calendar extension bundle. Better recurring events and exceptions.",
   "keywords": [
     "contao",
     "fullcalendar",
@@ -28,24 +28,29 @@
     "source": "https://github.com/cgoIT/calendar-extended-bundle"
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "ext-mbstring": "*",
-    "contao/core-bundle": "^4.13 || ^5.3",
-    "contao/calendar-bundle": "^4.13 || ^5.3",
-    "symfony/routing": "^5.4 || ^6.0 || ^7.3",
-    "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.3",
-    "symfony/http-foundation": "^5.4 || ^6.0 || ^7.3",
-    "symfony/config": "^5.4 || ^6.0 || ^7.3",
-    "symfony/dependency-injection": "^5.4 || ^6.0 || ^7.3",
-    "symfony/http-kernel": "^5.4 || ^6.0 || ^7.3",
+    "contao/core-bundle": "^5.3",
+    "contao/calendar-bundle": "^5.3",
+    "psr/log": "^1.1 || ^2.0 || ^3.0",
+    "symfony/routing": "^6.4 || ^7.0",
+    "symfony/security-bundle": "^6.4 || ^7.0",
+    "symfony/event-dispatcher": "^6.4 || ^7.0",
+    "symfony/http-foundation": "^6.4 || ^7.0",
+    "symfony/config": "^6.4 || ^7.0",
+    "symfony/dependency-injection": "^6.4 || ^7.0",
+    "symfony/http-kernel": "^6.4 || ^7.0",
     "doctrine/dbal": "^3.3 || ^4.0",
     "menatwork/contao-multicolumnwizard-bundle": "^3.6"
   },
   "require-dev": {
     "contao/manager-plugin": "^2.0",
-    "terminal42/contao-build-tools": "dev-main"
+    "phpunit/phpunit": "^11.5",
+    "terminal42/contao-build-tools": "dev-main",
+    "twig/twig": "^3.0"
   },
   "suggest": {
+    "cgoit/contao-calendar-ical-bundle": "For importing events from iCal sources.",
     "inspiredminds/contao-event-registration": "For registration to events use this bundle."
   },
   "conflict": {
@@ -54,6 +59,11 @@
   "autoload": {
     "psr-4": {
       "Cgoit\\CalendarExtendedBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cgoit\\CalendarExtendedBundle\\Tests\\": "tests/"
     }
   },
   "config": {
@@ -71,11 +81,10 @@
   },
   "scripts": {
     "all": [
-      "@ecs",
-      "@twig-cs-fixer",
-      "@rector",
-      "@phpstan",
-      "@depcheck"
-    ]
+      "@fix-tools",
+      "@tests"
+    ],
+    "tests": "phpunit",
+    "coverage": "@php -d extension=pcov -d pcov.enabled=1 vendor/bin/phpunit --coverage-text --coverage-filter src --coverage-html build/coverage"
   }
 }

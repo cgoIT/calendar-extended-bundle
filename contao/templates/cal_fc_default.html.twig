@@ -1,0 +1,12 @@
+{#
+    FullCalendar container. The configuration is read by the fullcalendar-js entry (assets/js/fullcalendar.js)
+    from the data attribute, so no inline script is required.
+
+    Variables:
+      moduleId  int    ID of the frontend module
+      config    array  FullCalendar options (locale, initialDate, initialView, weekNumbers, firstDay,
+                       businessHours, url, requestToken, fetchError)
+#}
+{# FullCalendar injects a style element, which needs the style nonce of the Content Security Policy #}
+<meta name="csp-nonce" content="{{ csp_nonce('style-src') }}">
+<div id="calendar-{{ moduleId }}" class="calendar" data-calendar-config="{{ config|json_encode|e('html_attr') }}"></div>
