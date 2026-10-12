@@ -97,6 +97,21 @@ final class TimeTableControllerTest extends CalendarViewTestCase
         $this->assertSame([], $data['calendar']['weekday']);
     }
 
+    public function testTimesFromTheDatabaseAreHandledAsStrings(): void
+    {
+        // The database delivers the times as strings, this must not fail (strict types)
+        $event = ['startTime' => (string) $this->time('2026-05-13 09:00'), 'endTime' => (string) $this->time('2026-05-13 10:30'), 'recurring' => '', 'recurringExt' => '', 'class' => ''];
+        $provider = $this->provider([1], [$this->time('2026-01-01'), $this->time('2026-12-31'), 0], ['20260513' => [[$event]]]);
+        $module = ['cal_times' => '1', 'cal_times_range' => serialize([['time_from' => (string) $this->time('1970-01-01 08:00'), 'time_to' => (string) $this->time('1970-01-01 18:00')]])] + self::MODULE;
+
+        [, $data] = $this->render(new TimeTableController($provider), $this->page(), $module, ['week' => '202620']);
+
+        $times = $data['calendar']['times'];
+        $this->assertSame(8, (int) array_key_first($times));
+        $this->assertSame(18, (int) array_key_last($times));
+        $this->assertNotSame([], $data['calendar']['weekday'][3]['events'] ?? []);
+    }
+
     /**
      * @return iterable<string, array{array<string, string>}>
      */

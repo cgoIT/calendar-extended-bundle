@@ -192,14 +192,18 @@ class TimeTableController extends AbstractCalendarViewController
                     // Here we have to get the valid times
                     foreach ($arrAllEvents[$intKey] as $v) {
                         foreach ($v as $vv) {
+                            // the database may deliver the times as strings
+                            $startTime = (int) $vv['startTime'];
+                            $endTime = (int) $vv['endTime'];
+
                             // set the times for the timetable
-                            if (date('H:i', $vv['startTime']) < $arrTimes['start']) {
-                                $arrTimes['start'] = date('H:00', $vv['startTime']);
+                            if (date('H:i', $startTime) < $arrTimes['start']) {
+                                $arrTimes['start'] = date('H:00', $startTime);
                             }
 
-                            if (date('H:i', $vv['endTime']) > $arrTimes['stop']) {
-                                $h = date('H', $vv['endTime']);
-                                $m = date('i', $vv['endTime']);
+                            if (date('H:i', $endTime) > $arrTimes['stop']) {
+                                $h = date('H', $endTime);
+                                $m = date('i', $endTime);
 
                                 if ($m > 0) {
                                     ++$h;
@@ -216,11 +220,11 @@ class TimeTableController extends AbstractCalendarViewController
             $timerange = StringUtil::deserialize($model->cal_times_range)[0];
 
             if ($timerange['time_from']) {
-                $arrTimes['start'] = substr(date('H', $timerange['time_from']), 0, 2);
+                $arrTimes['start'] = substr(date('H', (int) $timerange['time_from']), 0, 2);
             }
 
             if ($timerange['time_to']) {
-                $arrTimes['stop'] = substr(date('H', $timerange['time_to']), 0, 2);
+                $arrTimes['stop'] = substr(date('H', (int) $timerange['time_to']), 0, 2);
             }
 
             $counter = 0;
@@ -272,16 +276,18 @@ class TimeTableController extends AbstractCalendarViewController
                         }
 
                         // calculate the position of the event
-                        $h = date('H', $vv['startTime']);
-                        $m = date('i', $vv['startTime']);
+                        $startTime = (int) $vv['startTime'];
+                        $endTime = (int) $vv['endTime'];
+                        $h = date('H', $startTime);
+                        $m = date('i', $startTime);
 
                         if (isset($arrListTimes[$h])) {
                             // calculate the top of the event
                             $top = $arrListTimes[$h]['top'] + $m * $cellheight / 60;
 
                             // calculate the height of the event.
-                            $d1 = new \DateTime(date('H:i', $vv['startTime']));
-                            $d2 = new \DateTime(date('H:i', $vv['endTime']));
+                            $d1 = new \DateTime(date('H:i', $startTime));
+                            $d2 = new \DateTime(date('H:i', $endTime));
                             $d0 = date_diff($d1, $d2);
                             $height = ((int) $d0->format('%h') * $cellheight) + (int) $d0->format('%i') * $cellheight / 60;
 
