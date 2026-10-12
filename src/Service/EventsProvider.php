@@ -14,8 +14,6 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Service;
 
-use Cgoit\CalendarExtendedBundle\Hook\GetAllEventsHook;
-use Contao\CalendarBundle\Generator\CalendarEventsGenerator;
 use Contao\CalendarModel;
 use Contao\CoreBundle\Security\Authentication\Token\TokenChecker;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
@@ -24,20 +22,16 @@ use Contao\ModuleModel;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Loads the events for the frontend modules of this bundle.
  *
- * The core modules get their events from the "getAllEvents" hook of the core generator. The modules of this
- * bundle are not derived from the legacy Events class, so the hook of this bundle is applied directly.
+ * The modules of this bundle are not derived from the legacy Events class, so a stand-in module is used. The
+ * "getAllEvents" hooks, including the one of this bundle, are applied by the core.
  */
 class EventsProvider
 {
     public function __construct(
-        #[Autowire(service: 'contao_calendar.generator.calendar_events')]
-        private readonly CalendarEventsGenerator $generator,
-        private readonly GetAllEventsHook $getAllEventsHook,
         private readonly Connection $connection,
         private readonly Security $security,
         private readonly TokenChecker $tokenChecker,
@@ -82,15 +76,7 @@ class EventsProvider
      */
     public function getAllEvents(ModuleModel $module, array $calendars, int $start, int $end, bool|null $featured = null): array
     {
-        $events = $this->generator->getAllEvents(
-            $calendars,
-            (new \DateTime())->setTimestamp($start),
-            (new \DateTime())->setTimestamp($end),
-            $featured,
-            (bool) $module->cal_noSpan,
-        );
-
-        return ($this->getAllEventsHook)($events, $calendars, $start, $end, $module);
+        return (new EventsModule($module))->findEvents($calendars, $start, $end, $featured);
     }
 
     /**

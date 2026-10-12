@@ -14,9 +14,7 @@ declare(strict_types=1);
 
 namespace Cgoit\CalendarExtendedBundle\Tests\Service;
 
-use Cgoit\CalendarExtendedBundle\Hook\GetAllEventsHook;
 use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
-use Contao\CalendarBundle\Generator\CalendarEventsGenerator;
 use Contao\CoreBundle\Security\Authentication\Token\TokenChecker;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -84,8 +82,6 @@ final class EventsProviderTest extends TestCase
         ;
 
         return new EventsProvider(
-            $this->createStub(CalendarEventsGenerator::class),
-            (new \ReflectionClass(GetAllEventsHook::class))->newInstanceWithoutConstructor(),
             $connection,
             $this->createStub(Security::class),
             $tokenChecker,
