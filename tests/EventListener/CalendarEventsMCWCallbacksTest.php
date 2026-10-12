@@ -18,6 +18,7 @@ use Cgoit\CalendarExtendedBundle\EventListener\DataContainer\CalendarEventsMCWCa
 use Contao\Input;
 use Contao\System;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Result;
 use MenAtWork\MultiColumnWizardBundle\Contao\Widgets\MultiColumnWizard;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -134,8 +135,11 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
         Input::setGet('id', '7');
         $first = strtotime('2025-03-03 09:00');
 
-        $result = $this->createStub(\Doctrine\DBAL\Result::class);
-        $result->method('fetchAssociative')->willReturn(['allRecurrences' => serialize([$first => []])]);
+        $result = $this->createStub(Result::class);
+        $result
+            ->method('fetchAssociative')
+            ->willReturn(['allRecurrences' => serialize([$first => []])])
+        ;
 
         $db = $this->createMock(Connection::class);
         $db
