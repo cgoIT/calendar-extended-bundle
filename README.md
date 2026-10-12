@@ -105,7 +105,7 @@ umgestellt werden muss.
 ## Wiederholungen
 
 Ein Event kann auf drei Arten wiederholt werden. Die Core-Wiederholung und die erweiterte Wiederholung schließen
-sich gegenseitig aus: Wird die eine aktiviert, wird die andere beim Speichern zurückgesetzt.
+sich gegenseitig aus: Sind beide aktiv, bricht das Speichern mit einer Fehlermeldung ab.
 
 ### Core-Wiederholung
 
@@ -226,7 +226,7 @@ Zwei Schalter steuern Ausnahmen:
 
 Das Bundle bringt drei Frontend-Module der Kategorie *Events* mit. Alle drei laden ihre Events über denselben
 Service wie die Core-Module und unterstützen Wiederholungen, Ausnahmen, Ferienkalender und Kalenderfarben.
-Das Template der Ansicht (`cal_*`) kann im Modul über **Template** (`cal_ctemplate`) gewählt werden.
+Das Template der Ansicht (`cal_*`) kann im Modul über **Kalender-Template** (`cal_ctemplate`) gewählt werden.
 
 ### Stundenplan (`timetable`)
 
@@ -267,6 +267,7 @@ wenn der Besucher den angezeigten Zeitraum wechselt. Einstellungen:
 | **Kalenderwochen** | Kalenderwochen werden angezeigt. |
 | **Arbeitszeiten** | Arbeitstage und Arbeitszeit (von/bis) werden hervorgehoben. |
 | **Wochenstart** | Erster Wochentag. |
+| Option `cal_ignoreDynamic` | Die URL-Parameter `month`, `week` und `day` werden nicht ausgewertet. |
 
 > 💡 **Hinweis**
 >
@@ -298,7 +299,8 @@ Der `getAllEvents`-Hook des Bundles wirkt auf **alle** Kalender-Module, auch auf
 - berücksichtigt Ferienkalender (`hide_holiday`),
 - reduziert auf die jeweils nächste Wiederholung (`showOnlyNext`),
 - ergänzt Filterdaten (`filter_data`),
-- hängt die URL-Parameter `?day=…&times=start,end` an die Links der Termine.
+- hängt die URL-Parameter `?day=…&times=start,end` an die Links der Termine (nicht, wenn im Modul
+  die Option `cal_ignoreDynamic` (Datumsparameter ignorieren) gesetzt ist).
 
 In den Modulen **Eventliste**, **Kalender**, **Stundenplan** und **Jahresübersicht** erscheinen dafür zusätzliche
 Felder:
@@ -318,8 +320,9 @@ Browser filtern, ohne die Seite neu zu laden. Welche Felder zur Auswahl stehen, 
 
 ## Der Event-Reader und der Parameter `times`
 
-Links auf Termine einer Serie enthalten die URL-Parameter `day` und `times`. Damit zeigt der Core-`eventreader`
-Datum und Uhrzeit des angeklickten Termins an statt der Daten des ersten Termins der Serie. Zusätzlich ersetzt das
+Links auf Termine einer Serie enthalten die URL-Parameter `day` und `times`. Der Core-`eventreader` wertet `times`
+aus und zeigt damit Datum und Uhrzeit des angeklickten Termins an statt der Daten des ersten Termins der Serie.
+`day` ist nur Teil der Link-URL und wird vom Reader nicht ausgewertet. Zusätzlich ersetzt das
 Bundle die Template-Funktionen `getUpcomingDates()`, `getPastDates()` und `getSchemaOrgData()`, sodass sie zu den
 Wiederholungen und Ausnahmen passen.
 
@@ -352,7 +355,7 @@ Die Rahmen binden CSS/JS ein und rendern das im Modul gewählte `cal_*`-Template
 | `_cal_navigation.html.twig` | Navigation (Wochen/Jahre), von mehreren Ansichten genutzt |
 
 Eigene Varianten werden mit dem Präfix `cal_` benannt (z. B. `cal_timetable_custom.html.twig`) und stehen dann im Feld
-**Template** des Moduls zur Auswahl.
+**Kalender-Template** des Moduls zur Auswahl.
 
 > 💡 **Hinweis**
 >
