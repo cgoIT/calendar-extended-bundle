@@ -46,7 +46,8 @@
   "require-dev": {
     "contao/manager-plugin": "^2.0",
     "phpunit/phpunit": "^11.5",
-    "terminal42/contao-build-tools": "dev-main"
+    "terminal42/contao-build-tools": "dev-main",
+    "twig/twig": "^3.0"
   },
   "suggest": {
     "cgoit/contao-calendar-ical-bundle": "For importing events from iCal sources.",
