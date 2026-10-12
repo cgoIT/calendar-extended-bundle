@@ -1,5 +1,85 @@
 # Changelog
 
+## [3.0.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.9.1...v3.0.0) (2026-10-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* FullCalendar 7 replaces version 6 (different markup, theme classic), Font Awesome 4.7 is removed and the event JSON delivers the icon as "repeat" or "calendar". Custom templates that use the old files under public/ or the global FullCalendar object have to be adapted.
+* the Controller\Module\Module* classes are removed. The module templates are frontend_module/timetable|yearview|fullcalendar, the selected cal_* template must be a twig template. Third-party getAllEvents and findCalendarBoundaries hooks no longer run for these modules. Adds a dependency on symfony/security-bundle.
+* cal_fc_default receives a single `config` array instead of the individual variables (url, locale, businessHours, ...); locale and businessHours are no longer JSON strings. Custom .html5 templates of the FullCalendar module must be adapted. The yearview cells provide colspan/rowspan and classes instead of an `attr` string.
+* the unused field tl_calendar.allowEvents was removed. The behaviour it described is controlled by the event option showOnFreeDay.
+* the unused model classes CalendarEventsModelExt and CalendarLeadsModel were removed.
+* Contao 4.13 is no longer supported. The bundle now requires contao/core-bundle and contao/calendar-bundle ^5.3 and Symfony ^6.4 || ^7.0. Contao 4 users have to stay on version 1.
+
+### Features
+
+* drop Contao 4.13 support ([07b0834](https://github.com/cgoIT/calendar-extended-bundle/commit/07b083471e18f000ec6de657d9ff662c099f4571))
+
+
+### Bug Fixes
+
+* add moved css class to the event class instead of the raw column ([b6eb213](https://github.com/cgoIT/calendar-extended-bundle/commit/b6eb21302b8d2313fb1274c8a907b4b462ffc7a8))
+* address the findings of the review of the refactoring ([eca834b](https://github.com/cgoIT/calendar-extended-bundle/commit/eca834b2b3c181720b692b84d668a5da3e93f630))
+* append day and times parameters to event urls correctly ([80721ea](https://github.com/cgoIT/calendar-extended-bundle/commit/80721ea3394b33d11e1dc3bb4d588dc9d9d191a2))
+* apply interval exceptions to events starting on sunday ([aaf9c80](https://github.com/cgoIT/calendar-extended-bundle/commit/aaf9c8059b6d941ea7f78a447b0d7b7a2fba7cb4))
+* calculate moved event times independent of the page date format ([fa1a6de](https://github.com/cgoIT/calendar-extended-bundle/commit/fa1a6deb9cea827aeafef08863f3fb5834f21e1e))
+* calculate repeat end relative to the event end instead of now ([e8acb18](https://github.com/cgoIT/calendar-extended-bundle/commit/e8acb184aab3ad47308ad7219ebc19ec33085e55))
+* cast calendar ids and skip queries without calendars ([a1f58b9](https://github.com/cgoIT/calendar-extended-bundle/commit/a1f58b9d5069317738cb436a64673a348a2b9679))
+* cast recurrences before comparing it in RecurrenceCalculator ([472d6e0](https://github.com/cgoIT/calendar-extended-bundle/commit/472d6e0708e90604f877cba36302bebfdc920645))
+* cast the times of events and the time range to int in the timetable ([1c3f8a2](https://github.com/cgoIT/calendar-extended-bundle/commit/1c3f8a25724ee158036ce2d889fe696f3362c000))
+* check access and validate range in FetchEventsController ([f2e5f1c](https://github.com/cgoIT/calendar-extended-bundle/commit/f2e5f1c30dd05af259501725d97a12d8f47de9a2))
+* check exclusive recurrence types on the merged record ([5aed3f6](https://github.com/cgoIT/calendar-extended-bundle/commit/5aed3f67cbea6ab96c04026c67358dcb920d8f12))
+* check inherited page protection in FetchEventsController and cover range checks with tests ([6e4a23d](https://github.com/cgoIT/calendar-extended-bundle/commit/6e4a23db4c3ad233c4274ac7f515f2bebb4a9603))
+* compare calendar ids as integers for holiday handling ([5c57432](https://github.com/cgoIT/calendar-extended-bundle/commit/5c57432f9c4b1a4f42e09173bb9659e7d74599ff))
+* compare weekday filter of standard recurrence as integers ([f2681b4](https://github.com/cgoIT/calendar-extended-bundle/commit/f2681b4f8bcc23938e02879d3704bd704d4cb2c9))
+* detect fixed dates as recurring events in fullcalendar ([0353a35](https://github.com/cgoIT/calendar-extended-bundle/commit/0353a35bd329f4da24e41240bf6ff8445a7a6bcd))
+* escape template values as JS literals in fullcalendar template ([1c75c90](https://github.com/cgoIT/calendar-extended-bundle/commit/1c75c90310194c4b46be3a8e7aa9ed8d19addd73))
+* fall back to start date for extended recurrence without end date ([99cb6e0](https://github.com/cgoIT/calendar-extended-bundle/commit/99cb6e0d34c27a78cfe2072418c9280ab2f4d2b7))
+* guard against null models and missing page in frontend hooks ([5d20e0c](https://github.com/cgoIT/calendar-extended-bundle/commit/5d20e0ccfda1d7fec20d8229aaf98360f178dfea))
+* hide events of other calendars on the whole holiday day ([c6e5e0d](https://github.com/cgoIT/calendar-extended-bundle/commit/c6e5e0d6390f5b3547532893cc27353c0832d384))
+* include sundays in weekday filter of core recurrence ([bdab3b5](https://github.com/cgoIT/calendar-extended-bundle/commit/bdab3b5dce428b6f0a0b54728e30e1399be5a0d2))
+* keep the end day of moved events with new times ([a1d4985](https://github.com/cgoIT/calendar-extended-bundle/commit/a1d4985352962357e7a616b427787aad3d334fa7))
+* map locale for fullcalendar and use unique element ids ([b0ba540](https://github.com/cgoIT/calendar-extended-bundle/commit/b0ba540395d1d8601e115e7988ebd74f074c1c20))
+* output plain text title and teaser in fullcalendar events ([c14c71c](https://github.com/cgoIT/calendar-extended-bundle/commit/c14c71cc13e9e68814edcd12a4b5a9c288f2dcf3))
+* pass plain calendar colors to fullcalendar ([7c23430](https://github.com/cgoIT/calendar-extended-bundle/commit/7c234301cfc70c2e1fbbc3558293fa9091e22116))
+* preselect first weekday of the event as default for extended recurrence ([526451d](https://github.com/cgoIT/calendar-extended-bundle/commit/526451d2770779e8027714ce41561ffc8ec4ed6c))
+* restrict custom css class of moved events to plain class names ([9bc754b](https://github.com/cgoIT/calendar-extended-bundle/commit/9bc754b36979a6bec9b90657679157a676dd93f7))
+* review findings ([a0c2a4b](https://github.com/cgoIT/calendar-extended-bundle/commit/a0c2a4b90807c2d9625c84a94a18acf096ca3c54))
+* review findings, Twig/fragment controller migration and German README (3.0.0) ([f643794](https://github.com/cgoIT/calendar-extended-bundle/commit/f64379435fb9f300c972819d6949db2830ca737c))
+* sign the url that loads the events of a FullCalendar module ([05af9bd](https://github.com/cgoIT/calendar-extended-bundle/commit/05af9bdb0aa32823030925c3752818b882a1c295))
+* skip months without a fifth weekday and clamp monthly recurrences to the last day of the month ([c2ef2ea](https://github.com/cgoIT/calendar-extended-bundle/commit/c2ef2ea3a0260b342d2476b3c3bdc0793bd3435f))
+* store all pre-calculated values of an imported event ([ad2d7a6](https://github.com/cgoIT/calendar-extended-bundle/commit/ad2d7a62ac5b6acfe4bc66e39e3d19656e69c0dd))
+* throw validation errors instead of redirecting in save callbacks ([d9158cd](https://github.com/cgoIT/calendar-extended-bundle/commit/d9158cd2720aeecee3b0597dab8b41695db96b1a))
+* use correct seconds format for end time with ignoreEndTime ([5b6b52e](https://github.com/cgoIT/calendar-extended-bundle/commit/5b6b52eb10ef31eaf17509ce30a6f43c74bef2cd))
+* use freshly calculated recurrences for time range exceptions ([b071afb](https://github.com/cgoIT/calendar-extended-bundle/commit/b071afb31a3e2f5a7a605c0c9694c4a9e92d86a8))
+* use singular recurrence text and featured class with string values ([17aa73c](https://github.com/cgoIT/calendar-extended-bundle/commit/17aa73c7b5859762256c7b788d91cbbee82adb09))
+* use symfony routing attribute instead of removed annotation class ([3ef8d98](https://github.com/cgoIT/calendar-extended-bundle/commit/3ef8d9822f56279b5b66c6c045026a417fc435e2))
+* use the week count of the previous year for the previous week link of the timetable ([38268f5](https://github.com/cgoIT/calendar-extended-bundle/commit/38268f519930efe47789ba35f6f03ce58ae7bdeb))
+* validate move_times configuration to prevent endless loop ([72b9c88](https://github.com/cgoIT/calendar-extended-bundle/commit/72b9c887f7fc182a5b5d89b5cab43d86f7024bda))
+* validate overlapping events before saving ([b8f052d](https://github.com/cgoIT/calendar-extended-bundle/commit/b8f052d986607c2d8a249e82a8dc46cc436c0543))
+* validate that move_times start is not later than end ([f106144](https://github.com/cgoIT/calendar-extended-bundle/commit/f1061442f7e49eafd2e6dad519496a3c5b9dbede))
+* validate the times parameter of the event reader ([1eedb0c](https://github.com/cgoIT/calendar-extended-bundle/commit/1eedb0c218888019900d47e8c1d19a6ecf9c3711))
+
+
+### Miscellaneous Chores
+
+* ignore local claude notes ([bfaad3f](https://github.com/cgoIT/calendar-extended-bundle/commit/bfaad3fd4ecda62f7d4d5209553d15210883e7b5))
+* remove fullcalendar examples and readme from webroot ([c0070ce](https://github.com/cgoIT/calendar-extended-bundle/commit/c0070cead41804af34929505136514bd3907801e))
+
+
+### Code Refactoring
+
+* convert frontend modules to fragment controllers ([eda8422](https://github.com/cgoIT/calendar-extended-bundle/commit/eda8422817c4bd0f1df0502d8ce0bf48decafb00))
+* migrate frontend templates to twig ([d941aac](https://github.com/cgoIT/calendar-extended-bundle/commit/d941aacbe6df691b859617a2c07847da737cfb32))
+* remove unused CalendarEventsModelExt and CalendarLeadsModel ([306492d](https://github.com/cgoIT/calendar-extended-bundle/commit/306492d4a2b9e377db9ae9d680b5d2b4ffb50571))
+* remove unused tl_calendar.allowEvents field ([99c40d4](https://github.com/cgoIT/calendar-extended-bundle/commit/99c40d4d3ea412851f441ce129621aff89a467a3))
+
+
+### Build System
+
+* integrate fullcalendar 7 and icons via encore ([6976d25](https://github.com/cgoIT/calendar-extended-bundle/commit/6976d25d6a912748e65bd862a590872c75c4beab))
+
 ## [2.9.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.9.0...v2.9.1) (2026-05-18)
 
 
