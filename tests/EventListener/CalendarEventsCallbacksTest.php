@@ -41,6 +41,9 @@ final class CalendarEventsCallbacksTest extends TestCase
         $GLOBALS['TL_CONFIG']['datimFormat'] = 'Y-m-d H:i';
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
         $GLOBALS['TL_LANG']['MONTHS'] = self::MONTHS;
+        $GLOBALS['TL_CONFIG']['timeFormat'] = 'H:i';
+        $GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'] = ' - ';
+        $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'] = 'Series';
         $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
     }
 
@@ -152,6 +155,119 @@ final class CalendarEventsCallbacksTest extends TestCase
         yield 'core recurrence' => [1, ['startDate' => 1741000000, 'recurring' => 1], ['title' => 'Concert']];
         yield 'extended recurrence submitted' => [1, ['startDate' => 1741000000], ['recurringExt' => '1']];
         yield 'no start date' => [1, [], ['title' => 'Concert']];
+    }
+
+    public function testInitializeFixedDatesRepeatAddsOneEmptyRow(): void
+    {
+        $value = $this->createCallbacks()->initializeFixedDatesRepeat('', $this->createDataContainer([]));
+
+        $this->assertSame([['new_repeat' => '', 'new_start' => '', 'new_end' => '', 'reason' => '']], unserialize($value));
+    }
+
+    public function testInitializeFixedDatesRepeatKeepsExistingValue(): void
+    {
+        $existing = serialize([['new_repeat' => '2025-01-01']]);
+
+        $this->assertSame($existing, $this->createCallbacks()->initializeFixedDatesRepeat($existing, $this->createDataContainer([])));
+    }
+
+    public function testInitializeRepeatExceptionsPerAddsOneEmptyRow(): void
+    {
+        $value = $this->createCallbacks()->initializeRepeatExceptionsPer(null, $this->createDataContainer([]));
+
+        $this->assertSame([['exception' => '', 'exceptionTo' => '']], unserialize($value));
+    }
+
+    public function testInitializeRepeatExceptionsPerKeepsExistingValue(): void
+    {
+        $existing = serialize([['exception' => '2025-01-01', 'exceptionTo' => '2025-01-07']]);
+
+        $this->assertSame($existing, $this->createCallbacks()->initializeRepeatExceptionsPer($existing, $this->createDataContainer([])));
+    }
+
+    public function testSaveDoesNothingWithoutRecordId(): void
+    {
+        $this->assertSame([], $this->save($this->event(['id' => 0])));
+    }
+
+    public function testSaveDoesNothingWithoutStartDate(): void
+    {
+        $this->assertSame([], $this->save($this->event(['id' => 7, 'startDate' => 0])));
+    }
+
+    public function testSaveWritesTheCalculatedColumns(): void
+    {
+        $update = $this->save($this->event([
+            'id' => 7,
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'weeks']),
+            'recurrences' => 2,
+        ]));
+
+        $this->assertArrayHasKey('allRecurrences', $update);
+        $this->assertCount(3, unserialize($update['allRecurrences']));
+        $this->assertSame(strtotime('2025-03-17 10:00'), $update['repeatEnd']);
+    }
+
+    public function testListChildRecordsShowsTheDateOfAnEventWithTime(): void
+    {
+        $label = $this->createCallbacks()->listChildRecords($this->row(), '', $this->createDataContainer([]), []);
+
+        $this->assertStringContainsString('Concert', $label);
+        $this->assertStringContainsString('2025-03-03 09:00 - 10:00', $label);
+        $this->assertStringNotContainsString('recurring.svg', $label);
+    }
+
+    public function testListChildRecordsShowsTheDateOfAnEventWithoutTime(): void
+    {
+        $label = $this->createCallbacks()->listChildRecords($this->row(['addTime' => 0]), '', $this->createDataContainer([]), []);
+
+        $this->assertStringContainsString('[2025-03-03]', $label);
+    }
+
+    public function testListChildRecordsShowsAnEventWithoutEndTimeOnlyWithTheStart(): void
+    {
+        $label = $this->createCallbacks()->listChildRecords($this->row(['endTime' => strtotime('2025-03-03 09:00')]), '', $this->createDataContainer([]), []);
+
+        $this->assertStringContainsString('[2025-03-03 09:00]', $label);
+    }
+
+    public function testListChildRecordsShowsTheRangeOfAMultiDayEvent(): void
+    {
+        $label = $this->createCallbacks()->listChildRecords($this->row(['endTime' => strtotime('2025-03-05 10:00')]), '', $this->createDataContainer([]), []);
+
+        $this->assertStringContainsString('[2025-03-03 09:00 - 2025-03-05 10:00]', $label);
+    }
+
+    #[DataProvider('recurringRows')]
+    public function testListChildRecordsMarksRecurringEvents(string $field): void
+    {
+        $label = $this->createCallbacks()->listChildRecords($this->row([$field => 1]), '', $this->createDataContainer([]), []);
+
+        $this->assertStringContainsString('recurring.svg', $label);
+        $this->assertStringContainsString('Series', $label);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function recurringRows(): iterable
+    {
+        yield 'core recurrence' => ['recurring'];
+        yield 'extended recurrence' => ['recurringExt'];
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     *
+     * @return array<string, mixed>
+     */
+    private function row(array $overrides = []): array
+    {
+        return array_merge(
+            ['title' => 'Concert', 'addTime' => 1, 'startTime' => strtotime('2025-03-03 09:00'), 'endTime' => strtotime('2025-03-03 10:00')],
+            $overrides,
+        );
     }
 
     /**
