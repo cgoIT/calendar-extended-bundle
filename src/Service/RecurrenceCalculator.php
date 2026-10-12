@@ -185,7 +185,7 @@ class RecurrenceCalculator
             if (!empty($record['repeatEnd'])) {
                 $arrSet['repeatEnd'] = $record['repeatEnd'];
             } else {
-                if (0 === $record['recurrences']) {
+                if (0 === (int) $record['recurrences']) {
                     $arrSet['repeatEnd'] = min(4294967295, PHP_INT_MAX);
                 } else {
                     $arrRange = StringUtil::deserialize($record['repeatEach']);

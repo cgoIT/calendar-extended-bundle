@@ -217,6 +217,19 @@ final class RecurrenceCalculatorTest extends TestCase
         $this->assertSame($this->times('2025-03-31', '2025-06-30', '2025-09-29', '2025-12-29', '2026-03-30'), array_keys($all));
     }
 
+    public function testDefaultRecurrenceWithoutLimitAlsoWorksWithStringValuesFromTheDatabase(): void
+    {
+        $event = $this->event([
+            'recurring' => '1',
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'weeks']),
+            'recurrences' => '0',
+        ]);
+
+        [, $set] = $this->calculate($event, 3);
+
+        $this->assertSame(4294967295, $set['repeatEnd']);
+    }
+
     public function testExtendedRecurrenceOfAMultiDayEventKeepsTheDuration(): void
     {
         // Monday and Tuesday, every first Monday
