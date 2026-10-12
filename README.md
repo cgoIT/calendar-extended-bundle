@@ -476,6 +476,7 @@ Für die Entwicklung:
 ```bash
 composer install
 composer run tests      # PHPUnit
+composer run coverage   # Testabdeckung (benötigt PCOV), HTML-Report in build/coverage
 composer run phpstan    # statische Analyse
 composer run all        # ECS, twig-cs-fixer, Rector (ändert Dateien)
 ```

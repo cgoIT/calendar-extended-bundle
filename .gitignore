@@ -5,6 +5,7 @@
 # PhpUnit
 /.phpunit.result.cache
 /.phpunit.cache
+/build/
 /phpunit.xml
 
 # Tools
