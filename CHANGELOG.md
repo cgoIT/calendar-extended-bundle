@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.0...v3.0.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* collect the events of the frontend modules with Events::getAllEv… ([7aad031](https://github.com/cgoIT/calendar-extended-bundle/commit/7aad03138c5c9367823b1852a4dc369433999ad6))
+* collect the events of the frontend modules with Events::getAllEvents ([5868fb9](https://github.com/cgoIT/calendar-extended-bundle/commit/5868fb924a2880749e095e324c51f1bad629d765))
+
 ## [3.0.0](https://github.com/cgoIT/calendar-extended-bundle/compare/v2.9.1...v3.0.0) (2026-10-12)
 
 
