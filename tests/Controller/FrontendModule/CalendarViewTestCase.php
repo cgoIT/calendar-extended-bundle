@@ -18,7 +18,6 @@ use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Controller\FrontendModule\AbstractCalendarViewController;
 use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
 use Cgoit\CalendarExtendedBundle\Tests\Support\Models;
-use Contao\CoreBundle\Cache\CacheTagManager;
 use Contao\CoreBundle\Csrf\ContaoCsrfTokenManager;
 use Contao\CoreBundle\Routing\PageFinder;
 use Contao\CoreBundle\Twig\FragmentTemplate;
@@ -28,6 +27,7 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
@@ -102,11 +102,11 @@ abstract class CalendarViewTestCase extends TestCase
      */
     protected function render(AbstractCalendarViewController $controller, PageModel|null $page, array $moduleRow, array $query = [], bool $hasTemplate = true): array
     {
-        $pageFinder = $this->createStub(PageFinder::class);
-        $pageFinder
-            ->method('getCurrentPage')
-            ->willReturn($page)
-        ;
+        $request = Request::create('/calendar?'.http_build_query($query));
+        $request->attributes->set('pageModel', $page);
+
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
 
         $loader = $this->createStub(LoaderInterface::class);
         $loader
@@ -120,8 +120,26 @@ abstract class CalendarViewTestCase extends TestCase
         ;
 
         $container = new Container();
-        $container->set('contao.routing.page_finder', $pageFinder);
-        $container->set('contao.cache.tag_manager', $this->createStub(CacheTagManager::class));
+        $container->set('request_stack', $requestStack);
+
+        // Contao 5.3 reads the page from the request, newer versions use the page finder
+        if ((new \ReflectionClass(PageFinder::class))->hasMethod('getCurrentPage')) {
+            $pageFinder = $this->createStub(PageFinder::class);
+            $pageFinder
+                ->method('getCurrentPage')
+                ->willReturn($page)
+            ;
+            $container->set('contao.routing.page_finder', $pageFinder);
+        }
+
+        // The cache tags are collected by "contao.cache.entity_tags" in Contao 5.3 and by "contao.cache.tag_manager" later
+        $tagManager = new class() {
+            public function tagWith(mixed $tags): void
+            {
+            }
+        };
+        $container->set('contao.cache.entity_tags', $tagManager);
+        $container->set('contao.cache.tag_manager', $tagManager);
         $container->set('twig', $twig);
 
         $router = $this->createStub(UrlGeneratorInterface::class);
@@ -143,7 +161,7 @@ abstract class CalendarViewTestCase extends TestCase
         $template->set('headline', ['text' => 'Calendar', 'unit' => 'h2']);
 
         $method = new \ReflectionMethod($controller, 'getResponse');
-        $response = $method->invoke($controller, $template, Models::module($moduleRow), Request::create('/calendar?'.http_build_query($query)));
+        $response = $method->invoke($controller, $template, Models::module($moduleRow), $request);
 
         return [$response, $template->getData()];
     }
