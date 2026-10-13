@@ -1,7 +1,7 @@
 on:
     push:
         branches:
-            - main
+            - 2.x
 name: release-please
 permissions:
     contents: write
@@ -11,11 +11,11 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - id: release-pr
-              uses: googleapis/release-please-action@v4
+              uses: googleapis/release-please-action@v5
               with:
                   release-type: php
                   package-name: cgoit/calendar-extended-bundle
-                  default-branch: main
+                  target-branch: 2.x
                   token: ${{secrets.GITHUB_TOKEN}}
                   bump-minor-pre-major: true
                   bump-patch-for-minor-pre-major: true
