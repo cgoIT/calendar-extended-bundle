@@ -18,7 +18,6 @@ use Cgoit\CalendarExtendedBundle\Hook\ParseTemplateHook;
 use Cgoit\CalendarExtendedBundle\Tests\Support\Models;
 use Contao\CalendarEventsModel;
 use Contao\CoreBundle\Routing\ContentUrlGenerator;
-use Contao\CoreBundle\Routing\PageFinder;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -132,7 +131,7 @@ final class ParseTemplateHookTest extends TestCase
         $template->set('id', 1);
         $template->set('class', ' upcoming');
 
-        $hook = new ParseTemplateHook(new RequestStack(), $this->createStub(PageFinder::class), $this->urlGenerator);
+        $hook = new ParseTemplateHook(new RequestStack(), $this->urlGenerator);
         $hook($template);
 
         $this->assertSame(['id' => 1, 'class' => ' upcoming'], $template->getData());
@@ -168,7 +167,7 @@ final class ParseTemplateHookTest extends TestCase
             'allRecurrences' => serialize($recurrences),
         ]);
 
-        $hook = new ParseTemplateHook(new RequestStack(), $this->createStub(PageFinder::class), $this->urlGenerator);
+        $hook = new ParseTemplateHook(new RequestStack(), $this->urlGenerator);
         $hook->adjustTemplate($template, $event, Models::page(['dateFormat' => 'Y-m-d', 'timeFormat' => 'H:i', 'datimFormat' => 'Y-m-d H:i']), $times, $now ?? $this->time('2026-06-03 12:00'));
 
         return $template->getData();

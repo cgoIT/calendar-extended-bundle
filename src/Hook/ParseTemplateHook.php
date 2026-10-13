@@ -20,7 +20,6 @@ use Contao\Calendar;
 use Contao\CalendarEventsModel;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\CoreBundle\Routing\ContentUrlGenerator;
-use Contao\CoreBundle\Routing\PageFinder;
 use Contao\Date;
 use Contao\PageModel;
 use Contao\StringUtil;
@@ -41,7 +40,6 @@ class ParseTemplateHook
 {
     public function __construct(
         private readonly RequestStack $requestStack,
-        private readonly PageFinder $pageFinder,
         #[Autowire(service: 'contao.routing.content_url_generator')]
         private readonly ContentUrlGenerator $urlGenerator,
     ) {
@@ -55,7 +53,7 @@ class ParseTemplateHook
         }
 
         $objEvent = CalendarEventsModel::findById((int) $template->id);
-        $objPage = $this->pageFinder->getCurrentPage();
+        $objPage = $this->getCurrentPage();
 
         if (!$objEvent instanceof CalendarEventsModel || !$objPage instanceof PageModel || !$this->isRecurring($objEvent)) {
             return;
@@ -66,6 +64,16 @@ class ParseTemplateHook
         $times = $this->requestStack->getCurrentRequest()?->query->get('times');
 
         $this->adjustTemplate($template, $objEvent, $objPage, \is_string($times) ? $times : null);
+    }
+
+    /**
+     * The page of the request. PageFinder::getCurrentPage() is not available before Contao 5.5.
+     */
+    private function getCurrentPage(): PageModel|null
+    {
+        $page = $this->requestStack->getCurrentRequest()?->attributes->get('pageModel') ?? $GLOBALS['objPage'] ?? null;
+
+        return $page instanceof PageModel ? $page : null;
     }
 
     /**
