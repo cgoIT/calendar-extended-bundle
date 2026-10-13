@@ -276,9 +276,9 @@ wenn der Besucher den angezeigten Zeitraum wechselt. Einstellungen:
 
 > ℹ️ **Hinweis zu fremden Hooks**
 >
-> Die eigenen Module laden ihre Events über den Generator des Cores und rufen den `getAllEvents`-Hook dieses Bundles
-> direkt auf. Hooks anderer Erweiterungen (`getAllEvents`, `findCalendarBoundaries`) greifen für diese drei Module
-> deshalb nicht.
+> Die eigenen Module laden ihre Events über die Legacy-Methode `Events::getAllEvents()` des Cores (funktioniert in
+> allen unterstützten Contao-Versionen). `getAllEvents`-Hooks anderer Erweiterungen greifen deshalb auch hier,
+> `findCalendarBoundaries`-Hooks dagegen nicht.
 
 #### Assets
 
