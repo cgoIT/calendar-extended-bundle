@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.1...v3.0.2) (2026-10-13)
+
+
+### Bug Fixes
+
+* read the current page from the request to support Contao 5.3 ([2c668d0](https://github.com/cgoIT/calendar-extended-bundle/commit/2c668d0b70528f8704c3adb0c61e90da0cb104ce))
+* read the current page from the request to support Contao 5.3 ([e3ce948](https://github.com/cgoIT/calendar-extended-bundle/commit/e3ce94898facbfbfc84cfdcaf9f08124fe7af306))
+* satisfy the code style and static analysis checks ([8fd237f](https://github.com/cgoIT/calendar-extended-bundle/commit/8fd237ffd97881ad55749ad7b75a5e5d62f1283f))
+* tag the response in the tests with the service of Contao 5.3 as well ([93a83b6](https://github.com/cgoIT/calendar-extended-bundle/commit/93a83b68df730e113bd5d41da469bfebeb470b70))
+
 ## [3.0.1](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.0...v3.0.1) (2026-10-13)
 
 
