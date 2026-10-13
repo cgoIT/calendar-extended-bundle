@@ -67,16 +67,6 @@ class ParseTemplateHook
     }
 
     /**
-     * The page of the request. PageFinder::getCurrentPage() is not available before Contao 5.5.
-     */
-    private function getCurrentPage(): PageModel|null
-    {
-        $page = $this->requestStack->getCurrentRequest()?->attributes->get('pageModel') ?? $GLOBALS['objPage'] ?? null;
-
-        return $page instanceof PageModel ? $page : null;
-    }
-
-    /**
      * @param string|null $times the value of the parameter "times" (start and end of the requested occurrence)
      * @param int|null    $now   the current time, defaults to time()
      */
@@ -158,6 +148,16 @@ class ParseTemplateHook
 
             return $jsonLd;
         };
+    }
+
+    /**
+     * The page of the request. PageFinder::getCurrentPage() is not available before Contao 5.5.
+     */
+    private function getCurrentPage(): PageModel|null
+    {
+        $page = $this->requestStack->getCurrentRequest()?->attributes->get('pageModel') ?? $GLOBALS['objPage'] ?? null;
+
+        return $page instanceof PageModel ? $page : null;
     }
 
     /**

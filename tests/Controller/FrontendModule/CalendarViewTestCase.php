@@ -123,7 +123,7 @@ abstract class CalendarViewTestCase extends TestCase
         $container->set('request_stack', $requestStack);
 
         // Contao 5.3 reads the page from the request, newer versions use the page finder
-        if (method_exists(PageFinder::class, 'getCurrentPage')) {
+        if ((new \ReflectionClass(PageFinder::class))->hasMethod('getCurrentPage')) {
             $pageFinder = $this->createStub(PageFinder::class);
             $pageFinder
                 ->method('getCurrentPage')
