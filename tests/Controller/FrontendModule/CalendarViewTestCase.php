@@ -18,7 +18,6 @@ use Cgoit\CalendarExtendedBundle\Classes\Utils;
 use Cgoit\CalendarExtendedBundle\Controller\FrontendModule\AbstractCalendarViewController;
 use Cgoit\CalendarExtendedBundle\Service\EventsProvider;
 use Cgoit\CalendarExtendedBundle\Tests\Support\Models;
-use Contao\CoreBundle\Cache\CacheTagManager;
 use Contao\CoreBundle\Csrf\ContaoCsrfTokenManager;
 use Contao\CoreBundle\Routing\PageFinder;
 use Contao\CoreBundle\Twig\FragmentTemplate;
@@ -133,7 +132,14 @@ abstract class CalendarViewTestCase extends TestCase
             $container->set('contao.routing.page_finder', $pageFinder);
         }
 
-        $container->set('contao.cache.tag_manager', $this->createStub(CacheTagManager::class));
+        // The cache tags are collected by "contao.cache.entity_tags" in Contao 5.3 and by "contao.cache.tag_manager" later
+        $tagManager = new class() {
+            public function tagWith(mixed $tags): void
+            {
+            }
+        };
+        $container->set('contao.cache.entity_tags', $tagManager);
+        $container->set('contao.cache.tag_manager', $tagManager);
         $container->set('twig', $twig);
 
         $router = $this->createStub(UrlGeneratorInterface::class);
