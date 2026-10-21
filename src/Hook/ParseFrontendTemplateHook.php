@@ -84,8 +84,10 @@ class ParseFrontendTemplateHook extends Controller
             $intNextEndTime = $intEndTime;
 
             // Replace the date an time with the correct ones from the recurring event
-            if (Input::get('times')) {
-                [$intStartTime, $intEndTime] = array_map(\intval(...), explode(',', Input::get('times')));
+            $arrRequestedTimes = $this->parseRequestedTimes(Input::get('times'));
+
+            if (null !== $arrRequestedTimes) {
+                [$intStartTime, $intEndTime] = $arrRequestedTimes;
             }
 
             // Do not show dates in the past if the event is recurring (see #923)
@@ -99,7 +101,7 @@ class ParseFrontendTemplateHook extends Controller
                     $intNextStartTime = $nextRecurrence['int_start'];
                     $intNextEndTime = $nextRecurrence['int_end'];
 
-                    if (empty(Input::get('times'))) {
+                    if (null === $arrRequestedTimes) {
                         $intStartTime = $intNextStartTime;
                         $intEndTime = $intNextEndTime;
                     }
@@ -316,6 +318,20 @@ class ParseFrontendTemplateHook extends Controller
         }
 
         return [$strDate, $strTime];
+    }
+
+    /**
+     * Parses the "times" parameter (start and end of the requested occurrence).
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    private function parseRequestedTimes(mixed $times): array|null
+    {
+        if (!\is_string($times) || !preg_match('/^(-?\d+),(-?\d+)$/', $times, $matches)) {
+            return null;
+        }
+
+        return [(int) $matches[1], (int) $matches[2]];
     }
 
     private function isRepeatOnFixedDates(CalendarEventsModel $objEvent): bool
