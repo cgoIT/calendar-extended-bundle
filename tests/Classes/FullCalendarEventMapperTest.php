@@ -31,16 +31,16 @@ final class FullCalendarEventMapperTest extends TestCase
 
         $this->assertSame('Fish & Chips', $result['event']['title']);
         $this->assertSame('Tasty', $result['event']['description']);
-        $this->assertSame('#ff0000', $result['event']['backgroundColor']);
-        $this->assertSame('#ffffff', $result['event']['textColor']);
+        $this->assertSame('#ff0000', $result['event']['color']);
+        $this->assertSame('#ffffff', $result['event']['contrastColor']);
     }
 
     public function testColorsDefaultToEmptyStrings(): void
     {
         $result = FullCalendarEventMapper::map($this->event([]));
 
-        $this->assertSame('', $result['event']['backgroundColor']);
-        $this->assertSame('', $result['event']['textColor']);
+        $this->assertSame('', $result['event']['color']);
+        $this->assertSame('', $result['event']['contrastColor']);
     }
 
     public function testAllDayEventEndsOnTheFollowingDay(): void
