@@ -128,6 +128,10 @@ class RecurrenceCalculator
         }
 
         $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
+
+        // A fixed date keeps the duration of the event: it ends as many calendar days after its date as the event
+        $span = max(0, Utils::daysBetween((int) $record['startDate'], (int) ($record['endDate'] ?: $record['startDate'])));
+
         usort(
             $arrFixedDates,
             static function ($a, $b) {
@@ -162,7 +166,7 @@ class RecurrenceCalculator
                 ($record['addTime'] ? date('H:i', $record['endTime']) : '23:59');
 
             $new_fix_start_date = Utils::parseTime(date('Y-m-d', $new_fix_date).' '.date('H:i', Utils::parseTime($new_fix_start_time)));
-            $new_fix_end_date = Utils::parseTime(date('Y-m-d', $new_fix_date).' '.date('H:i', Utils::parseTime($new_fix_end_time)));
+            $new_fix_end_date = Utils::parseTime(date('Y-m-d', Utils::parseTime('+'.$span.' days', $new_fix_date)).' '.date('H:i', Utils::parseTime($new_fix_end_time)));
 
             $arrAllRecurrences[$new_fix_start_date] = $this->getRecurrenceArray($new_fix_start_date, $new_fix_end_date);
             $maxRepeatEnd[] = $new_fix_end_date;

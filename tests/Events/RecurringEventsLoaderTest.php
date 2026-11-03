@@ -147,6 +147,76 @@ final class RecurringEventsLoaderTest extends TestCase
         $this->assertSame($day + 23 * 3600 + 59 * 60, $events[20250407][$day][0]['end']);
     }
 
+    public function testFixedDatesOfAMultiDayEventKeepTheDuration(): void
+    {
+        // Friday to Sunday, 18:00 - 13:00
+        $events = $this->loader(fixed: [$this->event(
+            fixedDates: [
+                ['new_repeat' => $this->time('2025-04-11', '00:00'), 'new_start' => '', 'new_end' => '', 'reason' => ''],
+                ['new_repeat' => $this->time('2025-04-18', '00:00'), 'new_start' => $this->time('2025-01-01', '17:00'), 'new_end' => $this->time('2025-01-01', '12:00'), 'reason' => ''],
+            ],
+            row: ['startTime' => $this->time('2025-03-07', '18:00'), 'endTime' => $this->time('2025-03-09', '13:00'), 'endDate' => $this->time('2025-03-09', '00:00')],
+        )])->addFixedDates([], $this->context('2025-04-01', '2025-04-30'));
+
+        $this->assertSame($this->time('2025-04-13', '13:00'), $events[20250411][$this->time('2025-04-11', '18:00')][0]['end']);
+        $this->assertSame($this->time('2025-04-20', '12:00'), $events[20250418][$this->time('2025-04-18', '17:00')][0]['end']);
+    }
+
+    public function testFixedDatesOfAMultiDayEventWithoutTimeKeepTheDuration(): void
+    {
+        $day = $this->time('2025-04-11', '00:00');
+        $events = $this->loader(fixed: [$this->event(
+            fixedDates: [['new_repeat' => $day, 'new_start' => '', 'new_end' => '', 'reason' => '']],
+            row: ['addTime' => 0, 'startTime' => $this->time('2025-03-07', '00:00'), 'endTime' => $this->time('2025-03-09', '23:59:59'), 'endDate' => $this->time('2025-03-09', '00:00')],
+        )])->addFixedDates([], $this->context('2025-04-01', '2025-04-30'));
+
+        $this->assertSame($this->time('2025-04-13', '23:59:59'), $events[20250411][$day][0]['end']);
+        $this->assertSame('11.04.2025 - 13.04.2025', $events[20250411][$day][0]['date']);
+        // the occurrence is also added to the following days
+        $this->assertSame([20250411, 20250412, 20250413], array_keys($events));
+    }
+
+    public function testFixedDatesOfAMultiDayEventKeepTheDurationAcrossTheChangeFromDaylightSavingTime(): void
+    {
+        $timezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            // Friday to Sunday, all day; the clocks change on Sunday 2025-10-26
+            $day = $this->time('2025-10-24', '00:00');
+            $events = $this->loader(fixed: [$this->event(
+                fixedDates: [['new_repeat' => $day, 'new_start' => '', 'new_end' => '', 'reason' => '']],
+                row: ['addTime' => 0, 'startTime' => $this->time('2025-03-07', '00:00'), 'endTime' => $this->time('2025-03-09', '23:59:59'), 'endDate' => $this->time('2025-03-09', '00:00')],
+            )])->addFixedDates([], $this->context('2025-10-01', '2025-10-31'));
+
+            $this->assertSame($this->time('2025-10-26', '23:59:59'), $events[20251024][$day][0]['end']);
+        } finally {
+            date_default_timezone_set($timezone);
+        }
+    }
+
+    public function testFixedDatesWithIgnoredEndTimeOfAMultiDayEventEndOnTheLastDay(): void
+    {
+        $events = $this->loader(fixed: [$this->event(
+            fixedDates: [['new_repeat' => $this->time('2025-04-11', '00:00'), 'new_start' => '', 'new_end' => '', 'reason' => '']],
+            row: ['ignoreEndTime' => 1, 'startTime' => $this->time('2025-03-07', '09:00'), 'endTime' => $this->time('2025-03-09', '09:00'), 'endDate' => $this->time('2025-03-09', '00:00')],
+        )])->addFixedDates([], $this->context('2025-04-01', '2025-04-30'));
+
+        $this->assertSame($this->time('2025-04-13', '09:00'), $events[20250411][$this->time('2025-04-11', '09:00')][0]['end']);
+    }
+
+    public function testRunningFixedDateThatStartedBeforeThePeriodIsAdded(): void
+    {
+        // Friday to Sunday, all day; the period starts on Saturday
+        $day = $this->time('2025-04-11', '00:00');
+        $events = $this->loader(fixed: [$this->event(
+            fixedDates: [['new_repeat' => $day, 'new_start' => '', 'new_end' => '', 'reason' => '']],
+            row: ['addTime' => 0, 'startTime' => $this->time('2025-03-07', '00:00'), 'endTime' => $this->time('2025-03-09', '23:59:59'), 'endDate' => $this->time('2025-03-09', '00:00')],
+        )])->addFixedDates([], $this->context('2025-04-12', '2025-04-30'));
+
+        $this->assertSame($this->time('2025-04-13', '23:59:59'), $events[20250411][$day][0]['end']);
+    }
+
     public function testFixedDateAlreadyInTheListOnlyUpdatesTheNumberOfRecurrences(): void
     {
         $start = $this->time('2025-04-07', '09:00');

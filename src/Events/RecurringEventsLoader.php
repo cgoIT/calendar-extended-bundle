@@ -102,33 +102,37 @@ class RecurringEventsLoader
             if (!empty($arrFixedDates) && \is_array($arrFixedDates)) {
                 $arrFixedDates = Utils::sanitizeFixedDates($arrFixedDates);
 
+                // A fixed date keeps the duration of the event: it ends as many calendar days after its date as the event
+                $span = max(0, Utils::daysBetween((int) $objEvent->startTime, (int) $objEvent->endTime));
+
                 foreach ($arrFixedDates as $date) {
                     $intStart = $date['new_repeat'];
-                    $intEnd = $intStart;
+                    $strEndDate = date('Y-m-d', Utils::parseTime('+'.$span.' days', $date['new_repeat']));
                     $reason = $date['reason'] ?? null;
 
                     if ($objEvent->addTime) {
                         if (empty($date['new_start'])) {
-                            $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->startTime));
+                            $intStart = Utils::parseTime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->startTime));
                         } else {
-                            $intStart = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_start']));
+                            $intStart = Utils::parseTime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_start']));
                         }
 
                         if ($objEvent->ignoreEndTime) {
-                            $intEnd = $intStart;
+                            $intEnd = Utils::parseTime('+'.$span.' days', $intStart);
                         } else {
                             if (empty($date['new_end'])) {
-                                $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $objEvent->endTime));
+                                $intEnd = Utils::parseTime($strEndDate.' '.date('H:i', $objEvent->endTime));
                             } else {
-                                $intEnd = strtotime(date('Y-m-d', $date['new_repeat']).' '.date('H:i', $date['new_end']));
+                                $intEnd = Utils::parseTime($strEndDate.' '.date('H:i', $date['new_end']));
                             }
                         }
-                    } elseif (empty($objEvent->endDate)) {
-                        // Only start date is set. Event will take place the whole day.
-                        $intEnd = $intStart + $objEvent->endTime - $objEvent->startTime;
+                    } else {
+                        // The event takes place the whole day(s) and ends at the end time of the event (23:59:59)
+                        $intEnd = Utils::parseTime($strEndDate.' '.date('H:i:s', $objEvent->endTime));
                     }
 
-                    if ($intStart >= $timeStart && $intStart <= $timeEnd) {
+                    // Like the core, also add occurrences that started before the period and are still running
+                    if ($intEnd >= $timeStart && $intStart <= $timeEnd) {
                         $key = Date::parse('Ymd', $intStart);
                         if (\array_key_exists($key, $arrEvents) && \array_key_exists($intStart, $arrEvents[$key])) {
                             $alreadyInArray = false;

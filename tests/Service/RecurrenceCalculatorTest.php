@@ -371,6 +371,71 @@ final class RecurrenceCalculatorTest extends TestCase
         $this->assertNotNull($set['repeatFixedDates']);
     }
 
+    public function testFixedDatesOfAMultiDayEventKeepTheDuration(): void
+    {
+        // Friday to Sunday, 18:00 - 13:00
+        $event = $this->event([
+            'startDate' => strtotime('2025-03-07'),
+            'endDate' => strtotime('2025-03-09'),
+            'startTime' => strtotime('2025-03-07 18:00'),
+            'endTime' => strtotime('2025-03-09 13:00'),
+            'repeatFixedDates' => serialize([
+                ['new_repeat' => strtotime('2025-04-11'), 'new_start' => '', 'new_end' => '', 'reason' => ''],
+                ['new_repeat' => strtotime('2025-05-09'), 'new_start' => strtotime('1970-01-01 17:00'), 'new_end' => strtotime('1970-01-01 12:00'), 'reason' => ''],
+            ]),
+        ]);
+
+        [$all, $set] = $this->calculate($event);
+
+        $this->assertSame(strtotime('2025-04-13 13:00'), $all[strtotime('2025-04-11 18:00')]['int_end']);
+        $this->assertSame(strtotime('2025-05-11 12:00'), $all[strtotime('2025-05-09 17:00')]['int_end']);
+        // the last fixed date ends on Sunday
+        $this->assertSame(strtotime('2025-05-11 12:00'), $set['repeatEnd']);
+    }
+
+    public function testFixedDatesOfAMultiDayEventWithoutTimeKeepTheDuration(): void
+    {
+        // Friday to Sunday, all day
+        $event = $this->event([
+            'startDate' => strtotime('2025-03-07'),
+            'endDate' => strtotime('2025-03-09'),
+            'addTime' => 0,
+            'startTime' => strtotime('2025-03-07 00:00'),
+            'endTime' => strtotime('2025-03-09 23:59:59'),
+            'repeatFixedDates' => serialize([['new_repeat' => strtotime('2025-04-11'), 'new_start' => '', 'new_end' => '', 'reason' => '']]),
+        ]);
+
+        [$all, $set] = $this->calculate($event);
+
+        $this->assertSame([strtotime('2025-03-07 00:00'), strtotime('2025-04-11 00:00')], array_keys($all));
+        $this->assertSame(strtotime('2025-04-13 23:59'), $all[strtotime('2025-04-11 00:00')]['int_end']);
+        $this->assertSame(strtotime('2025-04-13 23:59'), $set['repeatEnd']);
+    }
+
+    public function testFixedDatesOfAMultiDayEventKeepTheDurationAcrossTheChangeFromDaylightSavingTime(): void
+    {
+        $timezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            // Friday to Sunday, all day; the clocks change on Sunday 2025-10-26
+            $event = $this->event([
+                'startDate' => strtotime('2025-03-07'),
+                'endDate' => strtotime('2025-03-09'),
+                'addTime' => 0,
+                'startTime' => strtotime('2025-03-07 00:00'),
+                'endTime' => strtotime('2025-03-09 23:59:59'),
+                'repeatFixedDates' => serialize([['new_repeat' => strtotime('2025-10-24'), 'new_start' => '', 'new_end' => '', 'reason' => '']]),
+            ]);
+
+            [$all] = $this->calculate($event);
+
+            $this->assertSame(strtotime('2025-10-26 23:59'), $all[strtotime('2025-10-24 00:00')]['int_end']);
+        } finally {
+            date_default_timezone_set($timezone);
+        }
+    }
+
     public function testEmptyFixedDatesRowFromWizardIsIgnored(): void
     {
         $event = $this->event([
