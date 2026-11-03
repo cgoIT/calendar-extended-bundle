@@ -61,8 +61,8 @@ class FullCalendarEventMapper
                 'overlap' => false,
                 'url' => $event['href'],
                 'icon' => $recurring ? 'repeat' : 'calendar',
-                'backgroundColor' => $event['bgcolor'] ?? '',
-                'textColor' => $event['fgcolor'] ?? '',
+                'color' => $event['bgcolor'] ?? '',
+                'contrastColor' => $event['fgcolor'] ?? '',
             ],
             'multiday' => $multiday,
         ];
