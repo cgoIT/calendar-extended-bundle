@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.2...v3.0.3) (2026-11-03)
+
+
+### Bug Fixes
+
+* fix unit tests ([ddf8fe6](https://github.com/cgoIT/calendar-extended-bundle/commit/ddf8fe6ec556f9095ffdd381319ff727daedacfb))
+* keep the duration of multi-day events for fixed dates ([4ceff79](https://github.com/cgoIT/calendar-extended-bundle/commit/4ceff79c5f0fcc03973e187681b1833649e98a34))
+* keep the duration of multi-day events for fixed dates ([5b6b479](https://github.com/cgoIT/calendar-extended-bundle/commit/5b6b47928c6ef311bb70a9cee2a0e1b962ba9c40))
+* use correct keys for colors in fullcalendar events, fixes [#67](https://github.com/cgoIT/calendar-extended-bundle/issues/67) ([1acda53](https://github.com/cgoIT/calendar-extended-bundle/commit/1acda53b423fac0f1ce4c421025f8620d637b865))
+
 ## [3.0.2](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.1...v3.0.2) (2026-10-13)
 
 
