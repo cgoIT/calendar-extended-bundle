@@ -408,8 +408,8 @@ final class RecurrenceCalculatorTest extends TestCase
         [$all, $set] = $this->calculate($event);
 
         $this->assertSame([strtotime('2025-03-07 00:00'), strtotime('2025-04-11 00:00')], array_keys($all));
-        $this->assertSame(strtotime('2025-04-13 23:59'), $all[strtotime('2025-04-11 00:00')]['int_end']);
-        $this->assertSame(strtotime('2025-04-13 23:59'), $set['repeatEnd']);
+        $this->assertSame(strtotime('2025-04-13 23:59:59'), $all[strtotime('2025-04-11 00:00')]['int_end']);
+        $this->assertSame(strtotime('2025-04-13 23:59:59'), $set['repeatEnd']);
     }
 
     public function testFixedDatesOfAMultiDayEventKeepTheDurationAcrossTheChangeFromDaylightSavingTime(): void
@@ -430,10 +430,44 @@ final class RecurrenceCalculatorTest extends TestCase
 
             [$all] = $this->calculate($event);
 
-            $this->assertSame(strtotime('2025-10-26 23:59'), $all[strtotime('2025-10-24 00:00')]['int_end']);
+            $this->assertSame(strtotime('2025-10-26 23:59:59'), $all[strtotime('2025-10-24 00:00')]['int_end']);
         } finally {
             date_default_timezone_set($timezone);
         }
+    }
+
+    public function testAllDayRecurrencesEndAtTheLastSecondOfTheDay(): void
+    {
+        // The core ends all-day events at 23:59:59, the event list and the "times" parameter of the event URL use this end
+        $allDay = [
+            'addTime' => 0,
+            'startTime' => strtotime('2025-03-03 00:00'),
+            'endTime' => strtotime('2025-03-03 23:59:59'),
+        ];
+
+        [$default] = $this->calculate($this->event($allDay + [
+            'recurring' => 1,
+            'repeatEach' => serialize(['value' => 1, 'unit' => 'weeks']),
+            'repeatEnd' => strtotime('2025-03-17 23:59:59'),
+        ]));
+
+        $this->assertSame(strtotime('2025-03-03 23:59:59'), $default[strtotime('2025-03-03 00:00')]['int_end']);
+        $this->assertSame(strtotime('2025-03-10 23:59:59'), $default[strtotime('2025-03-10 00:00')]['int_end']);
+
+        [$extended] = $this->calculate($this->event($allDay + [
+            'recurringExt' => 1,
+            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+            'recurrences' => 0,
+        ]), 3);
+
+        $this->assertSame(strtotime('2025-04-07 23:59:59'), $extended[strtotime('2025-04-07 00:00')]['int_end']);
+
+        [$fixed] = $this->calculate($this->event($allDay + [
+            'repeatFixedDates' => serialize([['new_repeat' => strtotime('2025-04-20'), 'new_start' => '', 'new_end' => '', 'reason' => '']]),
+        ]));
+
+        $this->assertSame(strtotime('2025-03-03 23:59:59'), $fixed[strtotime('2025-03-03 00:00')]['int_end']);
+        $this->assertSame(strtotime('2025-04-20 23:59:59'), $fixed[strtotime('2025-04-20 00:00')]['int_end']);
     }
 
     public function testEmptyFixedDatesRowFromWizardIsIgnored(): void
