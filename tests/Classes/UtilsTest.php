@@ -393,6 +393,29 @@ final class UtilsTest extends TestCase
         yield 'end before start' => ['1700003600,1700000000', false];
     }
 
+    public function testResolveRequestedTimesComparesTheEndOfAllDayOccurrencesByDay(): void
+    {
+        // Recurrence of an all-day event stored by an older version: it ends at 23:59:00,
+        // the event list links to it with the end of the core (23:59:59)
+        $start = strtotime('2025-03-10 00:00');
+        $storedEnd = strtotime('2025-03-10 23:59');
+        $recurrences = [$start => ['int_start' => $start, 'int_end' => $storedEnd]];
+        $eventStart = strtotime('2025-03-03 00:00');
+        $eventEnd = strtotime('2025-03-03 23:59:59');
+
+        $this->assertSame(
+            [$start, $storedEnd],
+            Utils::resolveRequestedTimes($start.','.strtotime('2025-03-10 23:59:59'), $eventStart, $eventEnd, $recurrences, [], false),
+        );
+
+        // Another day or another start is still rejected
+        $this->assertNull(Utils::resolveRequestedTimes($start.','.strtotime('2025-03-11 23:59:59'), $eventStart, $eventEnd, $recurrences, [], false));
+        $this->assertNull(Utils::resolveRequestedTimes(($start + 60).','.strtotime('2025-03-10 23:59:59'), $eventStart, $eventEnd, $recurrences, [], false));
+
+        // Events with a time are compared exactly
+        $this->assertNull(Utils::resolveRequestedTimes($start.','.strtotime('2025-03-10 23:59:59'), $eventStart, $eventEnd, $recurrences, [], true));
+    }
+
     public function testResolveRequestedTimesAcceptsMovedOccurrence(): void
     {
         $recurrences = [1700100000 => ['int_start' => 1700100000, 'int_end' => 1700103600]];
