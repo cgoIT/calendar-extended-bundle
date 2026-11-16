@@ -459,11 +459,14 @@ final class RecurrenceCalculatorTest extends TestCase
         $this->assertSame(strtotime('2025-03-03 23:59:59'), $default[strtotime('2025-03-03 00:00')]['int_end']);
         $this->assertSame(strtotime('2025-03-10 23:59:59'), $default[strtotime('2025-03-10 00:00')]['int_end']);
 
-        [$extended] = $this->calculate($this->event($allDay + [
-            'recurringExt' => 1,
-            'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
-            'recurrences' => 0,
-        ]), 3);
+        [$extended] = $this->calculate(
+            $this->event($allDay + [
+                'recurringExt' => 1,
+                'repeatEachExt' => serialize(['value' => 'first', 'unit' => 'monday']),
+                'recurrences' => 0,
+            ]),
+            3,
+        );
 
         $this->assertSame(strtotime('2025-04-07 23:59:59'), $extended[strtotime('2025-04-07 00:00')]['int_end']);
 
