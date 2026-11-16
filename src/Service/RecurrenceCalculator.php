@@ -120,7 +120,7 @@ class RecurrenceCalculator
         }
 
         $intStart = Utils::parseTime(date('Y-m-d', $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['startTime']) : '00:00'));
-        $intEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59'));
+        $intEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59:59'));
         $arrAllRecurrences[$intStart] = $this->getRecurrenceArray($intStart, $intEnd);
 
         if (empty($arrFixedDates) || !\is_array($arrFixedDates)) {
@@ -163,10 +163,10 @@ class RecurrenceCalculator
                 ($record['addTime'] ? date('H:i', $record['startTime']) : '00:00');
             $new_fix_end_time = !empty($fixedDate['new_end']) ?
                 date('H:i', $fixedDate['new_end']) :
-                ($record['addTime'] ? date('H:i', $record['endTime']) : '23:59');
+                ($record['addTime'] ? date('H:i', $record['endTime']) : '23:59:59');
 
             $new_fix_start_date = Utils::parseTime(date('Y-m-d', $new_fix_date).' '.date('H:i', Utils::parseTime($new_fix_start_time)));
-            $new_fix_end_date = Utils::parseTime(date('Y-m-d', Utils::parseTime('+'.$span.' days', $new_fix_date)).' '.date('H:i', Utils::parseTime($new_fix_end_time)));
+            $new_fix_end_date = Utils::parseTime(date('Y-m-d', Utils::parseTime('+'.$span.' days', $new_fix_date)).' '.date('H:i:s', Utils::parseTime($new_fix_end_time)));
 
             $arrAllRecurrences[$new_fix_start_date] = $this->getRecurrenceArray($new_fix_start_date, $new_fix_end_date);
             $maxRepeatEnd[] = $new_fix_end_date;
@@ -207,7 +207,7 @@ class RecurrenceCalculator
             }
 
             $intStart = Utils::parseTime(date('Y-m-d', $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['startTime']) : '00:00'));
-            $intEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59'));
+            $intEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59:59'));
 
             // store the list of dates
             $next = $intStart;
@@ -291,7 +291,7 @@ class RecurrenceCalculator
                 $year = (int) date('Y', $record['startDate']);
                 // search date for the next event
                 $next = Utils::parseTime(date('Y-m-d', $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['startTime']) : '00:00'));
-                $nextEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59'));
+                $nextEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59:59'));
                 $eventDuration = $nextEnd - $next;
 
                 // last month

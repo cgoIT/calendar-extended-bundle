@@ -351,8 +351,14 @@ class Utils
         }
 
         foreach ($candidates as [$candidateStart, $candidateEnd]) {
-            if ($candidateStart === $start && $candidateEnd === $end) {
-                return [$start, $end];
+            if ($candidateStart !== $start) {
+                continue;
+            }
+
+            // The event list ends all-day occurrences at 23:59:59 like the core, but recurrences
+            // stored by older versions end at 23:59:00, so only the day of the end counts for them
+            if ($candidateEnd === $end || (!$addTime && date('Ymd', $candidateEnd) === date('Ymd', $end))) {
+                return [$candidateStart, $candidateEnd];
             }
         }
 
