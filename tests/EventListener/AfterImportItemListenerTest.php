@@ -68,6 +68,7 @@ final class AfterImportItemListenerTest extends TestCase
         $this->assertSame(1, $columns['weekday']);
         $this->assertSame(strtotime('2025-03-06 10:00'), $columns['repeatEnd']);
         $this->assertCount(4, unserialize($columns['allRecurrences']));
+
         // these were dropped by the import before
         $this->assertSame([strtotime('2025-03-04 09:00')], array_keys(unserialize($columns['exceptionList'])));
     }

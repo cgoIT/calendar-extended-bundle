@@ -42,6 +42,7 @@ final class UtilsRecurringTextTest extends TestCase
             'count_other_dates_singular' => '(%s more date)',
             'count_other_dates_plural' => '(%s more dates)',
         ];
+
         $GLOBALS['TL_LANG']['tl_calendar_events'] = [
             'first' => 'first',
             'monday' => 'Monday',

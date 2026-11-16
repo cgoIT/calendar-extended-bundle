@@ -36,6 +36,7 @@ final class UtilsTest extends TestCase
             'recurrences' => 0,
             'addTime' => 0,
         ]);
+
         $page = $this->mockModel(PageModel::class, ['dateFormat' => 'Y-m-d']);
 
         [, $recurring] = Utils::getUntilAndRecurring($event, $page, strtotime('2025-03-03'), '2025-03-03', '', false);
@@ -147,6 +148,7 @@ final class UtilsTest extends TestCase
         $this->assertSame(0, Utils::daysBetween(strtotime('2025-03-03 09:00'), strtotime('2025-03-03 23:59')));
         $this->assertSame(1, Utils::daysBetween(strtotime('2025-03-03 22:00'), strtotime('2025-03-04 02:00')));
         $this->assertSame(-1, Utils::daysBetween(strtotime('2025-03-04'), strtotime('2025-03-03')));
+
         // across the switch to daylight saving time
         $this->assertSame(2, Utils::daysBetween(strtotime('2025-03-29 12:00'), strtotime('2025-03-31 12:00')));
     }
@@ -466,7 +468,6 @@ final class UtilsTest extends TestCase
             ->method('__isset')
             ->willReturnCallback(static fn (string $key): bool => isset($data[$key]))
         ;
-
         $model
             ->method('__get')
             ->willReturnCallback(static fn (string $key): mixed => $data[$key] ?? null)

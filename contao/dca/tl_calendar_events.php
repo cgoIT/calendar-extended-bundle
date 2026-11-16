@@ -28,12 +28,14 @@ foreach (['default', 'article', 'internal', 'external'] as $palette) {
     PaletteManipulator::create()->addField('showOnFreeDay', 'addTime', PaletteManipulator::POSITION_BEFORE)
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+
     PaletteManipulator::create()->addLegend('contact_legend', 'recurring_legend', PaletteManipulator::POSITION_BEFORE)
         ->addField('location_link', 'contact_legend', PaletteManipulator::POSITION_APPEND)
         ->addField('location_contact', 'location_link')
         ->addField('location_mail', 'location_contact')
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+
     PaletteManipulator::create()->addLegend('location_legend', 'contact_legend', PaletteManipulator::POSITION_BEFORE)
         ->addField('location_name', 'location_legend', PaletteManipulator::POSITION_APPEND)
         ->addField('location_str', 'location_name')
@@ -41,14 +43,17 @@ foreach (['default', 'article', 'internal', 'external'] as $palette) {
         ->addField('location_ort', 'location_plz')
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+
     PaletteManipulator::create()->addLegend('recurring_legend_ext', 'recurring_legend')
         ->addField('recurringExt', 'recurring_legend_ext', PaletteManipulator::POSITION_APPEND)
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+
     PaletteManipulator::create()->addLegend('repeatFixedDates_legend', 'recurring_legend_ext')
         ->addField('repeatFixedDates', 'repeatFixedDates_legend', PaletteManipulator::POSITION_APPEND)
         ->applyToPalette((string) $palette, 'tl_calendar_events')
     ;
+
     PaletteManipulator::create()->addLegend('exception_legend', 'repeatFixedDates_legend')
         ->addField('useExceptions', 'exception_legend', PaletteManipulator::POSITION_APPEND)
         ->applyToPalette((string) $palette, 'tl_calendar_events')

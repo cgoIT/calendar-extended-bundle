@@ -120,10 +120,12 @@ final class EventFactoryTest extends TestCase
         $this->factory()->create($this->event(), $this->context(), $start, $end, $events, false);
 
         $this->assertSame([20250303, 20250304, 20250305], array_keys($events));
+
         $event = $events['20250303'][$start][0];
         $this->assertSame('03.03.2025 09:00 - 05.03.2025 17:00', $event['date']);
         $this->assertSame('', $event['day']);
         $this->assertSame('', $event['time']);
+
         // the following days are keyed by the start of the following days
         $this->assertSame([strtotime('2025-03-04 09:00')], array_keys($events['20250304']));
     }
@@ -157,6 +159,7 @@ final class EventFactoryTest extends TestCase
 
         $factory = $this->factory();
         $event = $this->event(['cssClass' => 'special', 'featured' => '1']);
+
         $factory->create($event, $this->context(), $past, $past + 3600, $events, false);
         $factory->create($event, $this->context(), $future, $future + 3600, $events, false);
         $factory->create($event, $this->context(), strtotime('today 09:00'), strtotime('today 10:00'), $events, false);
@@ -183,6 +186,7 @@ final class EventFactoryTest extends TestCase
     {
         $start = strtotime('2025-03-03 09:00');
         $events = [];
+
         $generator = $this->createStub(ContentUrlGenerator::class);
         $generator
             ->method('generate')

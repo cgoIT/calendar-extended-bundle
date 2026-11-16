@@ -24,6 +24,7 @@ final class ExceptionStepTest extends TestCase
     protected function setUp(): void
     {
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
+
         $GLOBALS['TL_LANG']['DAYS'] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         $GLOBALS['TL_LANG']['MONTHS'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     }

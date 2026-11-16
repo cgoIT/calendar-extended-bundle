@@ -37,10 +37,25 @@ class RecurrenceCalculator
      * The fields of the event that are used for the calculation.
      */
     private const array RECORD_FIELDS = [
-        'startDate', 'endDate', 'addTime', 'startTime', 'endTime', 'ignoreEndTime',
-        'recurring', 'repeatEach', 'repeatEnd', 'recurrences', 'repeatWeekday', 'hideOnWeekend',
-        'recurringExt', 'repeatEachExt', 'repeatFixedDates',
-        'useExceptions', 'repeatExceptions', 'repeatExceptionsInt', 'repeatExceptionsPer',
+        'startDate',
+        'endDate',
+        'addTime',
+        'startTime',
+        'endTime',
+        'ignoreEndTime',
+        'recurring',
+        'repeatEach',
+        'repeatEnd',
+        'recurrences',
+        'repeatWeekday',
+        'hideOnWeekend',
+        'recurringExt',
+        'repeatEachExt',
+        'repeatFixedDates',
+        'useExceptions',
+        'repeatExceptions',
+        'repeatExceptionsInt',
+        'repeatExceptionsPer',
     ];
 
     public function __construct(
@@ -67,6 +82,7 @@ class RecurrenceCalculator
         }
 
         $arrAllRecurrences = [];
+
         // The number of entries controls the calculation of repeatEnd, the first one is the initial value
         $maxRepeatEnd = [0];
 
@@ -84,8 +100,10 @@ class RecurrenceCalculator
 
         // process exceptions
         $currentEndDate = \count($maxRepeatEnd) > 1 ? (int) max($maxRepeatEnd) : (int) ($arrSet['repeatEnd'] ?? 0);
+
         [$exceptionList, $maxRepeatEnd] =
             $this->processExceptions($record, $currentEndDate, $maxRepeatEnd, $arrAllRecurrences);
+
         $arrSet['exceptionList'] = $exceptionList;
 
         if (\count($maxRepeatEnd) > 1) {
@@ -161,6 +179,7 @@ class RecurrenceCalculator
             $new_fix_start_time = !empty($fixedDate['new_start']) ?
                 date('H:i', $fixedDate['new_start']) :
                 ($record['addTime'] ? date('H:i', $record['startTime']) : '00:00');
+
             $new_fix_end_time = !empty($fixedDate['new_end']) ?
                 date('H:i', $fixedDate['new_end']) :
                 ($record['addTime'] ? date('H:i', $record['endTime']) : '23:59');
@@ -200,6 +219,7 @@ class RecurrenceCalculator
                     }
                 }
             }
+
             $arrRange = StringUtil::deserialize($record['repeatEach'], true);
 
             if (empty($arrRange) || empty($arrRange['value']) || empty($arrRange['unit'])) {
@@ -262,6 +282,7 @@ class RecurrenceCalculator
                     break;
                 }
             }
+
             $maxRepeatEnd[] = $arrSet['repeatEnd'];
         }
 
@@ -287,8 +308,10 @@ class RecurrenceCalculator
 
                 // next month of the event
                 $month = (int) date('n', $record['startDate']);
+
                 // year of the event
                 $year = (int) date('Y', $record['startDate']);
+
                 // search date for the next event
                 $next = Utils::parseTime(date('Y-m-d', $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['startTime']) : '00:00'));
                 $nextEnd = Utils::parseTime(date('Y-m-d', $record['endDate'] ?: $record['startDate']).' '.($record['addTime'] ? date('H:i', $record['endTime']) : '23:59'));
@@ -370,6 +393,7 @@ class RecurrenceCalculator
             if (\count($exceptionRows) > 1) {
                 ksort($exceptionRows);
             }
+
             $exceptions = \count($exceptionRows) > 0 ? serialize($exceptionRows) : null;
         }
 
@@ -578,15 +602,17 @@ class RecurrenceCalculator
      * Adds the interval to the time. Months and years are calculated from the given time and keep its day of the
      * month; if the target month is shorter, the last day of the month is used (31st of January + 1 month = 28th of February).
      */
-    private function addInterval(int $time, int $amount, string $unit): int|false
+    private function addInterval(int $time, int $amount, string $unit): false|int
     {
         if (!\in_array($unit, ['months', 'years'], true)) {
             return strtotime('+ '.$amount.' '.$unit, $time);
         }
 
         $months = 'years' === $unit ? $amount * 12 : $amount;
+
         $date = (new \DateTimeImmutable('@'.$time))->setTimezone(new \DateTimeZone(date_default_timezone_get()));
         $target = $date->modify('first day of this month')->modify(\sprintf('%+d months', $months));
+
         $day = min((int) $date->format('j'), (int) $target->format('t'));
 
         return $target->setDate((int) $target->format('Y'), (int) $target->format('n'), $day)->getTimestamp();

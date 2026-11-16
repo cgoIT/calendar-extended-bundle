@@ -56,6 +56,7 @@ class CalendarEventsCallbacks
         $recurringIndicator = '';
         if (!empty($arrRow['recurring']) || !empty($arrRow['recurringExt'])) {
             $recurringAltText = $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'];
+
             $recurringIndicator =
                 '<img src="/bundles/cgoitcalendarextended/recurring.svg" width="16px" height="16px" title="'.$recurringAltText.'" style="margin-left: 5px;">';
         }

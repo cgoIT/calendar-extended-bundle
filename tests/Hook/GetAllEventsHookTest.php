@@ -42,7 +42,6 @@ final class GetAllEventsHookTest extends TestCase
             ->method('addExtendedRecurrences')
             ->willReturnCallback($this->record('extended recurrences'))
         ;
-
         $loader
             ->method('addFixedDates')
             ->willReturnCallback($this->record('fixed dates'))

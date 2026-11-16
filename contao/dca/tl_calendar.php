@@ -17,10 +17,12 @@ use Contao\CoreBundle\DataContainer\PaletteManipulator;
 PaletteManipulator::create()->addField('uniqueEvents', 'jumpTo')
     ->applyToPalette('default', 'tl_calendar')
 ;
+
 PaletteManipulator::create()->addLegend('extended_type_legend', 'title_legend')
     ->addField('isHolidayCal', 'extended_type_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('default', 'tl_calendar')
 ;
+
 PaletteManipulator::create()->addLegend('extended_legend', 'extended_type_legend')
     ->addField('fg_color', 'extended_legend', PaletteManipulator::POSITION_APPEND)
     ->addField('bg_color', 'extended_legend', PaletteManipulator::POSITION_APPEND)

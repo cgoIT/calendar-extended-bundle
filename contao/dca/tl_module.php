@@ -19,6 +19,7 @@ PaletteManipulator::create()->addField('hide_holiday', 'config_legend', PaletteM
     ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('calendar', 'tl_module')
 ;
+
 PaletteManipulator::create()->addLegend('filter_legend', 'template_legend')
     ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('calendar', 'tl_module')
@@ -26,6 +27,7 @@ PaletteManipulator::create()->addLegend('filter_legend', 'template_legend')
 
 // Palette for timetable
 $GLOBALS['TL_DCA']['tl_module']['palettes']['timetable'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'];
+
 PaletteManipulator::create()->addField('showDate', 'config_legend', PaletteManipulator::POSITION_APPEND)
     ->addField('hideEmptyDays', 'showDate')
     ->addField('use_navigation', 'hideEmptyDays')
@@ -38,6 +40,7 @@ PaletteManipulator::create()->addField('showDate', 'config_legend', PaletteManip
 
 // Palette for yearview
 $GLOBALS['TL_DCA']['tl_module']['palettes']['yearview'] = $GLOBALS['TL_DCA']['tl_module']['palettes']['calendar'];
+
 PaletteManipulator::create()->addField('use_horizontal', 'config_legend', PaletteManipulator::POSITION_APPEND)
     ->addField('use_navigation', 'use_horizontal')
     ->addField('linkCurrent', 'use_navigation')
@@ -49,6 +52,7 @@ PaletteManipulator::create()->addField('hide_holiday', 'config_legend', PaletteM
     ->addField('showOnlyNext', 'hide_holiday')
     ->applyToPalette('eventlist', 'tl_module')
 ;
+
 PaletteManipulator::create()->addLegend('filter_legend', 'template_legend', PaletteManipulator::POSITION_AFTER)
     ->addField('filter_fields', 'filter_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('eventlist', 'tl_module')

@@ -47,6 +47,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'background', 'background-color:#'.$cssColor.';');
+
                     $calConf[$cal]['backgroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 
@@ -60,6 +61,7 @@ class Utils
 
                 if (!empty($cssColor)) {
                     self::appendToArrayKey($calConf[$cal], 'foreground', 'color:#'.$cssColor.';');
+
                     $calConf[$cal]['foregroundColor'] = self::buildCssColor($cssColor, $cssOpacity);
                 }
 

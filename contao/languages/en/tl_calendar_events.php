@@ -41,7 +41,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['mini'] = 'min';
 $GLOBALS['TL_LANG']['tl_calendar_events']['maxi'] = 'max';
 $GLOBALS['TL_LANG']['tl_calendar_events']['curr'] = 'current';
 $GLOBALS['TL_LANG']['tl_calendar_events']['free'] = 'free';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['first'] = 'every first';
 $GLOBALS['TL_LANG']['tl_calendar_events']['second'] = 'every second';
 $GLOBALS['TL_LANG']['tl_calendar_events']['third'] = 'every third';
@@ -50,7 +49,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['fifth'] = 'every fifth';
 $GLOBALS['TL_LANG']['tl_calendar_events']['sixth'] = 'every sixth';
 $GLOBALS['TL_LANG']['tl_calendar_events']['seventh'] = 'every seventh';
 $GLOBALS['TL_LANG']['tl_calendar_events']['last'] = 'every last';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['sunday'] = 'sunday of a month';
 $GLOBALS['TL_LANG']['tl_calendar_events']['monday'] = 'monday of a month';
 $GLOBALS['TL_LANG']['tl_calendar_events']['tuesday'] = 'tuesday of a month';
@@ -58,17 +56,14 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['wednesday'] = 'wednesday of a month';
 $GLOBALS['TL_LANG']['tl_calendar_events']['thursday'] = 'thursday of a month';
 $GLOBALS['TL_LANG']['tl_calendar_events']['friday'] = 'friday of a month';
 $GLOBALS['TL_LANG']['tl_calendar_events']['saturday'] = 'saturday of a month';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['recurring_legend_ext'] = 'Recurrence settings (extended)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatFixedDates_legend'] = 'Recurrence settings (irregular)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Define exceptions for the recurrences';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Exception settings (extended)';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'] = 'The recurrences could not be calculated because the data of the event is invalid: %s';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'No option for recurrences is active.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'] = 'Time overlapping with another event.';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_exception'] = 'move by';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception'] = 'Date';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exceptionInt'] = 'Every X. ';
@@ -82,6 +77,5 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['cssclass'] = 'Css class';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_start'] = 'Start time';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_end'] = 'End time';
 $GLOBALS['TL_LANG']['tl_calendar_events']['reason'] = 'Reason';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'] = 'This event is repeated at %s. The next event will take place on <time datetime="%s">%s</time>.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'] = 'This event is a series event';

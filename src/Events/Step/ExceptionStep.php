@@ -92,13 +92,13 @@ class ExceptionStep
     {
         // The templates use "class" (with leading space), not the raw "cssClass" column
         $event['class'] = Utils::appendMovedClass($event['class'] ?? '', $skipInfo['cssclass'] ?? '');
-
         $event['oldStartTime'] = $event['startTime'];
         $event['oldEndTime'] = $event['endTime'];
         $event['moveReason'] = $skipInfo['reason'];
 
         // only change the start and end time if addTime is set to true for the event
         $useNewTimes = !empty($event['addTime']) && !empty($skipInfo['new_start']) && !empty($skipInfo['new_end']);
+
         [$newStartTime, $newEndTime] = Utils::calculateMovedTimes(
             $startTime,
             (int) $event['endTime'] - (int) $event['startTime'],
@@ -110,7 +110,6 @@ class ExceptionStep
 
         $event['startTime'] = $newStartTime;
         $event['endTime'] = $newEndTime;
-
         $event['date'] = Date::parse($dateFormat, $newStartTime);
         $event['datetime'] = date('Y-m-d', $newStartTime);
         $event['day'] = $GLOBALS['TL_LANG']['DAYS'][date('w', $newStartTime)];

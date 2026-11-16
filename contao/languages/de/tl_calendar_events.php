@@ -41,7 +41,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['mini'] = 'minimal';
 $GLOBALS['TL_LANG']['tl_calendar_events']['maxi'] = 'maximal';
 $GLOBALS['TL_LANG']['tl_calendar_events']['curr'] = 'aktuell';
 $GLOBALS['TL_LANG']['tl_calendar_events']['free'] = 'frei';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['first'] = 'jeden ersten';
 $GLOBALS['TL_LANG']['tl_calendar_events']['second'] = 'jeden zweiten';
 $GLOBALS['TL_LANG']['tl_calendar_events']['third'] = 'jeden dritten';
@@ -50,7 +49,6 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['fifth'] = 'jeden fünften';
 $GLOBALS['TL_LANG']['tl_calendar_events']['sixth'] = 'jeden sechsten';
 $GLOBALS['TL_LANG']['tl_calendar_events']['seventh'] = 'jeden siebten';
 $GLOBALS['TL_LANG']['tl_calendar_events']['last'] = 'jeden letzten';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['sunday'] = 'Sonntag im Monat';
 $GLOBALS['TL_LANG']['tl_calendar_events']['monday'] = 'Montag im Monat';
 $GLOBALS['TL_LANG']['tl_calendar_events']['tuesday'] = 'Dienstag im Monat';
@@ -58,17 +56,14 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['wednesday'] = 'Mittwoch im Monat';
 $GLOBALS['TL_LANG']['tl_calendar_events']['thursday'] = 'Donnerstag im Monat';
 $GLOBALS['TL_LANG']['tl_calendar_events']['friday'] = 'Freitag im Monat';
 $GLOBALS['TL_LANG']['tl_calendar_events']['saturday'] = 'Samstag im Monat';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['recurring_legend_ext'] = 'Wiederholungen (erweitert)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatFixedDates_legend'] = 'Wiederholungen (unregelmäßig)';
 $GLOBALS['TL_LANG']['tl_calendar_events']['repeatExceptions_legend'] = 'Ausnahmen für Wiederholungen';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception_legend'] = 'Ausnahmen für Wiederholungen';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Es kann nur eine der Optionen für die Wiederholungen aktiv sein.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['invalidRecurrenceData'] = 'Die Wiederholungen konnten nicht berechnet werden, weil die Daten des Termins ungültig sind: %s';
 $GLOBALS['TL_LANG']['tl_calendar_events']['checkExceptions'] = 'Keine Option für Wiederholungen aktiv.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['nonUniqueEvents'] = 'Es gibt eine Zeitüberschneidung mit einem anderen Event.';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_exception'] = 'verschieben um';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exception'] = 'Datum';
 $GLOBALS['TL_LANG']['tl_calendar_events']['exceptionFr'] = 'Von';
@@ -82,6 +77,5 @@ $GLOBALS['TL_LANG']['tl_calendar_events']['cssclass'] = 'CSS Class';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_start'] = 'Startzeit';
 $GLOBALS['TL_LANG']['tl_calendar_events']['new_end'] = 'Endzeit';
 $GLOBALS['TL_LANG']['tl_calendar_events']['reason'] = 'Grund';
-
 $GLOBALS['TL_LANG']['tl_calendar_events']['cal_repeat_fixed_dates'] = 'Dieses Ereignis wird an den Terminen %s wiederholt. Das nächste Ereignis findet statt am <time datetime="%s">%s</time>.';
 $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'] = 'Bei diesem Event handelt es sich um einen Serientermin';

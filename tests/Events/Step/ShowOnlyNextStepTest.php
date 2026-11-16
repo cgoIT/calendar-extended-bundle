@@ -23,6 +23,7 @@ final class ShowOnlyNextStepTest extends TestCase
     public function testOnlyTheNextOccurrenceIsKept(): void
     {
         $now = strtotime('2025-03-05 12:00');
+
         $events = (new ShowOnlyNextStep())->process(
             [
                 '20250303' => [strtotime('2025-03-03 09:00') => [['pid' => 1, 'id' => 1, 'begin' => strtotime('2025-03-03 09:00'), 'end' => strtotime('2025-03-03 10:00')]]],

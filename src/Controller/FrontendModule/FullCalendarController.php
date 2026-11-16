@@ -57,6 +57,7 @@ class FullCalendarController extends AbstractCalendarViewController
         $month = $request->query->get('month');
         $week = $request->query->get('week');
         $day = $request->query->get('day');
+
         $format = $model->cal_fcFormat;
 
         // Jump to the current period
@@ -91,8 +92,10 @@ class FullCalendarController extends AbstractCalendarViewController
                 $selYear = (int) substr((string) $week, 0, 4);
                 $selWeek = (int) substr((string) $week, -2);
                 $selDay = 1 === $selWeek ? 4 : 1;
+
                 $dt = new \DateTime();
                 $dt->setISODate($selYear, $selWeek, $selDay);
+
                 $date = new Date((int) $dt->format('Ymd'), 'Ymd');
                 $format = 'cal_fc_week';
                 $headlineText .= ' '.Date::parse('W/Y', $date->tstamp);

@@ -74,12 +74,14 @@ abstract class CalendarViewTestCase extends TestCase
             'dayShortLength' => 2,
             'monthShortLength' => 3,
         ];
+
         $GLOBALS['TL_LANG']['tl_module']['fetch_error'] = 'Error';
         $GLOBALS['TL_LANGUAGE'] = 'en';
 
         // The language files would need the kernel, mark them as loaded
         $loaded = new \ReflectionProperty(System::class, 'arrLanguageFiles');
         $this->loadedLanguageFiles = $loaded->getValue();
+
         $loaded->setValue(null, ['default' => ['en' => 'en'], 'tl_module' => ['en' => 'en']]);
 
         $GLOBALS['TL_LANG']['DAYS'] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -113,6 +115,7 @@ abstract class CalendarViewTestCase extends TestCase
             ->method('exists')
             ->willReturn($hasTemplate)
         ;
+
         $twig = $this->createStub(Environment::class);
         $twig
             ->method('getLoader')
@@ -129,15 +132,17 @@ abstract class CalendarViewTestCase extends TestCase
                 ->method('getCurrentPage')
                 ->willReturn($page)
             ;
+
             $container->set('contao.routing.page_finder', $pageFinder);
         }
 
         // The cache tags are collected by "contao.cache.entity_tags" in Contao 5.3 and by "contao.cache.tag_manager" later
-        $tagManager = new class() {
+        $tagManager = new class {
             public function tagWith(mixed $tags): void
             {
             }
         };
+
         $container->set('contao.cache.entity_tags', $tagManager);
         $container->set('contao.cache.tag_manager', $tagManager);
         $container->set('twig', $twig);
@@ -147,6 +152,7 @@ abstract class CalendarViewTestCase extends TestCase
             ->method('generate')
             ->willReturnCallback(static fn (string $name, array $parameters): string => '/fetch/'.$parameters['pageId'].'/'.$parameters['moduleId'].'?signature='.$parameters['signature'])
         ;
+
         $container->set('router', $router);
 
         $tokenManager = $this->createStub(ContaoCsrfTokenManager::class);
@@ -154,6 +160,7 @@ abstract class CalendarViewTestCase extends TestCase
             ->method('getDefaultTokenValue')
             ->willReturn('token')
         ;
+
         $container->set('contao.csrf.token_manager', $tokenManager);
         $controller->setContainer($container);
 
@@ -188,12 +195,10 @@ abstract class CalendarViewTestCase extends TestCase
             ->method('getAccessibleCalendars')
             ->willReturn($calendars)
         ;
-
         $provider
             ->method('findBoundaries')
             ->willReturn($boundaries)
         ;
-
         $provider
             ->method('getAllEvents')
             ->willReturn($events)

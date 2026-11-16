@@ -46,6 +46,7 @@ class TimeTableController extends AbstractCalendarViewController
         }
 
         $strUrl = $this->getBaseUrl($request);
+
         $month = $request->query->get('month');
         $week = $request->query->get('week');
         $day = $request->query->get('day');
@@ -114,6 +115,7 @@ class TimeTableController extends AbstractCalendarViewController
             // Get the current year and the week
             if ($model->linkCurrent) {
                 $lblCurrent = $GLOBALS['TL_LANG']['MSC']['curr_week'];
+
                 $variables['currHref'] = $strUrl.'?week='.date('o').str_pad((string) (int) date('W'), 2, '0', STR_PAD_LEFT);
                 $variables['currTitle'] = StringUtil::specialchars($lblCurrent);
                 $variables['currLink'] = $lblCurrent;
@@ -127,6 +129,7 @@ class TimeTableController extends AbstractCalendarViewController
             $prevWeekEnd = $this->getWeekBeginAndEnd($prevYear.$prevWeek)[1];
             if ($prevWeekEnd->tstamp > $firstWeek->tstamp) {
                 $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$prevWeek.'/'.$prevYear;
+
                 $variables['prevHref'] = $strUrl.'?week='.$prevYear.$prevWeek;
                 $variables['prevTitle'] = StringUtil::specialchars($lblPrevious);
                 $variables['prevLink'] = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
@@ -142,6 +145,7 @@ class TimeTableController extends AbstractCalendarViewController
             $nextWeekBegin = $this->getWeekBeginAndEnd($nextYear.$nextWeek)[0];
             if ($nextWeekBegin->tstamp < $lastWeek->tstamp) {
                 $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_week'].' '.$nextWeek.'/'.$nextYear;
+
                 $variables['nextHref'] = $strUrl.'?week='.$nextYear.$nextWeek;
                 $variables['nextTitle'] = StringUtil::specialchars($lblNext);
                 $variables['nextLink'] = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
@@ -208,12 +212,14 @@ class TimeTableController extends AbstractCalendarViewController
                                 if ($m > 0) {
                                     ++$h;
                                 }
+
                                 $arrTimes['stop'] = "$h:00";
                             }
                         }
                     }
                 }
             }
+
             $arrTimes['start'] = substr($arrTimes['start'], 0, 2);
             $arrTimes['stop'] = substr($arrTimes['stop'], 0, 2);
 
@@ -232,6 +238,7 @@ class TimeTableController extends AbstractCalendarViewController
             for ($i = $arrTimes['start']; $i <= $arrTimes['stop']; ++$i) {
                 $top = $cellheight * $counter;
                 $strHour = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+
                 $arrListTimes[$strHour]['top'] = $top;
                 $arrListTimes[$strHour]['class'] = 0 === $counter % 2 ? 'even' : 'odd';
                 $arrListTimes[$strHour]['label'] = "$strHour:00"; // top:".$top."px; position:relative;
@@ -262,6 +269,7 @@ class TimeTableController extends AbstractCalendarViewController
             if ($model->showDate) {
                 $arrDays[$intCurrentDay]['label'] .= '<br/>'.$currDay;
             }
+
             $arrDays[$intCurrentDay]['class'] = $class;
 
             // Get all events of a day
@@ -297,6 +305,7 @@ class TimeTableController extends AbstractCalendarViewController
                         $arrEvents[] = $vv;
                     }
                 }
+
                 $arrDays[$intCurrentDay]['events'] = $arrEvents;
             } else {
                 $arrDays[$intCurrentDay]['events'] = $arrEvents;
@@ -347,9 +356,10 @@ class TimeTableController extends AbstractCalendarViewController
         $selYear = (int) substr($week, 0, 4);
         $selWeek = (int) substr($week, -2);
         $selDay = 1 === $selWeek ? 4 : 1;
-        $dt = new \DateTime();
 
+        $dt = new \DateTime();
         $dt->setISODate($selYear, $selWeek, $selDay);
+
         $weekBegin = new Date((int) $dt->format('Ymd'), 'Ymd');
 
         $dt->setISODate($selYear, $selWeek, 7);

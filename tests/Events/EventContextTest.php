@@ -64,7 +64,6 @@ final class EventContextTest extends TestCase
             ->method('__isset')
             ->willReturnCallback(static fn (string $key): bool => isset($values[$key]))
         ;
-
         $module
             ->method('__get')
             ->willReturnCallback(static fn (string $key): mixed => $values[$key] ?? null)

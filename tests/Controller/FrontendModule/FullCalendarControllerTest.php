@@ -97,6 +97,7 @@ final class FullCalendarControllerTest extends CalendarViewTestCase
             $this->page(),
             ['businessHours' => '1', 'businessDays' => serialize(['1', '2']), 'businessDayStart' => (string) (8 * 3600), 'businessDayEnd' => (string) (17 * 3600)] + self::MODULE,
         );
+
         $this->assertSame(['daysOfWeek' => [1, 2], 'startTime' => '08:00', 'endTime' => '17:00'], $data['calendar']['config']['businessHours']);
     }
 

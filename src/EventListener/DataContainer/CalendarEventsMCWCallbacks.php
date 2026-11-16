@@ -66,9 +66,11 @@ class CalendarEventsMCWCallbacks
             // Probably an AJAX request where activeRecord is not available
             if (null === $activeRecord) {
                 $t = $mcw->dataContainer->table;
+
                 $activeRecord = $this->db
                     ->executeQuery("SELECT $t.* FROM $t WHERE id=?", [Input::get('id')])
                 ;
+
                 $activeRecord = (object) $activeRecord->fetchAssociative();
             }
 
@@ -183,12 +185,14 @@ class CalendarEventsMCWCallbacks
                 'inputType' => 'text',
                 'eval' => ['rgxp' => 'date', 'doNotCopy' => true, 'style' => 'width:100px', 'datepicker' => true, 'tl_class' => 'wizard'],
             ];
+
             $secondField = [
                 'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['exceptionTo'],
                 'exclude' => true,
                 'inputType' => 'text',
                 'eval' => ['rgxp' => 'date', 'doNotCopy' => true, 'style' => 'width:100px', 'datepicker' => true, 'tl_class' => 'wizard'],
             ];
+
             $columnFields['reason'] = [
                 'label' => &$GLOBALS['TL_LANG']['tl_calendar_events']['reason'],
                 'exclude' => true,

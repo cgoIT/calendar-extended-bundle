@@ -69,8 +69,10 @@ final class ParseTemplateHookTest extends TestCase
 
         $this->assertSame($this->time('2026-06-02 09:00'), $data['begin']);
         $this->assertSame('2026-06-02', $data['date']);
+
         // The class of the core ("upcoming") is replaced by the state of the shown occurrence
         $this->assertSame(' bygone', $data['class']);
+
         // The text about the repetition always starts at the next occurrence
         $this->assertStringContainsString('2026-06-04', (string) $data['recurring']);
     }

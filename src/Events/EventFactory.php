@@ -83,7 +83,6 @@ class EventFactory
         [$until, $recurring] = Utils::getUntilAndRecurring($objEvent, $objPage, $intStart, $strDate, $strTime, $isFixedDate);
 
         $arrEvent = $objEvent->row();
-
         $arrEvent['startDate'] = $objEvent->startDate;
         $arrEvent['startTime'] = $objEvent->startTime;
         $arrEvent['endDate'] = $objEvent->endDate;

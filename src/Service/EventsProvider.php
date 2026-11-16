@@ -98,6 +98,7 @@ class EventsProvider
         if (!$this->tokenChecker->isPreviewMode()) {
             $time = Date::floorToMinute();
             $sql .= " AND published='1' AND (start='' OR start<=?) AND (stop='' OR stop>?)";
+
             $params[] = $time;
             $params[] = $time;
         }

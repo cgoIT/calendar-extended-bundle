@@ -41,6 +41,7 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
 
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
         $GLOBALS['TL_CONFIG']['timeFormat'] = 'H:i';
+
         $GLOBALS['TL_LANG']['DAYS'] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         $GLOBALS['TL_LANG']['tl_calendar_events'] = ['move' => 'move', 'hide' => 'hide', 'days' => 'days', 'exceptionInt' => 'Every '];
 
@@ -49,6 +50,7 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
 
         $container = new ContainerBuilder();
         $container->set('request_stack', $requestStack);
+
         System::setContainer($container);
 
         Input::setGet('id', null);
@@ -86,6 +88,7 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
     public function testExceptionsByDateOfferTheCalculatedDates(): void
     {
         Input::setGet('id', '7');
+
         $first = strtotime('2025-03-03 09:00');
         $second = strtotime('2025-03-10 09:00');
 
@@ -133,6 +136,7 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
     public function testTheRecordIsReadFromTheDatabaseWithoutActiveRecord(): void
     {
         Input::setGet('id', '7');
+
         $first = strtotime('2025-03-03 09:00');
 
         $result = $this->createStub(Result::class);
@@ -166,6 +170,7 @@ final class CalendarEventsMCWCallbacksTest extends TestCase
     {
         $widget = (new \ReflectionClass(MultiColumnWizard::class))->newInstanceWithoutConstructor();
         $widget->id = $id;
+
         // @phpstan-ignore assign.propertyType
         $widget->dataContainer = (object) ['table' => 'tl_calendar_events', 'activeRecord' => $activeRecord];
 

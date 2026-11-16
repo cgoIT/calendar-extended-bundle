@@ -117,8 +117,8 @@ class ParseTemplateHook
 
         // The core marks the event with the class of its own start and end
         $status = ReaderOccurrences::statusClass($intStartTime, $intEndTime, strtotime('00:00:00', $now), strtotime('23:59:59', $now));
-        $template->class = ' '.trim(preg_replace('/\s+(bygone|upcoming|current)(?=\s|$)/', '', (string) $template->class).' '.$status);
 
+        $template->class = ' '.trim(preg_replace('/\s+(bygone|upcoming|current)(?=\s|$)/', '', (string) $template->class).' '.$status);
         $template->date = $strDate;
         $template->time = $strTime;
         $template->datetime = $objEvent->addTime ? date('Y-m-d\TH:i:sP', $intStartTime) : date('Y-m-d', $intStartTime);

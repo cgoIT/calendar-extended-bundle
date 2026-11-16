@@ -70,6 +70,7 @@ class TimePeriodExt extends Widget
                 } else {
                     unset($this->arrAttributes['required']);
                 }
+
                 parent::__set($strKey, $varValue);
                 break;
 

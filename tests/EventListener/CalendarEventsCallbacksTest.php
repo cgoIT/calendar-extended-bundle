@@ -40,8 +40,10 @@ final class CalendarEventsCallbacksTest extends TestCase
 
         $GLOBALS['TL_CONFIG']['datimFormat'] = 'Y-m-d H:i';
         $GLOBALS['TL_CONFIG']['dateFormat'] = 'Y-m-d';
+
         $GLOBALS['TL_LANG']['MONTHS'] = self::MONTHS;
         $GLOBALS['TL_CONFIG']['timeFormat'] = 'H:i';
+
         $GLOBALS['TL_LANG']['MSC']['cal_timeSeparator'] = ' - ';
         $GLOBALS['TL_LANG']['tl_calendar_events']['cal_series_date_title'] = 'Series';
         $GLOBALS['TL_LANG']['tl_calendar_events']['checkRecurring'] = 'Only one option can be active for recurrences.';
@@ -80,7 +82,6 @@ final class CalendarEventsCallbacksTest extends TestCase
     public function testDefaultRepeatEachExtFallsBackToMonday(): void
     {
         $callbacks = $this->createCallbacks();
-
         $value = $callbacks->defaultRepeatEachExt(null, $this->createDataContainer([]));
 
         $this->assertSame(['value' => 'first', 'unit' => 'monday'], unserialize($value));
@@ -137,7 +138,6 @@ final class CalendarEventsCallbacksTest extends TestCase
             ->with('id')
             ->willReturn($id)
         ;
-
         $dc
             ->method('getCurrentRecord')
             ->willReturn($record)
@@ -297,13 +297,13 @@ final class CalendarEventsCallbacksTest extends TestCase
             ->with('id')
             ->willReturn($event->id)
         ;
-
         $dc
             ->method('getCurrentRecord')
             ->willReturn((array) $event)
         ;
 
         $update = [];
+
         $db = $this->createMock(Connection::class);
         $db
             ->method('update')
@@ -317,7 +317,6 @@ final class CalendarEventsCallbacksTest extends TestCase
         ;
 
         $callbacks = $this->createCallbacks($db);
-
         $callbacks->handleRecurrencesAndExceptions($dc);
 
         return $update;

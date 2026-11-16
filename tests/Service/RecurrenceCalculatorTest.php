@@ -73,6 +73,7 @@ final class RecurrenceCalculatorTest extends TestCase
     public function testRecurrencesKeepTheLocalTimeAcrossTheChangeToDaylightSavingTime(): void
     {
         $timezone = date_default_timezone_get();
+
         date_default_timezone_set('Europe/Berlin');
 
         try {
@@ -159,6 +160,7 @@ final class RecurrenceCalculatorTest extends TestCase
     public function testMonthlyRecurrenceKeepsTheLocalTimeAcrossTheChangeToDaylightSavingTime(): void
     {
         $timezone = date_default_timezone_get();
+
         date_default_timezone_set('Europe/Berlin');
 
         try {
@@ -365,6 +367,7 @@ final class RecurrenceCalculatorTest extends TestCase
             [strtotime('2025-03-03 09:00'), strtotime('2025-04-10 14:30'), strtotime('2025-04-20 09:00')],
             array_keys($all),
         );
+
         $this->assertSame(strtotime('2025-04-10 16:00'), $all[strtotime('2025-04-10 14:30')]['int_end']);
         $this->assertSame(strtotime('2025-04-20 10:00'), $all[strtotime('2025-04-20 09:00')]['int_end']);
         $this->assertSame(strtotime('2025-04-20 10:00'), $set['repeatEnd']);
@@ -389,6 +392,7 @@ final class RecurrenceCalculatorTest extends TestCase
 
         $this->assertSame(strtotime('2025-04-13 13:00'), $all[strtotime('2025-04-11 18:00')]['int_end']);
         $this->assertSame(strtotime('2025-05-11 12:00'), $all[strtotime('2025-05-09 17:00')]['int_end']);
+
         // the last fixed date ends on Sunday
         $this->assertSame(strtotime('2025-05-11 12:00'), $set['repeatEnd']);
     }
@@ -415,6 +419,7 @@ final class RecurrenceCalculatorTest extends TestCase
     public function testFixedDatesOfAMultiDayEventKeepTheDurationAcrossTheChangeFromDaylightSavingTime(): void
     {
         $timezone = date_default_timezone_get();
+
         date_default_timezone_set('Europe/Berlin');
 
         try {
@@ -700,17 +705,20 @@ final class RecurrenceCalculatorTest extends TestCase
      */
     private function dailyEvent(array $overrides = []): \stdClass
     {
-        return $this->event(array_merge([
-            'recurring' => 1,
-            'repeatEach' => serialize(['value' => 1, 'unit' => 'days']),
-            'repeatEnd' => strtotime('2025-03-07 12:00'),
-            'ignoreEndTime' => 0,
-            'repeatExceptions' => '',
-            'repeatExceptionsInt' => '',
-            'repeatExceptionsPer' => '',
-            'allRecurrences' => '',
-            'weekday' => 1,
-        ], $overrides));
+        return $this->event(array_merge(
+            [
+                'recurring' => 1,
+                'repeatEach' => serialize(['value' => 1, 'unit' => 'days']),
+                'repeatEnd' => strtotime('2025-03-07 12:00'),
+                'ignoreEndTime' => 0,
+                'repeatExceptions' => '',
+                'repeatExceptionsInt' => '',
+                'repeatExceptionsPer' => '',
+                'allRecurrences' => '',
+                'weekday' => 1,
+            ],
+            $overrides,
+        ));
     }
 
     /**
@@ -753,7 +761,6 @@ final class RecurrenceCalculatorTest extends TestCase
     private function calculate(\stdClass $event, int $maxRepeatCount = 365, int $maxExceptionsCount = 250): array
     {
         $calculator = new RecurrenceCalculator($maxRepeatCount, $maxExceptionsCount);
-
         $result = $calculator->calculate((array) $event);
 
         return [$result->recurrences, $result->set];

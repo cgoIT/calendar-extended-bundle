@@ -72,6 +72,7 @@ final class FetchEventsControllerTest extends TestCase
     public function testASignatureOfAnotherPageIsNotFound(): void
     {
         $signature = new FetchEventsSignature('secret');
+
         $framework = $this->createMock(ContaoFramework::class);
         $framework
             ->expects($this->never())
@@ -207,6 +208,7 @@ final class FetchEventsControllerTest extends TestCase
         $started['end'] = time() + 3600;
         $started['startTime'] = $started['begin'];
         $started['endTime'] = $started['end'];
+
         $upcoming = $this->event(2, '2026-06-02 10:00');
         $upcoming['begin'] = time() + 7200;
         $upcoming['end'] = time() + 10800;
@@ -288,7 +290,6 @@ final class FetchEventsControllerTest extends TestCase
             ->method('getAccessibleCalendars')
             ->willReturn($calendars)
         ;
-
         $provider
             ->method('getAllEvents')
             ->willReturn($events)
@@ -376,7 +377,7 @@ final class FetchEventsControllerTest extends TestCase
     private function page(array $row = []): PageModel
     {
         // loadDetails() would query the database
-        $page = new class() extends PageModel {
+        $page = new class extends PageModel {
             public function __construct()
             {
             }

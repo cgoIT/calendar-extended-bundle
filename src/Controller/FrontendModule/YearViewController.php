@@ -52,7 +52,7 @@ class YearViewController extends AbstractCalendarViewController
         try {
             $timeStamp = Utils::parseYearParameter($year);
             $date = null !== $timeStamp ? new Date($timeStamp) : new Date();
-        } catch (\OutOfBoundsException|\InvalidArgumentException) {
+        } catch (\InvalidArgumentException|\OutOfBoundsException) {
             throw new PageNotFoundException('Page not found: '.$request->getUri());
         }
 
@@ -97,6 +97,7 @@ class YearViewController extends AbstractCalendarViewController
             $prevYear = $intYear - 1;
             if ($prevYear >= $firstYear) {
                 $lblPrevious = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$prevYear;
+
                 $variables['prevHref'] = $strUrl.'?year='.$prevYear;
                 $variables['prevTitle'] = StringUtil::specialchars((string) $prevYear);
                 $variables['prevLink'] = $GLOBALS['TL_LANG']['MSC']['cal_previous'].' '.$lblPrevious;
@@ -110,6 +111,7 @@ class YearViewController extends AbstractCalendarViewController
             $nextYear = $intYear + 1;
             if ($nextYear <= $lastYear) {
                 $lblNext = $GLOBALS['TL_LANG']['MSC']['calendar_year'].' '.$nextYear;
+
                 $variables['nextHref'] = $strUrl.'?year='.$nextYear;
                 $variables['nextTitle'] = StringUtil::specialchars((string) $nextYear);
                 $variables['nextLink'] = $lblNext.' '.$GLOBALS['TL_LANG']['MSC']['cal_next'];
@@ -169,6 +171,7 @@ class YearViewController extends AbstractCalendarViewController
 
                     $intKey = date('Ymd', Utils::parseTime(date('Y-m-d', $day)));
                     $currDay = Date::parse($page->dateFormat, Utils::parseTime(date('Y-m-d', $day)));
+
                     $class = 0 === $intCurrentDay || 6 === $intCurrentDay ? 'weekend' : 'weekday';
                     $class .= 0 === $d % 2 ? ' even' : ' odd';
                     $class .= ' '.strtolower((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay]);
@@ -188,6 +191,7 @@ class YearViewController extends AbstractCalendarViewController
                         $key1 = $m;
                         $key2 = $d;
                     }
+
                     $arrDays[$key1][$key2]['label'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2)).' '.$d;
                     $arrDays[$key1][$key2]['weekday'] = strtoupper(substr((string) $GLOBALS['TL_LANG']['DAYS'][$intCurrentDay], 0, 2));
                     $arrDays[$key1][$key2]['day'] = $d;
@@ -204,6 +208,7 @@ class YearViewController extends AbstractCalendarViewController
                         $key1 = $m;
                         $key2 = $d;
                     }
+
                     $arrDays[$key1][$key2]['label'] = '';
                     $arrDays[$key1][$key2]['weekday'] = '';
                     $arrDays[$key1][$key2]['day'] = '';
@@ -267,10 +272,11 @@ class YearViewController extends AbstractCalendarViewController
                     $m = $yeardays[$day][$month];
                     $m['class'] .= ' nowrap top';
                     unset($m['events']);
-                    $row[] = $m;
 
+                    $row[] = $m;
                     $row[] = $yeardays[$day][$month]['events'];
                 }
+
                 $body[] = $row;
             }
         } else {
@@ -286,13 +292,16 @@ class YearViewController extends AbstractCalendarViewController
 
                 $m = $months[$month];
                 $m['rowspan'] = 2;
+
                 $row[] = $m;
 
                 foreach (range(1, 31) as $day) {
                     $col = $yeardays[$month][$day];
                     $col['class'] .= ' nowrap';
+
                     $row[] = $col;
                 }
+
                 $body[] = $row;
 
                 $row = [];
@@ -300,6 +309,7 @@ class YearViewController extends AbstractCalendarViewController
                 foreach (range(1, 31) as $day) {
                     $row[] = $yeardays[$month][$day]['events'];
                 }
+
                 $body[] = $row;
             }
         }

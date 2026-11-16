@@ -48,8 +48,8 @@ class RenameFieldsMigration extends AbstractMigration
     public function shouldRun(): bool
     {
         $schemaManager = $this->db->createSchemaManager();
-
         $cols = $schemaManager->listTableColumns(self::$strTable);
+
         $t = self::$strTable;
 
         foreach (self::$arrColumns as $oldCol => $newCol) {

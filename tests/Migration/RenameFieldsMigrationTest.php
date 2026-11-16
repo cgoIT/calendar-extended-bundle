@@ -21,6 +21,7 @@ final class RenameFieldsMigrationTest extends MigrationTestCase
     public function testDoesNotRunIfTheOldColumnsDoNotExist(): void
     {
         $this->db->executeStatement('CREATE TABLE tl_module (id INTEGER PRIMARY KEY, hide_holiday TEXT, cellheight TEXT)');
+
         $this->insert('tl_module', ['id' => 1, 'hide_holiday' => '1', 'cellheight' => '20']);
 
         $this->assertFalse((new RenameFieldsMigration($this->db))->shouldRun());
