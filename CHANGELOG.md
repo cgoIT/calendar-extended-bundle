@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.4](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.3...v3.0.4) (2026-11-16)
+
+
+### Bug Fixes
+
+* end all-day recurrences at 23:59:59 like the core ([249e8fa](https://github.com/cgoIT/calendar-extended-bundle/commit/249e8fa4646c957b5f8a6b5129c873bf5cfbadd2))
+* end all-day recurrences at 23:59:59 like the core, fixes [#64](https://github.com/cgoIT/calendar-extended-bundle/issues/64) ([466b66f](https://github.com/cgoIT/calendar-extended-bundle/commit/466b66f6fc7560e655049adcf1989aed5b31e070))
+* reformat after build-tools run ([7bb5b14](https://github.com/cgoIT/calendar-extended-bundle/commit/7bb5b14484f3e18e94ea104256c2174d687948ed))
+* reformat after build-tools run ([9a81a2d](https://github.com/cgoIT/calendar-extended-bundle/commit/9a81a2d5c2d4048b86d1834553a4010b9ba1ccd1))
+
 ## [3.0.3](https://github.com/cgoIT/calendar-extended-bundle/compare/v3.0.2...v3.0.3) (2026-11-03)
 
 
